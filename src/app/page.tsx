@@ -1,19 +1,26 @@
-import ECommerce from "@/components/Dashboard/E-commerce";
-import { Metadata } from "next";
-import DefaultLayout from "@/components/Layouts/DefaultLayout";
+// pages/index.js
+// "use client"; // Add this at the top
 
-export const metadata: Metadata = {
-  title:
-    "Next.js E-commerce Dashboard | TailAdmin - Next.js Dashboard Template",
-  description: "This is Next.js Home for TailAdmin Dashboard Template",
+import React, { useState } from 'react';
+import ECommerce from "@/components/Dashboard/E-commerce";
+import DefaultLayout from "@/components/Layouts/DefaultLayout";
+// import SignIn from "@/components/auth/signin/page";
+import SignIn from './auth/signin/page';
+
+export const metadata = {
+  title: "iLearn Africa - Office Automation System",
+  description: "The best e-learning platform in Africa",
 };
 
-export default function Home() {
+const Home: React.FC = () => {
   return (
     <>
-      <DefaultLayout>
-        <ECommerce />
-      </DefaultLayout>
+      {/* <DefaultLayout> */}
+        {/* <ECommerce /> */}
+        <SignIn />
+      {/* </DefaultLayout> */}
     </>
   );
-}
+};
+
+export default Home;

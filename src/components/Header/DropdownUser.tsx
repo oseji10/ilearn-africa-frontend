@@ -2,9 +2,43 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import ClickOutside from "@/components/ClickOutside";
+import { useRouter } from 'next/navigation';
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const router = useRouter();
+  const handleLogout = async () => {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      // Redirect to login if no token is found
+      router.push('/');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/logout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      // Clear the token from local storage
+      localStorage.removeItem('token');
+
+      // Redirect to the login page after logging out
+      router.push('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Handle logout error (e.g., display error message)
+    }
+  };
 
   return (
     <ClickOutside onClick={() => setDropdownOpen(false)} className="relative">
@@ -128,7 +162,9 @@ const DropdownUser = () => {
               </Link>
             </li>
           </ul>
-          <button className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
+          <button 
+          onClick={handleLogout}
+          className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
             <svg
               className="fill-current"
               width="22"
