@@ -8,8 +8,9 @@ import SidebarItem from "@/components/Sidebar/SidebarItem";
 import ClickOutside from "@/components/ClickOutside";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAward, faFileExport, faFileInvoiceDollar, faTableColumns, faUserGraduate, faUsers } from "@fortawesome/free-solid-svg-icons";
+import { faAward, faBookAtlas, faBookOpen, faFileExport, faFileInvoiceDollar, faTableColumns, faUserGraduate, faUsers } from "@fortawesome/free-solid-svg-icons";
 import { faBoxesStacked } from "@fortawesome/free-solid-svg-icons/faBoxesStacked";
+import { faBook } from "@fortawesome/free-solid-svg-icons/faBook";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -131,6 +132,15 @@ const menuGroups = [
           },
         ],
       },
+
+      {
+        icon: (
+          <FontAwesomeIcon icon={faBookOpen} className="fill-current" size="lg" />
+        ),
+        label: "Courses",
+        route: "/courses",
+      },
+
 
       {
         icon: (
