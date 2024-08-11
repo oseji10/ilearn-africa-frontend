@@ -169,7 +169,6 @@ const Register = () => {
           setFormData((prevState) => ({
             ...prevState,
             client_id: data.client_id,
-            email: data.email,
           }));
         } catch (error) {
           console.error("Error fetching client ID:", error);

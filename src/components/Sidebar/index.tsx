@@ -63,8 +63,12 @@ const menuGroups = [
         route: "#",
         children: [
           {
+            label: "Admitted Clients",
+            route: "/clients/admitted",
+          },
+          {
             label: "Register Course",
-            route: "/clients/register",
+            route: "/admission/courses",
           },
           {
             label: "Registered Courses",
@@ -84,7 +88,7 @@ const menuGroups = [
         children: [
           {
             label: "All Payments",
-            route: "/clients/register",
+            route: "/payments",
           },
           {
             label: "Make Payment",

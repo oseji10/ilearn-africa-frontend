@@ -8,8 +8,8 @@ import DefaultLayout2 from "@/components/Layouts/DefaultLayout";
 // import { useRouter } from 'next/router';
 import { useRouter } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faLock } from "@fortawesome/free-solid-svg-icons";
-
+import { faEnvelope, faLock, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { useState } from 'react';
 // export const metadata: Metadata = {
 //   title: "iLearn Africa | office Automation System",
 //   description: "Learning hub for Africa",
@@ -18,10 +18,12 @@ import { faEnvelope, faLock } from "@fortawesome/free-solid-svg-icons";
 
 const SignIn: React.FC = () => {
   const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSignIn = async (event) => {
     event.preventDefault();
-
+    
+    setIsSubmitting(true);
     const formData = new FormData(event.target);
     const data = {
       login: formData.get('login'),
@@ -46,8 +48,13 @@ const SignIn: React.FC = () => {
       const result = await response.json();
       console.log('Sign in successful:', result);
 
-      // Store the token in local storage
+      // Store the token and client_id in local storage
       localStorage.setItem('token', result.access_token);
+
+      // Assuming result.user contains user data, including client_id
+      if (result.user && result.user.client_id) {
+        localStorage.setItem('client_id', result.user.client_id);
+      }
 
       // Redirect to the dashboard on successful sign-in
       router.push('/dashboard');
@@ -55,7 +62,9 @@ const SignIn: React.FC = () => {
       console.error('Sign in failed:', error);
       // Handle sign-in error (e.g., display error message)
     }
+    setIsSubmitting(false);
   };
+
   
   return (
     // <DefaultLayout>
@@ -258,12 +267,21 @@ const SignIn: React.FC = () => {
                 </div>
 
                 <div className="mb-5">
-                  <input
-                    type="submit"
-                    value="Sign In"
-                    className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90"
-                  />
-                </div>
+                <input
+          type="submit"
+          value={isSubmitting ? '' : 'Sign In'}
+          className={`w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90 ${
+            isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+          disabled={isSubmitting}
+        />
+        {isSubmitting && (
+          <div className="flex items-center justify-center">
+            <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
+            <span>Please wait...</span>
+          </div>
+        )}
+      </div>
 
                 <button className="flex w-full items-center justify-center gap-3.5 rounded-lg border border-stroke bg-gray p-4 hover:bg-opacity-50 dark:border-strokedark dark:bg-meta-4 dark:hover:bg-opacity-50">
                   <span>
