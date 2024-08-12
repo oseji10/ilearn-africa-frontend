@@ -234,7 +234,7 @@ const ClientsTable = () => {
         <tr key={index}>
           {/* Fetch qualification_name from the main qualification object */}
           <td>{detail.qualification?.qualification_name || "N/A"}</td>
-          <td>{detail?.course_studied}</td>
+          <td>{detail.course_studied}</td>
           <td>{detail.grade?.grade}</td>
           <td>{detail?.date_acquired}</td>
         </tr>
