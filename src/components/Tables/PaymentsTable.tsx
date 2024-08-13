@@ -202,6 +202,53 @@ const [transactionReference, setTransactionReference] = useState('');
   };
   
 
+// Update the downloadInvoice function to accept the transaction_reference as a parameter
+async function downloadInvoice(transaction_reference) {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/generate-receipt`, {
+      method: 'POST', // Use POST method as required by the backend
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ transaction_reference }), // Send the transaction_reference in the request body
+    });
+
+    if (response.ok) {
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `invoice-${transaction_reference}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } else {
+      console.error('Failed to download the invoice', response.statusText);
+    }
+  } catch (error) {
+    console.error('An error occurred while downloading the invoice', error);
+  }
+}
+
+
+// Update the button click to pass the correct transaction_reference
+{/* <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
+  <button
+    className="px-4 py-2 bg-gray-300 rounded"
+    onClick={() => downloadInvoice(payment.transaction_reference)} // Pass the transaction_reference here
+  >
+    <FontAwesomeIcon icon={faEye} /> View
+  </button>
+</td> */}
+
+  
+
   return (
     <div>
       <button
@@ -321,13 +368,13 @@ const [transactionReference, setTransactionReference] = useState('');
                   </td>
 
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    <button
-                      className="px-4 py-2 bg-gray-300 rounded"
-                      onClick={() => handleEyeClick(payment)}
-                    >
-                      <FontAwesomeIcon icon={faEye} /> View
-                    </button>
-                  </td>
+  <button
+    className="px-4 py-2 bg-gray-300 rounded"
+    onClick={() => downloadInvoice(payment.transaction_reference)} // Pass the transaction_reference here
+  >
+    <FontAwesomeIcon icon={faEye} /> View
+  </button>
+</td>
                 </tr>
               ))}
             </tbody>
