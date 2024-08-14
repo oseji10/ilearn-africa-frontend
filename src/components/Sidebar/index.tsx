@@ -63,6 +63,10 @@ const menuGroups = [
         route: "#",
         children: [
           {
+            label: "Process Admission",
+            route: "/admission/process-admission",
+          },
+          {
             label: "Admitted Clients",
             route: "/clients/admitted",
           },

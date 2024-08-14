@@ -2,9 +2,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faPrint, faPlus, faDownload } from "@fortawesome/free-solid-svg-icons";
+import { faEye, faPrint, faPlus } from "@fortawesome/free-solid-svg-icons";
 
-const PaymentsTable = () => {
+const ProcessAdmissionTable = () => {
   const [payments, setPayments] = useState([]);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -52,7 +52,7 @@ const [transactionReference, setTransactionReference] = useState('');
         }
 
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/payments`,
+          `${process.env.NEXT_PUBLIC_API_URL}/verified-payments`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -128,40 +128,7 @@ const [transactionReference, setTransactionReference] = useState('');
     return <p>Error: {error}</p>;
   }
 
-  const handleAddPaymentClick = () => {
-    setIsClientModalOpen(true);
-  };
 
-  const handleClientSubmit = async (event) => {
-    event.preventDefault();
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("No auth token found");
-      }
-  
-      // Append the entered client_id to the endpoint
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/clients/${clientId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-  
-      // Set the client details from the response
-      setClientDetails(response.data.client[0]);
-      console.log(response.data);
-      setIsClientModalOpen(false);
-      setIsPaymentModalOpen(true);
-      console.log("Is Payment Modal Open:", isPaymentModalOpen);
-    } catch (err) {
-      console.error("Failed to fetch client details:", err.message);
-      setError("Failed to fetch client details. Please try again.");
-    }
-  };
-  
 
   const handlePaymentSubmit = async (event) => {
     event.preventDefault();
@@ -237,26 +204,11 @@ async function downloadInvoice(transaction_reference) {
 }
 
 
-// Update the button click to pass the correct transaction_reference
-{/* <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-  <button
-    className="px-4 py-2 bg-gray-300 rounded"
-    onClick={() => downloadInvoice(payment.transaction_reference)} // Pass the transaction_reference here
-  >
-    <FontAwesomeIcon icon={faEye} /> View
-  </button>
-</td> */}
-
   
 
   return (
     <div>
-      <button
-        className="mb-4 px-4 py-2 bg-blue-500 text-white rounded"
-        onClick={handleAddPaymentClick}
-      >
-        <FontAwesomeIcon icon={faPlus} /> Add Payment
-      </button>
+    
 
       <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
         <div className="max-w-full overflow-x-auto">
@@ -273,7 +225,7 @@ async function downloadInvoice(transaction_reference) {
                   Client Name
                 </th>
                 <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
-                  Transaction Reference
+                  Course Details
                 </th>
 
                 <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
@@ -316,7 +268,7 @@ async function downloadInvoice(transaction_reference) {
 
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <h5 className="font-medium text-black dark:text-white">
-                      {payment.transaction_reference}
+                      {payment.courses.course_id}
                     </h5>
                   </td>
 
@@ -368,16 +320,13 @@ async function downloadInvoice(transaction_reference) {
                   </td>
 
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-  {(payment.status !== 0 && payment.status !== null) && (
-    <button
-      className="px-4 py-2 bg-gray-300 rounded"
-      onClick={() => downloadInvoice(payment.transaction_reference)} // Pass the transaction_reference here
-    >
-      <FontAwesomeIcon icon={faDownload} /> Download Receipt
-    </button>
-  )}
+  <button
+    className="px-4 py-2 bg-gray-300 rounded"
+    onClick={() => downloadInvoice(payment.transaction_reference)} // Pass the transaction_reference here
+  >
+    <FontAwesomeIcon icon={faEye} /> View
+  </button>
 </td>
-
                 </tr>
               ))}
             </tbody>
@@ -550,4 +499,4 @@ async function downloadInvoice(transaction_reference) {
   );
 };
 
-export default PaymentsTable;
+export default ProcessAdmissionTable;
