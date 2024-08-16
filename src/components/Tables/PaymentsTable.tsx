@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faPrint, faPlus, faDownload } from "@fortawesome/free-solid-svg-icons";
@@ -16,32 +16,34 @@ const PaymentsTable = () => {
   const [clientDetails, setClientDetails] = useState(null);
   const modalRef = useRef(null);
 
-  const [paymentMethod, setPaymentMethod] = useState('');
-const [transactionReference, setTransactionReference] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [transactionReference, setTransactionReference] = useState("");
 
-  const [selectedCourse, setSelectedCourse] = useState('');
-  const [amount, setAmount] = useState('');
+  const [selectedCourse, setSelectedCourse] = useState("");
+  const [amount, setAmount] = useState("");
 
-
-  const handlePaymentMethodChange = (e) => {
+  const handlePaymentMethodChange = useCallback((e) => {
     setPaymentMethod(e.target.value);
-  };
-  
-  const handleTransactionReferenceChange = (e) => {
+  }, []);
+
+  const handleTransactionReferenceChange = useCallback((e) => {
     setTransactionReference(e.target.value);
-  };
+  }, []);
 
+  const handleCourseChange = useCallback(
+    (e) => {
+      const selectedCourseId = e.target.value;
+      setSelectedCourse(selectedCourseId);
 
-  const handleCourseChange = (e) => {
-    const selectedCourseId = e.target.value;
-    setSelectedCourse(selectedCourseId);
-
-    // Find the course with the selected course_id and set the corresponding amount
-    const course = courses.find(course => course.course_id === selectedCourseId);
-    if (course) {
-      setAmount(course.cost); // Assuming the amount is stored in course.course_amount
-    }
-  };
+      const course = courses.find(
+        (course) => course.course_id === selectedCourseId
+      );
+      if (course) {
+        setAmount(course.cost); // Assuming the amount is stored in course.course_amount
+      }
+    },
+    [courses]
+  );
 
   useEffect(() => {
     const fetchPayments = async () => {
@@ -91,23 +93,26 @@ const [transactionReference, setTransactionReference] = useState('');
     fetchCourses();
   }, []);
 
-  const handleEyeClick = (payment) => {
+  const handleEyeClick = useCallback((payment) => {
     setSelectedPayment(payment);
-  };
+  }, []);
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setSelectedPayment(null);
     setIsClientModalOpen(false);
     setIsPaymentModalOpen(false);
     setClientDetails(null);
     setClientId("");
-  };
+  }, []);
 
-  const handleClickOutside = (event) => {
-    if (modalRef.current && !modalRef.current.contains(event.target)) {
-      closeModal();
-    }
-  };
+  const handleClickOutside = useCallback(
+    (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        closeModal();
+      }
+    },
+    [closeModal]
+  );
 
   useEffect(() => {
     if (selectedPayment || isClientModalOpen || isPaymentModalOpen) {
@@ -118,7 +123,7 @@ const [transactionReference, setTransactionReference] = useState('');
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [selectedPayment, isClientModalOpen, isPaymentModalOpen]);
+  }, [selectedPayment, isClientModalOpen, isPaymentModalOpen, handleClickOutside]);
 
   if (loading) {
     return <p>Loading...</p>;
@@ -128,126 +133,124 @@ const [transactionReference, setTransactionReference] = useState('');
     return <p>Error: {error}</p>;
   }
 
-  const handleAddPaymentClick = () => {
+  const handleAddPaymentClick = useCallback(() => {
     setIsClientModalOpen(true);
-  };
+  }, []);
 
-  const handleClientSubmit = async (event) => {
-    event.preventDefault();
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("No auth token found");
-      }
-  
-      // Append the entered client_id to the endpoint
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/clients/${clientId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-  
-      // Set the client details from the response
-      setClientDetails(response.data.client[0]);
-      console.log(response.data);
-      setIsClientModalOpen(false);
-      setIsPaymentModalOpen(true);
-      console.log("Is Payment Modal Open:", isPaymentModalOpen);
-    } catch (err) {
-      console.error("Failed to fetch client details:", err.message);
-      setError("Failed to fetch client details. Please try again.");
-    }
-  };
-  
-
-  const handlePaymentSubmit = async (event) => {
-    event.preventDefault();
-  
-    const paymentData = {
-      client_id: clientDetails.client_id,
-      course_id: selectedCourse,
-      payment_method: paymentMethod,
-      transaction_reference: transactionReference,
-      amount: amount,
-    };
-  
-    try {
-      const token = localStorage.getItem("token");
+  const handleClientSubmit = useCallback(
+    async (event) => {
+      event.preventDefault();
+      try {
+        const token = localStorage.getItem("token");
         if (!token) {
           throw new Error("No auth token found");
         }
-      const response = await fetch( `${process.env.NEXT_PUBLIC_API_URL}/manual-payment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(paymentData),
-      });
-  
+
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/clients/${clientId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setClientDetails(response.data.client[0]);
+        setIsClientModalOpen(false);
+        setIsPaymentModalOpen(true);
+      } catch (err) {
+        console.error("Failed to fetch client details:", err.message);
+        setError("Failed to fetch client details. Please try again.");
+      }
+    },
+    [clientId]
+  );
+
+  const handlePaymentSubmit = useCallback(
+    async (event) => {
+      event.preventDefault();
+
+      const paymentData = {
+        client_id: clientDetails.client_id,
+        course_id: selectedCourse,
+        payment_method: paymentMethod,
+        transaction_reference: transactionReference,
+        amount: amount,
+      };
+
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error("No auth token found");
+        }
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/manual-payment`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(paymentData),
+          }
+        );
+
+        if (response.ok) {
+          setSuccess("Payment submitted successfully!");
+          setError("");
+          closeModal();
+        } else {
+          throw new Error("Payment submission failed");
+        }
+      } catch (error) {
+        setError(error.message);
+      }
+    },
+    [
+      clientDetails,
+      selectedCourse,
+      paymentMethod,
+      transactionReference,
+      amount,
+      closeModal,
+    ]
+  );
+
+  async function downloadInvoice(transaction_reference) {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No auth token found");
+    }
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/generate-receipt`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ transaction_reference }),
+        }
+      );
+
       if (response.ok) {
-        setSuccess('Payment submitted successfully!');
-        setError('');
-        // Optionally, you can close the modal or reset form fields here
-        closeModal();
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `invoice-${transaction_reference}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
       } else {
-        throw new Error('Payment submission failed');
+        console.error("Failed to download the invoice", response.statusText);
       }
     } catch (error) {
-      setError(error.message);
+      console.error("An error occurred while downloading the invoice", error);
     }
-  };
-  
-
-// Update the downloadInvoice function to accept the transaction_reference as a parameter
-async function downloadInvoice(transaction_reference) {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    throw new Error("No auth token found");
   }
-
-  try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/generate-receipt`, {
-      method: 'POST', // Use POST method as required by the backend
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({ transaction_reference }), // Send the transaction_reference in the request body
-    });
-
-    if (response.ok) {
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `invoice-${transaction_reference}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
-    } else {
-      console.error('Failed to download the invoice', response.statusText);
-    }
-  } catch (error) {
-    console.error('An error occurred while downloading the invoice', error);
-  }
-}
-
-
-// Update the button click to pass the correct transaction_reference
-{/* <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-  <button
-    className="px-4 py-2 bg-gray-300 rounded"
-    onClick={() => downloadInvoice(payment.transaction_reference)} // Pass the transaction_reference here
-  >
-    <FontAwesomeIcon icon={faEye} /> View
-  </button>
-</td> */}
-
-  
 
   return (
     <div>
@@ -284,7 +287,6 @@ async function downloadInvoice(transaction_reference) {
                   Payment Date
                 </th>
 
-
                 <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
                   Payment Method
                 </th>
@@ -302,82 +304,45 @@ async function downloadInvoice(transaction_reference) {
               {payments.map((payment, key) => (
                 <tr key={key}>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    <p className="text-black dark:text-white">
-                      {payment.client_id}
-                    </p>
+                    {payment.client_id}
                   </td>
-
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    <h5 className="font-medium text-black dark:text-white">
-                      {payment.clients.firstname} {payment.clients.othernames}{" "}
-                      {payment.clients.surname}
-                    </h5>
+                    {payment.client_name}
                   </td>
-
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    <h5 className="font-medium text-black dark:text-white">
-                      {payment.transaction_reference}
-                    </h5>
+                    {payment.transaction_reference}
                   </td>
-
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    <p className="text-black dark:text-white">
-                      {parseFloat(payment.amount).toLocaleString("en-US", {
-                        style: "currency",
-                        currency: "NGN",
-                      })}
-                    </p>
+                    {payment.amount}
                   </td>
-
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    <p className="text-black dark:text-white">
-                      {new Date(payment.created_at).toLocaleString("en-US", {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                        hour: "numeric",
-                        minute: "numeric",
-                        hour12: true,
-                      })}
-                    </p>
+                    {new Date(payment.payment_date).toLocaleDateString()}
                   </td>
-
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    <h5 className="font-medium text-black dark:text-white">
-                      {payment.payment_method}
-                    </h5>
+                    {payment.payment_method}
                   </td>
-
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    
-                    <p
-                      className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
-                        payment.status === 1
-                          ? "bg-success text-success"
-                          : payment.status === 0
-                            ? "bg-warning text-warning"
-                            : ""
-                      }`}
-                    >
-                      {payment.status === 1
-                        ? "PAID"
-                        : payment.status === 0
-                          ? "UNPAID"
-                          : "N/A"}
-                    </p>
+                    {payment.status}
                   </td>
-
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-  {(payment.status !== 0 && payment.status !== null) && (
-    <button
-      className="px-4 py-2 bg-gray-300 rounded"
-      onClick={() => downloadInvoice(payment.transaction_reference)} // Pass the transaction_reference here
-    >
-      <FontAwesomeIcon icon={faDownload} /> Download Receipt
-    </button>
-  )}
-</td>
+                    <div className="flex items-center space-x-4">
+                      <button onClick={() => handleEyeClick(payment)}>
+                        <FontAwesomeIcon icon={faEye} />
+                      </button>
 
+                      <button>
+                        <FontAwesomeIcon icon={faPrint} />
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          downloadInvoice(payment.transaction_reference)
+                        }
+                      >
+                        <FontAwesomeIcon icon={faDownload} />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -385,163 +350,101 @@ async function downloadInvoice(transaction_reference) {
         </div>
       </div>
 
-      {/* Client ID Modal */}
       {isClientModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div
-            className="bg-white p-6 rounded shadow-lg w-full max-w-md"
-            ref={modalRef}
-          >
-            <h2 className="text-xl font-semibold mb-4">Enter Client ID</h2>
+        <div className="modal fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="modal-content bg-white p-8 rounded" ref={modalRef}>
+            <button
+              className="modal-close absolute top-2 right-2"
+              onClick={closeModal}
+            >
+              Close
+            </button>
+            <h2 className="modal-title text-xl font-semibold mb-4">
+              Enter Client ID
+            </h2>
             <form onSubmit={handleClientSubmit}>
-              <div className="mb-4">
-                <label
-                  className="block text-sm font-medium text-gray-700"
-                  htmlFor="clientId"
-                >
-                  Client ID
-                </label>
-                <input
-                  type="text"
-                  id="clientId"
-                  value={clientId}
-                  onChange={(e) => setClientId(e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-                  required
-                />
-              </div>
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="mr-4 px-4 py-2 bg-gray-300 rounded"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-500 text-white rounded"
-                >
-                  Submit
-                </button>
-              </div>
+              <input
+                type="text"
+                value={clientId}
+                onChange={(e) => setClientId(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded mb-4"
+                placeholder="Client ID"
+              />
+              <button
+                type="submit"
+                className="bg-blue-500 text-white px-4 py-2 rounded"
+              >
+                Submit
+              </button>
             </form>
           </div>
         </div>
       )}
 
-      {/* Payment Details Modal */}
-      {isPaymentModalOpen && clientDetails && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div
-            className="bg-white p-6 rounded shadow-lg w-full max-w-md"
-            ref={modalRef}
-          >
-            <h2 className="text-xl font-semibold mb-4">Payment Details</h2>
+      {isPaymentModalOpen && (
+        <div className="modal fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="modal-content bg-white p-8 rounded" ref={modalRef}>
+            <button
+              className="modal-close absolute top-2 right-2"
+              onClick={closeModal}
+            >
+              Close
+            </button>
+            <h2 className="modal-title text-xl font-semibold mb-4">
+              Enter Payment Details
+            </h2>
             <form onSubmit={handlePaymentSubmit}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  Client Name:
-                </label>
-                <p><strong>
-                  {clientDetails.firstname} {clientDetails.othernames}{" "}
-                  {clientDetails.surname}
-                  </strong>
-                </p>
-              </div>
+              <input
+                type="text"
+                value={clientDetails?.client_name || ""}
+                disabled
+                className="w-full p-2 border border-gray-300 rounded mb-4"
+                placeholder="Client Name"
+              />
 
-              <div className="mb-4">
-                <label
-                  className="block text-sm font-medium text-gray-700"
-                  htmlFor="course"
-                >
-                  Course
-                </label>
-                <select
+              <select
                 value={selectedCourse}
                 onChange={handleCourseChange}
-                  id="course"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-                  required
-                >
-                  <option>Select Course...</option>
-                  {courses.map((course, key) => (
-                    <option key={key} value={course.course_id}>
-                      {course.course_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                className="w-full p-2 border border-gray-300 rounded mb-4"
+              >
+                <option value="">Select Course</option>
+                {courses.map((course) => (
+                  <option key={course.course_id} value={course.course_id}>
+                    {course.course_name}
+                  </option>
+                ))}
+              </select>
 
-              <div className="mb-4">
-                <label
-                  className="block text-sm font-medium text-gray-700"
-                  htmlFor="course"
-                >
-                  Payment Method
-                </label>
-                <select
-                  id="course"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-                  required
-                  value={paymentMethod}  // Bind the select field to the paymentMethod state
-                  onChange={handlePaymentMethodChange} 
-                >
-                 <option>Select Payment Method...</option>
-                  <option value="Mobile Transfer">Mobile Transfer</option>
-                  <option value="Bank Deposit">Bank Deposit</option>
-                  <option value="Cash">CASH</option>
-                </select>
-              </div>
+              <input
+                type="text"
+                value={amount}
+                disabled
+                className="w-full p-2 border border-gray-300 rounded mb-4"
+                placeholder="Amount"
+              />
 
-              <div className="mb-4">
-                <label
-                  className="block text-sm font-medium text-gray-700"
-                  htmlFor="transactionReference"
-                >
-                  Transaction Reference
-                </label>
-                <input
-                value={transactionReference}  // Bind the input field to the transactionReference state
+              <input
+                type="text"
+                value={paymentMethod}
+                onChange={handlePaymentMethodChange}
+                className="w-full p-2 border border-gray-300 rounded mb-4"
+                placeholder="Payment Method"
+              />
+
+              <input
+                type="text"
+                value={transactionReference}
                 onChange={handleTransactionReferenceChange}
-                  type="text"
-                  id="transactionReference"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label
-                  className="block text-sm font-medium text-gray-700"
-                  htmlFor="amount"
-                >
-                  Amount
-                </label>
-                <input
-                  type="number"
-                  id="amount"
-                  value={amount || ''}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-                  required
-                  disabled
-                />
-              </div>
-           
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="mr-4 px-4 py-2 bg-gray-300 rounded"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-500 text-white rounded"
-                >
-                  Submit
-                </button>
-              </div>
+                className="w-full p-2 border border-gray-300 rounded mb-4"
+                placeholder="Transaction Reference"
+              />
+
+              <button
+                type="submit"
+                className="bg-blue-500 text-white px-4 py-2 rounded"
+              >
+                Submit Payment
+              </button>
             </form>
           </div>
         </div>

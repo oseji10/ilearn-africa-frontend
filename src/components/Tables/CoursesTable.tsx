@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload, faEye, faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -76,19 +76,19 @@ const CoursesTable = () => {
     fetchCourses();
   }, []);
 
-  const handleEyeClick = (courses) => {
+  const handleEyeClick = useCallback((courses) => {
     setSelectedCourse(courses);
-  };
+  }, []);
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setSelectedCourse(null);
-  };
+  }, []);
 
-  const handleClickOutside = (event) => {
+  const handleClickOutside = useCallback((event) => {
     if (modalRef.current && !modalRef.current.contains(event.target)) {
       closeModal();
     }
-  };
+  }, [closeModal]);
 
   useEffect(() => {
     if (selectedCourse) {
@@ -99,7 +99,7 @@ const CoursesTable = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [selectedCourse]);
+  }, [selectedCourse, handleClickOutside]);
 
   if (loading) {
     return <p>Loading...</p>;
@@ -109,26 +109,23 @@ const CoursesTable = () => {
     return <p>Error: {error}</p>;
   }
 
-
-
   const handlePayment = async () => {
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_PAYSTACK_URL}`, // Ensure this endpoint is correct
+        `${process.env.NEXT_PUBLIC_DUPLO_URL}`, // Ensure this endpoint is correct
         {
-          // course_id: selectedCourse.course_id,
           email: formData.email,
-          amount: selectedCourse.cost * 100, // Paystack expects amount in kobo (smallest currency unit)
+          amount: (selectedCourse.cost).toString(), // Convert the amount to a string
           callback_url: `${process.env.NEXT_PUBLIC_PAYSTACK_VERIFY_FRONETEND}/verify?course_id=${encodeURIComponent(selectedCourse.course_id)}`, // The callback URL
         },
         {
           headers: {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY}`,
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_DUPLO_SECRET_KEY}`,
             "Content-Type": "application/json",
           },
         }
       );
-  
+
       if (response.data.status) {
         window.location.href = response.data.data.authorization_url;
       }
@@ -136,9 +133,6 @@ const CoursesTable = () => {
       console.error('Payment initiation failed:', error);
     }
   };
-  
-  
-  
 
   return (
     <div>
@@ -156,11 +150,9 @@ const CoursesTable = () => {
                 <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
                   Phone
                 </th>
-
                 <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
                   Status
                 </th>
-
                 <th className="px-4 py-4 font-medium text-black dark:text-white">
                   Actions
                 </th>
@@ -187,7 +179,6 @@ const CoursesTable = () => {
                       })}
                     </p>
                   </td>
-
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <p
                       className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
@@ -205,7 +196,6 @@ const CoursesTable = () => {
                           : "N/A"}
                     </p>
                   </td>
-
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <div className="flex items-center space-x-3.5">
                       <button

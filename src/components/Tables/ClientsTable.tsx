@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDownload, faEye, faTrash } from '@fortawesome/free-solid-svg-icons';
@@ -37,19 +37,19 @@ const ClientsTable = () => {
     fetchClients();
   }, []);
 
-  const handleEyeClick = (client) => {
+  const handleEyeClick = useCallback((client) => {
     setSelectedClient(client);
-  };
+  }, []);
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setSelectedClient(null);
-  };
+  }, []);
 
-  const handleClickOutside = (event) => {
+  const handleClickOutside = useCallback((event) => {
     if (modalRef.current && !modalRef.current.contains(event.target)) {
       closeModal();
     }
-  };
+  }, [closeModal]);
 
   useEffect(() => {
     if (selectedClient) {
@@ -60,7 +60,7 @@ const ClientsTable = () => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [selectedClient]);
+  }, [selectedClient, handleClickOutside]);
 
   if (loading) {
     return <p>Loading...</p>;
@@ -208,10 +208,6 @@ const ClientsTable = () => {
                 <td>{selectedClient.nationality?.nationality}</td>
               </tr>
 
-              {/* <tr>
-                <td width={"15%"}><strong>Current Status:</strong></td>
-                <td>{selectedClient.status}</td>
-              </tr> */}
               </tbody>
             </table>
 
@@ -242,41 +238,14 @@ const ClientsTable = () => {
     </>
   )}
 </tbody>
-
             </table>
 
-
-            <br/>
-            <h3 className="text-xl font-semibold mb-4">Work Details</h3>
-            <hr/>
-            <table width={"100%"}>
-              <thead>
-                <tr align="left">
-                  <th width={"30%"}>Organization</th>
-                  <th width={"30%"}>Job title</th>
-                  <th width={"30%"}>Start Date</th>
-                  <th width={"40%"}>End Date</th>
-                </tr>
-              </thead>
-              <tbody>
-  {selectedClient.work_details && selectedClient.work_details.length > 0 && (
-    <>
-      {selectedClient.work_details.map((work_detail, index) => (
-        <tr key={index}>
-          {/* Fetch qualification_name from the main qualification object */}
-          <td>{work_detail?.organization || "N/A"}</td>
-          <td>{work_detail?.job_title}</td>
-          <td>{work_detail?.start_date}</td>
-          <td>{work_detail?.end_date}</td>
-        </tr>
-      ))}
-    </>
-  )}
-</tbody>
-
-            </table>
-
-            <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded" onClick={closeModal}>Close</button>
+            <button
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
+              onClick={closeModal}
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
@@ -285,3 +254,4 @@ const ClientsTable = () => {
 };
 
 export default ClientsTable;
+

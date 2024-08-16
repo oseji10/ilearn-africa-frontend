@@ -1,4 +1,5 @@
 "use client";
+import React, { ChangeEvent } from "react";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
@@ -54,7 +55,10 @@ const Register = () => {
   );
   const [workDetails, setWorkDetails] = useState(formData.workDetails);
 
-  const handleEducationalChange = (index, event) => {
+  const handleEducationalChange = (
+    index: number,
+    event: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const values = [...educationalDetails];
     values[index][event.target.name] = event.target.value;
     setEducationalDetails(values);

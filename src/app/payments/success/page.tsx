@@ -59,7 +59,7 @@ const Profile = () => {
 
               <div className="mt-6.5">
                 <h4 className="mb-3.5 font-medium text-black dark:text-white">
-                  While you're here, you can connect with us on:
+                  While you are here, you can connect with us on:
                 </h4>
                 <div className="flex items-center justify-center gap-3.5">
                   <Link
