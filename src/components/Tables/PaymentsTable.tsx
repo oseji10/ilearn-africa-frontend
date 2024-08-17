@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faPrint, faPlus, faDownload } from "@fortawesome/free-solid-svg-icons";
+import { format } from 'date-fns';
 
 const PaymentsTable = () => {
   const [payments, setPayments] = useState([]);
@@ -62,6 +63,7 @@ const PaymentsTable = () => {
           }
         );
         setPayments(response.data.payments);
+        console.log(response.data)
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -227,7 +229,7 @@ const PaymentsTable = () => {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.setAttribute("download", `invoice-${transaction_reference}.pdf`);
+        link.setAttribute("download", `Payement_Receipt-${transaction_reference}.pdf`);
         document.body.appendChild(link);
         link.click();
         link.parentNode.removeChild(link);
@@ -303,7 +305,7 @@ const PaymentsTable = () => {
                   </td>
 
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    {payment.client_name}
+                  {payment.clients.title} {payment.clients.firstname} {payment.clients.othernames} {payment.clients.surname}
                   </td>
 
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
@@ -311,11 +313,13 @@ const PaymentsTable = () => {
                   </td>
 
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    {payment.amount}
+                    NGN{payment.amount}
                   </td>
 
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    {payment.payment_date}
+                  {format(new Date(payment.created_at), 'EEEE, MMMM do, yyyy')}
+  
+                    {/* {formattedDate} */}
                   </td>
 
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
@@ -323,7 +327,21 @@ const PaymentsTable = () => {
                   </td>
 
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    {payment.status}
+                  <p
+                      className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
+                        payment.status === 1
+                          ? "bg-success text-success"
+                          : payment.status === 0
+                            ? "bg-warning text-warning"
+                            : ""
+                      }`}
+                    >
+                      {payment.status === 1
+                        ? "PAID"
+                        : payment.status === 0
+                          ? "PENDING"
+                          : "N/A"}
+                    </p>
                   </td>
 
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
@@ -342,9 +360,9 @@ const PaymentsTable = () => {
                       >
                         <FontAwesomeIcon icon={faDownload} />
                       </button>
-                      <button className="hover:text-primary">
+                      {/* <button className="hover:text-primary">
                         <FontAwesomeIcon icon={faPrint} />
-                      </button>
+                      </button> */}
                     </div>
                   </td>
                 </tr>

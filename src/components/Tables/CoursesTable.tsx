@@ -112,15 +112,15 @@ const CoursesTable = () => {
   const handlePayment = async () => {
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_DUPLO_URL}`, // Ensure this endpoint is correct
+        `${process.env.NEXT_PUBLIC_PAYSTACK_URL}`, // Ensure this endpoint is correct
         {
           email: formData.email,
           amount: (selectedCourse.cost).toString(), // Convert the amount to a string
-          callback_url: `${process.env.NEXT_PUBLIC_PAYSTACK_VERIFY_FRONETEND}/verify?course_id=${encodeURIComponent(selectedCourse.course_id)}`, // The callback URL
+          callback_url: `${process.env.NEXT_PUBLIC_VERIFY_FRONETEND}/verify?course_id=${encodeURIComponent(selectedCourse.course_id)}`, // The callback URL
         },
         {
           headers: {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_DUPLO_SECRET_KEY}`,
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY}`,
             "Content-Type": "application/json",
           },
         }
