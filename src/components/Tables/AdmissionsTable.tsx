@@ -10,7 +10,7 @@ const AdmissionsTable = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedAdmission, setSelectedAdmission] = useState(null);
-
+  const [admissionNumber, setAdmissionNumber] = useState("");
   useEffect(() => {
     const fetchAdmissions = async () => {
       try {
@@ -24,6 +24,8 @@ const AdmissionsTable = () => {
             Authorization: `Bearer ${token}`,
           },
         });
+        // console.log(response.data.admissions[0].admission_number)
+
         setAdmissions(response.data.admissions);
         setLoading(false);
       } catch (err) {
@@ -38,6 +40,10 @@ const AdmissionsTable = () => {
   const handleEyeClick = (admission) => {
     setSelectedAdmission(admission);
   };
+
+  const handleAdmissionNumberChange = useCallback((e) => {
+    setAdmissionNumber(e.target.value);
+  }, []);
 
   const closeModal = () => {
     setSelectedAdmission(null);
@@ -62,30 +68,32 @@ const AdmissionsTable = () => {
     };
   }, [selectedAdmission, handleClickOutside]);
 
-  const [formData, setFormData] = useState({
-    feesPaid: false,
-    documentReviewed: false,
-    educationalDocumentsReviewed: false,
-    registrationFeePaid: false,
-  });
 
-  const handleCheckboxChange = (event) => {
-    const { name, checked } = event.target;
-    setFormData({ ...formData, [name]: checked });
-  };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+
+  const handleApproval = async (approved) => {
     try {
-      const response = await fetch('/api/process-admission', {
-        method: 'POST',
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No auth token found');
+      }
+  
+      // const admissionNumber = selectedAdmission.admission_number;
+  
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admissions/${selectedAdmission.admission_number}`, {
+        method: 'PUT',
         headers: {
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        // body: JSON.stringify({
+        //   admissionNumber,
+        //   approved,
+        // }),
       });
+  
       if (response.ok) {
-        alert('Admission processed successfully');
+        alert(`Admission ${approved ? 'approved' : 'disapproved'} successfully`);
         closeModal();
       } else {
         alert('There was an issue processing the admission');
@@ -95,45 +103,65 @@ const AdmissionsTable = () => {
       alert('An error occurred');
     }
   };
-
-  if (loading) {
-    return <p>Loading...</p>;
-  }
-
-  if (error) {
-    return <p>Error: {error}</p>;
-  }
-
-
-  const handleApproval = async (approved) => {
-    // Add approval or disapproval to the form data
-    setFormData({ ...formData, approved });
+  
+  const handleDownloadClick = (event) => {
+    const button = event.currentTarget;
+    const admissionNumber = button.dataset.admissionNumber;
+    downloadLetter(admissionNumber);
+  };
+  const downloadLetter = async (admissionNumber) => {
+ 
+    console.log(admissionNumber)
+     const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No auth token found");
+    }
   
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No auth token found');
-      }
-
-      const response = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/process-admissions`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ ...formData, approved }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/admissions/admission_letter?admission_number=${admissionNumber}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
       if (response.ok) {
-        alert(`Admission ${approved ? 'approved' : 'disapproved'} successfully`);
-        closeModal();
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `admission_letter-${admissionNumber}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
       } else {
-        // alert('There was an issue processing the admission');
+        console.error("Failed to download the admission letter", response.statusText);
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred');
+      console.error("An error occurred while downloading the admission letter", error);
     }
   };
 
-  
+  const renderDownloadButton = (admission) => {
+    if (admission.status === "ADMITTED") {
+      return (
+        <button
+          className="hover:text-primary"
+          data-admission-number={admission.admission_number}
+          onClick={handleDownloadClick}
+        >
+          <FontAwesomeIcon icon={faDownload} />
+        </button>
+      );
+    } else {
+      return null;
+    }
+  };
+
   return (
     <div>
       <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
@@ -159,44 +187,46 @@ const AdmissionsTable = () => {
               </tr>
             </thead>
             <tbody>
-              {admissions.map((payment, key) => (
+              {admissions.map((admission, key) => (
                 <tr key={key}>
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
                     <h5 className="font-medium text-black dark:text-white">
-                      {payment.client_id} 
+                      {admission.client_id} 
                     </h5>
-                  </td>
+                    </td>
+                  {/* <input type='text' value={admission.admission_number} id='admission_number' /> */}
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
                     <h5 className="font-medium text-black dark:text-white">
-                      {payment.clients?.firstname} {payment?.clients.surname} {payment?.clients.othernames}
+                      {admission.clients?.firstname} {admission?.clients.surname} {admission?.clients.othernames}
                     </h5>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <p className="text-black dark:text-white">
-                      {payment.payments.courses?.course_id} - {payment.payments.courses?.course_name}
+                      {admission.payments.courses?.course_id} - {admission.payments.courses?.course_name}
                     </p>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <p 
                       className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
-                        payment.status === "admitted"
+                        admission.status === "ADMITTED"
                           ? "bg-success text-success"
-                          : payment.status === "pending"
+                          : admission.status === "pending"
                             ? "bg-danger text-danger"
                             : ""
                       }`}
                     >
-                      {payment.status === "pending" ? "PENDING" : payment.status === "admitted" ? "ADMITTED" : "N/A"}
+                      {admission.status === "pending" ? "PENDING" : admission.status === "ADMITTED" ? "ADMITTED" : "N/A"}
                     </p>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <div className="flex items-center space-x-3.5">
-                      <button className="hover:text-primary" onClick={() => handleEyeClick(payment)}>
+                      <button className="hover:text-primary" onClick={() => handleEyeClick(admission)}>
                         <FontAwesomeIcon icon={faEye} className="fill-current" size="sm" />
                       </button>
-                      <button className="hover:text-primary">
-                        <FontAwesomeIcon icon={faDownload} className="fill-current" size="sm" />
-                      </button>
+                    
+
+                      {renderDownloadButton(admission)}
+
                     </div>
                   </td>
                 </tr>
@@ -239,8 +269,8 @@ const AdmissionsTable = () => {
                 </tr>
               </tbody>
             </table>
-
-            <form onSubmit={handleSubmit}>
+          {/* <p>Hh{selectedAdmission?.admission_number}</p> */}
+            <form>
   <button
     type="button"
     className="mt-4 px-4 py-2 bg-green-500 text-white rounded"
@@ -248,14 +278,14 @@ const AdmissionsTable = () => {
   >
     Approve
   </button> &nbsp;
-  <button
+  {/* <button
     type="button"
     className="mt-4 px-4 py-2 bg-red-500 text-white rounded"
     onClick={() => handleApproval(false)}
     style={{backgroundColor:"red", color:"white"}}
   >
     Disapprove
-  </button>
+  </button> */}
 </form>
 
           <span style={{alignItems:"center"}}>

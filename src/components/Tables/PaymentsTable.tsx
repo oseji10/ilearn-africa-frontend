@@ -115,23 +115,11 @@ const PaymentsTable = () => {
   );
 
   useEffect(() => {
-    if (selectedPayment || isClientModalOpen || isPaymentModalOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [selectedPayment, isClientModalOpen, isPaymentModalOpen, handleClickOutside]);
-
-  if (loading) {
-    return <p>Loading...</p>;
-  }
-
-  if (error) {
-    return <p>Error: {error}</p>;
-  }
+  }, [handleClickOutside]);
 
   const handleAddPaymentClick = useCallback(() => {
     setIsClientModalOpen(true);
@@ -196,8 +184,7 @@ const PaymentsTable = () => {
         );
 
         if (response.ok) {
-          setSuccess("Payment submitted successfully!");
-          setError("");
+          setError(null);
           closeModal();
         } else {
           throw new Error("Payment submission failed");
@@ -216,7 +203,7 @@ const PaymentsTable = () => {
     ]
   );
 
-  async function downloadInvoice(transaction_reference) {
+  const downloadInvoice = async (transaction_reference) => {
     const token = localStorage.getItem("token");
     if (!token) {
       throw new Error("No auth token found");
@@ -250,6 +237,14 @@ const PaymentsTable = () => {
     } catch (error) {
       console.error("An error occurred while downloading the invoice", error);
     }
+  };
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
+  if (error) {
+    return <p>Error: {error}</p>;
   }
 
   return (
@@ -301,45 +296,54 @@ const PaymentsTable = () => {
               </tr>
             </thead>
             <tbody>
-              {payments.map((payment, key) => (
-                <tr key={key}>
+              {payments.map((payment) => (
+                <tr key={payment.transaction_reference}>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     {payment.client_id}
                   </td>
+
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     {payment.client_name}
                   </td>
+
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     {payment.transaction_reference}
                   </td>
+
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     {payment.amount}
                   </td>
+
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    {new Date(payment.payment_date).toLocaleDateString()}
+                    {payment.payment_date}
                   </td>
+
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     {payment.payment_method}
                   </td>
+
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     {payment.status}
                   </td>
+
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    <div className="flex items-center space-x-4">
-                      <button onClick={() => handleEyeClick(payment)}>
+                    <div className="flex items-center space-x-3.5">
+                      <button
+                        className="hover:text-primary"
+                        onClick={() => handleEyeClick(payment)}
+                      >
                         <FontAwesomeIcon icon={faEye} />
                       </button>
-
-                      <button>
-                        <FontAwesomeIcon icon={faPrint} />
-                      </button>
-
                       <button
+                        className="hover:text-primary"
                         onClick={() =>
                           downloadInvoice(payment.transaction_reference)
                         }
                       >
                         <FontAwesomeIcon icon={faDownload} />
+                      </button>
+                      <button className="hover:text-primary">
+                        <FontAwesomeIcon icon={faPrint} />
                       </button>
                     </div>
                   </td>
@@ -351,100 +355,146 @@ const PaymentsTable = () => {
       </div>
 
       {isClientModalOpen && (
-        <div className="modal fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="modal-content bg-white p-8 rounded" ref={modalRef}>
-            <button
-              className="modal-close absolute top-2 right-2"
-              onClick={closeModal}
-            >
-              Close
-            </button>
-            <h2 className="modal-title text-xl font-semibold mb-4">
-              Enter Client ID
-            </h2>
+        <div
+          ref={modalRef}
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+        >
+          <div className="bg-white p-6 rounded-lg">
+            <h2 className="text-xl font-bold mb-4">Enter Client ID</h2>
             <form onSubmit={handleClientSubmit}>
-              <input
-                type="text"
-                value={clientId}
-                onChange={(e) => setClientId(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded mb-4"
-                placeholder="Client ID"
-              />
-              <button
-                type="submit"
-                className="bg-blue-500 text-white px-4 py-2 rounded"
-              >
-                Submit
-              </button>
+              <div className="mb-4">
+                <label
+                  htmlFor="clientId"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Client ID
+                </label>
+                <input
+                  type="text"
+                  id="clientId"
+                  value={clientId}
+                  onChange={(e) => setClientId(e.target.value)}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                />
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  className="mr-2 px-4 py-2 bg-gray-500 text-white rounded"
+                  onClick={closeModal}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-500 text-white rounded"
+                >
+                  Next
+                </button>
+              </div>
             </form>
           </div>
         </div>
       )}
 
-      {isPaymentModalOpen && (
-        <div className="modal fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="modal-content bg-white p-8 rounded" ref={modalRef}>
-            <button
-              className="modal-close absolute top-2 right-2"
-              onClick={closeModal}
-            >
-              Close
-            </button>
-            <h2 className="modal-title text-xl font-semibold mb-4">
-              Enter Payment Details
-            </h2>
+      {isPaymentModalOpen && clientDetails && (
+        <div
+          ref={modalRef}
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+        >
+          <div className="bg-white p-6 rounded-lg">
+            <h2 className="text-xl font-bold mb-4">Make Payment</h2>
             <form onSubmit={handlePaymentSubmit}>
-              <input
-                type="text"
-                value={clientDetails?.client_name || ""}
-                disabled
-                className="w-full p-2 border border-gray-300 rounded mb-4"
-                placeholder="Client Name"
-              />
+              <div className="mb-4">
+                <label
+                  htmlFor="paymentMethod"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Payment Method
+                </label>
+                <select
+                  id="paymentMethod"
+                  value={paymentMethod}
+                  onChange={handlePaymentMethodChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                >
+                  <option value="">Select Payment Method</option>
+                  <option value="bank">Bank</option>
+                  <option value="pos">POS</option>
+                  <option value="transfer">Transfer</option>
+                  <option value="cash">Cash</option>
+                </select>
+              </div>
 
-              <select
-                value={selectedCourse}
-                onChange={handleCourseChange}
-                className="w-full p-2 border border-gray-300 rounded mb-4"
-              >
-                <option value="">Select Course</option>
-                {courses.map((course) => (
-                  <option key={course.course_id} value={course.course_id}>
-                    {course.course_name}
-                  </option>
-                ))}
-              </select>
+              <div className="mb-4">
+                <label
+                  htmlFor="transactionReference"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Transaction Reference
+                </label>
+                <input
+                  type="text"
+                  id="transactionReference"
+                  value={transactionReference}
+                  onChange={handleTransactionReferenceChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                />
+              </div>
 
-              <input
-                type="text"
-                value={amount}
-                disabled
-                className="w-full p-2 border border-gray-300 rounded mb-4"
-                placeholder="Amount"
-              />
+              <div className="mb-4">
+                <label
+                  htmlFor="course"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Course
+                </label>
+                <select
+                  id="course"
+                  value={selectedCourse}
+                  onChange={handleCourseChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                >
+                  <option value="">Select Course</option>
+                  {courses.map((course) => (
+                    <option key={course.course_id} value={course.course_id}>
+                      {course.course_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-              <input
-                type="text"
-                value={paymentMethod}
-                onChange={handlePaymentMethodChange}
-                className="w-full p-2 border border-gray-300 rounded mb-4"
-                placeholder="Payment Method"
-              />
+              <div className="mb-4">
+                <label
+                  htmlFor="amount"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Amount
+                </label>
+                <input
+                  type="text"
+                  id="amount"
+                  value={amount}
+                  readOnly
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                />
+              </div>
 
-              <input
-                type="text"
-                value={transactionReference}
-                onChange={handleTransactionReferenceChange}
-                className="w-full p-2 border border-gray-300 rounded mb-4"
-                placeholder="Transaction Reference"
-              />
-
-              <button
-                type="submit"
-                className="bg-blue-500 text-white px-4 py-2 rounded"
-              >
-                Submit Payment
-              </button>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  className="mr-2 px-4 py-2 bg-gray-500 text-white rounded"
+                  onClick={closeModal}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-500 text-white rounded"
+                >
+                  Submit Payment
+                </button>
+              </div>
             </form>
           </div>
         </div>
