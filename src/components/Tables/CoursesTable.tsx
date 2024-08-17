@@ -148,7 +148,7 @@ const CoursesTable = () => {
                   Course Name
                 </th>
                 <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
-                  Phone
+                  Cost
                 </th>
                 <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
                   Status
@@ -173,7 +173,7 @@ const CoursesTable = () => {
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <p className="text-black dark:text-white">
-                      {Number(course_list.cost).toLocaleString(undefined, {
+                      NGN{Number(course_list.cost).toLocaleString(undefined, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}
@@ -199,16 +199,16 @@ const CoursesTable = () => {
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <div className="flex items-center space-x-3.5">
                       <button
-                        className="hover:text-primary"
+                        className="inline-flex items-center justify-center bg-primary px-10 py-4 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-10"
                         onClick={() => handleEyeClick(course_list)}
-                      >
-                        <FontAwesomeIcon
+                      >APPLY
+                        {/* <FontAwesomeIcon
                           icon={faEye}
                           className="fill-current"
                           size="sm"
-                        />
+                        /> */}
                       </button>
-                      <button className="hover:text-primary">
+                      {/* <button className="hover:text-primary">
                         <FontAwesomeIcon
                           icon={faFilePdf}
                           className="fill-current"
@@ -221,7 +221,7 @@ const CoursesTable = () => {
                           className="fill-current"
                           size="sm"
                         />
-                      </button>
+                      </button> */}
                     </div>
                   </td>
                 </tr>
