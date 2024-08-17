@@ -118,7 +118,8 @@ const CoursesTable = () => {
         `${process.env.NEXT_PUBLIC_PAYSTACK_URL}`, // Ensure this endpoint is correct
         {
           email: formData.email,
-          amount: (selectedCourse.cost).toString(), // Convert the amount to a string
+          amount: (selectedCourse.cost)*100, 
+          // amount: (selectedCourse.cost).toString(), 
           callback_url: `${process.env.NEXT_PUBLIC_VERIFY_FRONETEND}/verify?course_id=${encodeURIComponent(selectedCourse.course_id)}&clientId=${encodeURIComponent(clientId)}`, // The callback URL
         },
         {
