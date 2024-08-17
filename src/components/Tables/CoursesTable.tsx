@@ -13,6 +13,7 @@ const CoursesTable = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const modalRef = useRef(null);
   const router = useRouter();
+  const [clientId, setClientId] = useState("=") ;
 
   const [formData, setFormData] = useState({
     email: "",
@@ -35,6 +36,8 @@ const CoursesTable = () => {
           );
           if (!response.ok) throw new Error("Network response was not ok");
           const data = await response.json();
+          setClientId(data.client_id);
+
           setFormData((prevState) => ({
             ...prevState,
             client_id: data.client_id,
@@ -116,7 +119,7 @@ const CoursesTable = () => {
         {
           email: formData.email,
           amount: (selectedCourse.cost).toString(), // Convert the amount to a string
-          callback_url: `${process.env.NEXT_PUBLIC_VERIFY_FRONETEND}/verify?course_id=${encodeURIComponent(selectedCourse.course_id)}`, // The callback URL
+          callback_url: `${process.env.NEXT_PUBLIC_VERIFY_FRONETEND}/verify?course_id=${encodeURIComponent(selectedCourse.course_id)}&clientId=${encodeURIComponent(clientId)}`, // The callback URL
         },
         {
           headers: {
