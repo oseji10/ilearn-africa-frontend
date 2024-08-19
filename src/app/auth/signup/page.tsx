@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faPhone } from "@fortawesome/free-solid-svg-icons";
+import { faEnvelope, faPhone, faUser } from "@fortawesome/free-solid-svg-icons";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 
 // export const metadata = {
@@ -15,6 +15,9 @@ import DefaultLayout from "@/components/Layouts/DefaultLayout";
 const SignUp: React.FC = () => {
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [firstname, setFirstName] = useState("");
+  const [surname, setSurName] = useState("");
+  const [othernames, setOtherNames] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
 
@@ -30,6 +33,9 @@ const SignUp: React.FC = () => {
       body: JSON.stringify({
         email,
         phone_number: phoneNumber,
+        firstname: firstname,
+        surname: surname,
+        othernames: othernames
         // password: "temporaryPassword123", // Temporary password or generate a random one
       }),
       mode: 'cors' // Ensure CORS mode is set
@@ -68,8 +74,7 @@ const SignUp: React.FC = () => {
                 />
               </Link>
               <p className="2xl:px-20">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit
-                suspendisse.
+              Ilearn Africa provides learning platforms and opportunities for personal & professional advancement.
               </p>
 
               <span className="mt-15 inline-block">
@@ -99,6 +104,67 @@ const SignUp: React.FC = () => {
               )}
 
               <form onSubmit={handleSubmit}>
+              <div className="mb-4">
+                  <label className="mb-2.5 block font-medium text-black dark:text-white">
+                    Firstname
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="firstname"
+                      placeholder="Enter your Firstname"
+                      value={firstname}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                    />
+
+                    <span className="absolute right-4 top-4">
+                      <FontAwesomeIcon icon={faUser} className="fill-current" size="lg" />
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="mb-2.5 block font-medium text-black dark:text-white">
+                    Surname
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="surname"
+                      placeholder="Enter your Surname"
+                      value={surname}
+                      onChange={(e) => setSurName(e.target.value)}
+                      className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                    />
+
+                    <span className="absolute right-4 top-4">
+                      <FontAwesomeIcon icon={faUser} className="fill-current" size="lg" />
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="mb-2.5 block font-medium text-black dark:text-white">
+                    Othernames
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="othernames"
+                      placeholder="Enter your Firstname"
+                      value={othernames}
+                      onChange={(e) => setOtherNames(e.target.value)}
+                      className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                    />
+
+                    <span className="absolute right-4 top-4">
+                      <FontAwesomeIcon icon={faUser} className="fill-current" size="lg" />
+                    </span>
+                  </div>
+                </div>
+
+
                 <div className="mb-4">
                   <label className="mb-2.5 block font-medium text-black dark:text-white">
                     Phone Number

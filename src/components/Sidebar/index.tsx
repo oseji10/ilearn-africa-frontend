@@ -11,6 +11,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAward, faBookAtlas, faBookOpen, faFileExport, faFileInvoiceDollar, faTableColumns, faUserGraduate, faUsers } from "@fortawesome/free-solid-svg-icons";
 import { faBoxesStacked } from "@fortawesome/free-solid-svg-icons/faBoxesStacked";
 import { faBook } from "@fortawesome/free-solid-svg-icons/faBook";
+import { useRouter } from "next/navigation";
+import Register from "@/app/admission/register/page";
+import withStatusCheck from "../withStatusCheck";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -259,6 +262,9 @@ const clientMenu = [
     const [pageName, setPageName] = useLocalStorage("selectedMenu", "dashboard");
     const [role, setRole] = useState("");
   
+    const router = useRouter();
+
+
     useEffect(() => {
       const fetchUserRole = async () => {
         const token = localStorage.getItem("token");
@@ -286,6 +292,42 @@ const clientMenu = [
   
       fetchUserRole();
     }, []);
+
+
+    // useEffect(() => {
+    //   const fetchClientId = async () => {
+    //     const token = localStorage.getItem("token");
+    //     if (token) {
+    //       try {
+    //         const response = await fetch(
+    //           `${process.env.NEXT_PUBLIC_API_URL}/client-id`,
+    //           {
+    //             method: "GET",
+    //             headers: {
+    //               Authorization: `Bearer ${token}`,
+    //               "Content-Type": "application/json",
+    //             },
+    //           },
+    //         );
+    //         if (!response.ok) throw new Error("Network response was not ok");
+    //         const data = await response.json();
+      
+    //         setStatus(data.status);
+    //       } catch (error) {
+    //         console.error("Error fetching client ID:", error);
+    //       }
+    //     }
+    //   };
+  
+    //   fetchClientId();
+    // }, []);
+
+
+    // useEffect(() => {
+    //   if (status === 'pending') {
+    //     <Register/>
+    //   }
+    // }, [status, router]);
   
     const menuToRender = role === "admin" ? adminMenu : clientMenu;
   

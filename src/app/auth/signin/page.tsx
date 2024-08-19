@@ -61,9 +61,10 @@ const handleSignIn = async (event) => {
     }
 
     setSuccess("Login Successful!");
-
+    // console.log("HII", result.client.status)
     // Check the user's role and status
     if (result.role === "client" && result.client.status === "pending") {
+      
       // Redirect to the registration page
       router.push("/clients/register");
     } else if (result.role === "admin") {
@@ -201,8 +202,7 @@ const handleSignIn = async (event) => {
               </Link>
 
               <p className="2xl:px-20">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit
-                suspendisse.
+              Ilearn Africa provides learning platforms and opportunities for personal & professional advancement.
               </p>
 
               <span className="mt-15 inline-block">

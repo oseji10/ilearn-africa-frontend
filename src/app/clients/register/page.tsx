@@ -14,7 +14,7 @@ import {
   faUser,
   faVenusMars,
 } from "@fortawesome/free-solid-svg-icons";
-
+import { useRouter } from "next/navigation";
 import { config } from "@fortawesome/fontawesome-svg-core";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 config.autoAddCss = false;
@@ -49,6 +49,9 @@ const Register = () => {
       },
     ],
   });
+
+  const router = useRouter();
+  const [status, setStatus] = useState('');
 
   const [educationalDetails, setEducationalDetails] = useState(
     formData.educationalDetails,
@@ -174,7 +177,9 @@ const Register = () => {
             ...prevState,
             client_id: data.client_id,
             email: data.email,
+            status: data.status,
           }));
+          setStatus(data.status);
         } catch (error) {
           console.error("Error fetching client ID:", error);
         }
@@ -218,6 +223,12 @@ const Register = () => {
       );
     }
   };
+
+  // useEffect(() => {
+  //   if (status === 'pending') {
+  //     router.push('/clients/register');
+  //   }
+  // }, [status, router]);
 
   return (
     <DefaultLayout>
