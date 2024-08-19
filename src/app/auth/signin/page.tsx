@@ -26,48 +26,61 @@ const SignIn: React.FC = () => {
   const [progress, setProgress] = useState(100);
 const [success, setSuccess] = useState("");
 
-  const handleSignIn = async (event) => {
-    event.preventDefault();
+const handleSignIn = async (event) => {
+  event.preventDefault();
 
-    setIsSubmitting(true);
-    const formData = new FormData(event.target);
-    const data = {
-      login: formData.get("login"),
-      password: formData.get("password"),
-    };
-
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(data),
-        mode: "cors",
-      });
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      const result = await response.json();
-      console.log("Sign in successful:", result);
-
-      localStorage.setItem("token", result.access_token);
-
-      if (result.user && result.user.client_id) {
-        localStorage.setItem("client_id", result.user.client_id);
-      }
-      setSuccess("Login Successful!")
-      router.push("/dashboard");
-    } catch (error) {
-      console.error("Sign in failed:", error);
-      // alert("There was an error logging in. Please try again.");
-      setError("Invalid username or password. Please try again.");
-    }
-    setIsSubmitting(false);
+  setIsSubmitting(true);
+  const formData = new FormData(event.target);
+  const data = {
+    login: formData.get("login"),
+    password: formData.get("password"),
   };
+
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(data),
+      mode: "cors",
+    });
+
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+
+    const result = await response.json();
+    console.log("Sign in successful:", result);
+
+    localStorage.setItem("token", result.access_token);
+
+    if (result.user && result.user.client_id) {
+      localStorage.setItem("client_id", result.user.client_id);
+    }
+
+    setSuccess("Login Successful!");
+
+    // Check the user's role and status
+    if (result.role === "client" && result.client.status === "pending") {
+      // Redirect to the registration page
+      router.push("/clients/register");
+    } else if (result.role === "admin") {
+      // Redirect to the dashboard
+      router.push("/dashboard");
+    } else {
+      // Handle other roles or default redirection
+      router.push("/dashboard");
+    }
+    
+  } catch (error) {
+    console.error("Sign in failed:", error);
+    setError("Invalid username or password. Please try again.");
+  }
+  setIsSubmitting(false);
+};
+
 
   useEffect(() => {
     if (error || success) {
