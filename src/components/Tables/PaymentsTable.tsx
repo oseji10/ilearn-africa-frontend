@@ -4,6 +4,8 @@ import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faPrint, faPlus, faDownload } from "@fortawesome/free-solid-svg-icons";
 import { format } from 'date-fns';
+import styles from "./spinner.module.css";
+
 
 const PaymentsTable = () => {
   const [payments, setPayments] = useState([]);
@@ -15,6 +17,7 @@ const PaymentsTable = () => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [clientId, setClientId] = useState("");
   const [clientDetails, setClientDetails] = useState(null);
+  const [isDownloading, setIsDownloading] = useState(false);
   const modalRef = useRef(null);
 
   const [paymentMethod, setPaymentMethod] = useState("");
@@ -22,6 +25,7 @@ const PaymentsTable = () => {
 
   const [selectedCourse, setSelectedCourse] = useState("");
   const [amount, setAmount] = useState("");
+  const [loadingClientId, setLoadingClientId] = useState(null);
 
   const handlePaymentMethodChange = useCallback((e) => {
     setPaymentMethod(e.target.value);
@@ -206,10 +210,13 @@ const PaymentsTable = () => {
   );
 
   const downloadInvoice = async (transaction_reference) => {
+    setIsDownloading(true);
     const token = localStorage.getItem("token");
     if (!token) {
       throw new Error("No auth token found");
     }
+
+    
 
     try {
       const response = await fetch(
@@ -238,6 +245,8 @@ const PaymentsTable = () => {
       }
     } catch (error) {
       console.error("An error occurred while downloading the invoice", error);
+    } finally {
+      setIsDownloading(false); // Hide spinner
     }
   };
 
@@ -257,7 +266,9 @@ const PaymentsTable = () => {
       >
         <FontAwesomeIcon icon={faPlus} /> Add Payment
       </button>
+<div>
 
+</div>
       <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
         <div className="max-w-full overflow-x-auto">
           <table className="w-full table-auto">
@@ -303,32 +314,28 @@ const PaymentsTable = () => {
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     {payment.client_id}
                   </td>
-
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                   {payment.clients.title} {payment.clients.firstname} {payment.clients.othernames} {payment.clients.surname}
                   </td>
-
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     {payment.transaction_reference}
                   </td>
-
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    NGN{payment.amount}
+                    
+                    NGN{Number(payment.amount).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
                   </td>
-
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                   {format(new Date(payment.created_at), 'EEEE, MMMM do, yyyy')}
-  
-                    {/* {formattedDate} */}
                   </td>
-
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     {payment.payment_method}
                   </td>
-
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                  <p
-                      className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
+                    <p
+                    className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
                         payment.status === 1
                           ? "bg-success text-success"
                           : payment.status === 0
@@ -339,30 +346,30 @@ const PaymentsTable = () => {
                       {payment.status === 1
                         ? "PAID"
                         : payment.status === 0
-                          ? "PENDING"
+                          ? "UNPAID"
                           : "N/A"}
-                    </p>
+                          </p>
                   </td>
 
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <div className="flex items-center space-x-3.5">
                       <button
                         className="hover:text-primary"
-                        onClick={() => handleEyeClick(payment)}
+                        onClick={() => handleEyeClick(payment)} 
                       >
                         <FontAwesomeIcon icon={faEye} />
                       </button>
                       <button
                         className="hover:text-primary"
-                        onClick={() =>
-                          downloadInvoice(payment.transaction_reference)
-                        }
+                        onClick={() => downloadInvoice(payment.transaction_reference)}
+                        disabled={isDownloading}
                       >
-                        <FontAwesomeIcon icon={faDownload} />
+                        {isDownloading ? (
+                          <span className={styles.loader}></span> // Display spinner
+                        ) : (
+                          <FontAwesomeIcon icon={faDownload} />
+                        )}
                       </button>
-                      {/* <button className="hover:text-primary">
-                        <FontAwesomeIcon icon={faPrint} />
-                      </button> */}
                     </div>
                   </td>
                 </tr>
@@ -373,105 +380,71 @@ const PaymentsTable = () => {
       </div>
 
       {isClientModalOpen && (
-        <div
-          ref={modalRef}
-          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
-        >
-          <div className="bg-white p-6 rounded-lg">
-            <h2 className="text-xl font-bold mb-4">Enter Client ID</h2>
+        <div className="modal">
+          <div className="modal-content" ref={modalRef}>
+            <h2>Add Payment</h2>
             <form onSubmit={handleClientSubmit}>
               <div className="mb-4">
-                <label
-                  htmlFor="clientId"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Client ID
-                </label>
+                <label htmlFor="clientId">Client ID</label>
                 <input
                   type="text"
                   id="clientId"
                   value={clientId}
                   onChange={(e) => setClientId(e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                  required
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                 />
               </div>
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  className="mr-2 px-4 py-2 bg-gray-500 text-white rounded"
-                  onClick={closeModal}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-500 text-white rounded"
-                >
-                  Next
-                </button>
-              </div>
+              <button
+                type="submit"
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Next
+              </button>
             </form>
           </div>
         </div>
       )}
 
-      {isPaymentModalOpen && clientDetails && (
-        <div
-          ref={modalRef}
-          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
-        >
-          <div className="bg-white p-6 rounded-lg">
-            <h2 className="text-xl font-bold mb-4">Make Payment</h2>
+      {isPaymentModalOpen && (
+        <div className="modal">
+          <div className="modal-content" ref={modalRef}>
+            <h2>Manual Payment</h2>
             <form onSubmit={handlePaymentSubmit}>
               <div className="mb-4">
-                <label
-                  htmlFor="paymentMethod"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Payment Method
-                </label>
+                <label htmlFor="paymentMethod">Payment Method</label>
                 <select
                   id="paymentMethod"
                   value={paymentMethod}
                   onChange={handlePaymentMethodChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                  required
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                 >
                   <option value="">Select Payment Method</option>
-                  <option value="bank">Bank</option>
-                  <option value="pos">POS</option>
-                  <option value="transfer">Transfer</option>
-                  <option value="cash">Cash</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                  <option value="Credit Card">Credit Card</option>
+                  <option value="Cash">Cash</option>
                 </select>
               </div>
-
               <div className="mb-4">
-                <label
-                  htmlFor="transactionReference"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Transaction Reference
-                </label>
+                <label htmlFor="transactionReference">Transaction Reference</label>
                 <input
                   type="text"
                   id="transactionReference"
                   value={transactionReference}
                   onChange={handleTransactionReferenceChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                  required
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                 />
               </div>
-
               <div className="mb-4">
-                <label
-                  htmlFor="course"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Course
-                </label>
+                <label htmlFor="course">Course</label>
                 <select
                   id="course"
                   value={selectedCourse}
                   onChange={handleCourseChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                  required
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                 >
                   <option value="">Select Course</option>
                   {courses.map((course) => (
@@ -481,38 +454,23 @@ const PaymentsTable = () => {
                   ))}
                 </select>
               </div>
-
               <div className="mb-4">
-                <label
-                  htmlFor="amount"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Amount
-                </label>
+                <label htmlFor="amount">Amount</label>
                 <input
-                  type="text"
+                  type="number"
                   id="amount"
                   value={amount}
-                  readOnly
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                  onChange={(e) => setAmount(e.target.value)}
+                  required
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                 />
               </div>
-
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  className="mr-2 px-4 py-2 bg-gray-500 text-white rounded"
-                  onClick={closeModal}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-500 text-white rounded"
-                >
-                  Submit Payment
-                </button>
-              </div>
+              <button
+                type="submit"
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Submit Payment
+              </button>
             </form>
           </div>
         </div>

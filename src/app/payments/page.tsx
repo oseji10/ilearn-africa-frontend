@@ -9,9 +9,8 @@ import ClientsTable from "@/components/Tables/ClientsTable";
 import PaymentsTable from "@/components/Tables/PaymentsTable";
 
 export const metadata: Metadata = {
-  title: "Next.js Tables | TailAdmin - Next.js Dashboard Template",
-  description:
-    "This is Next.js Tables page for TailAdmin - Next.js Tailwind CSS Admin Dashboard Template",
+  title: "iLearn Africa",
+  // description:    "This is Next.js Tables page for TailAdmin - Next.js Tailwind CSS Admin Dashboard Template",
 };
 
 const TablesPage = () => {
