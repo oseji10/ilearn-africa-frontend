@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownload, faEye, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faEye, faSpinner, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faFilePdf } from "@fortawesome/free-solid-svg-icons/faFilePdf";
 import { useRouter } from 'next/navigation';
 
@@ -14,6 +14,7 @@ const CoursesTable = () => {
   const modalRef = useRef(null);
   const router = useRouter();
   const [clientId, setClientId] = useState("=") ;
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -114,6 +115,7 @@ const CoursesTable = () => {
 
   const handlePayment = async () => {
     try {
+      setIsSubmitting(true);
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_PAYSTACK_URL}`, // Ensure this endpoint is correct
         {
@@ -129,13 +131,14 @@ const CoursesTable = () => {
           },
         }
       );
-
+      setIsSubmitting(false);
       if (response.data.status) {
         window.location.href = response.data.data.authorization_url;
       }
     } catch (error) {
       console.error('Payment initiation failed:', error);
     }
+
   };
 
   return (
@@ -206,26 +209,9 @@ const CoursesTable = () => {
                         className="inline-flex items-center justify-center bg-primary px-10 py-4 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-10"
                         onClick={() => handleEyeClick(course_list)}
                       >APPLY
-                        {/* <FontAwesomeIcon
-                          icon={faEye}
-                          className="fill-current"
-                          size="sm"
-                        /> */}
+                      
                       </button>
-                      {/* <button className="hover:text-primary">
-                        <FontAwesomeIcon
-                          icon={faFilePdf}
-                          className="fill-current"
-                          size="sm"
-                        />
-                      </button>
-                      <button className="hover:text-primary">
-                        <FontAwesomeIcon
-                          icon={faTrash}
-                          className="fill-current"
-                          size="sm"
-                        />
-                      </button> */}
+                     
                     </div>
                   </td>
                 </tr>
@@ -252,12 +238,31 @@ const CoursesTable = () => {
                 maximumFractionDigits: 2,
               })}
             </p>
-            <button
+            {/* <button
               onClick={handlePayment}
               className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
             >
               Pay for Course
-            </button>
+            </button> */}
+
+            <button
+            type="submit"
+  onClick={handlePayment}
+  disabled={isSubmitting}
+  className={`mt-4 px-4 py-2 bg-blue-500 text-white rounded ${
+    isSubmitting ? "cursor-not-allowed opacity-50" : ""
+  }`}
+>
+  {isSubmitting ? (
+    <span>
+      Please wait... <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
+    </span>
+  ) : (
+    'Pay for Course'
+  )}
+</button>
+
+
             <button
               onClick={closeModal}
               className="absolute top-2 right-2 text-gray-500"

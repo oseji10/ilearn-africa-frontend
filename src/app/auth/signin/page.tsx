@@ -63,7 +63,7 @@ const handleSignIn = async (event) => {
     setSuccess("Login Successful!");
     // console.log("HII", result.client.status)
     // Check the user's role and status
-    if (result.role === "client" && result.client.status === "pending") {
+    if (result.role === "client" && result.client.status === "profile_created") {
       
       // Redirect to the registration page
       router.push("/clients/register");
