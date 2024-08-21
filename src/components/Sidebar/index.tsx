@@ -8,7 +8,7 @@ import SidebarItem from "@/components/Sidebar/SidebarItem";
 import ClickOutside from "@/components/ClickOutside";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAward, faBookAtlas, faBookOpen, faFileExport, faFileInvoiceDollar, faTableColumns, faUserGraduate, faUsers } from "@fortawesome/free-solid-svg-icons";
+import { faAward, faBookAtlas, faBookOpen, faFileExport, faFileInvoiceDollar, faPen, faTableColumns, faUserGraduate, faUsers } from "@fortawesome/free-solid-svg-icons";
 import { faBoxesStacked } from "@fortawesome/free-solid-svg-icons/faBoxesStacked";
 import { faBook } from "@fortawesome/free-solid-svg-icons/faBook";
 import { useRouter } from "next/navigation";
@@ -179,53 +179,81 @@ const clientMenu = [
         icon: (
           <FontAwesomeIcon icon={faUsers} className="fill-current" size="lg" />
         ),
-        label: "Users",
-        route: "#",
-        children: [
-          {
-            label: "Update Profile",
-            route: "/clients/register",
-            icon: (
-              <FontAwesomeIcon icon={faBoxesStacked} className="fill-current" size="lg" />
-            ),
-          },
-     
-        ],
+        label: "Update Profile",
+        route: "/client-dashboard/my-registration",
+        // children: [
+        //   {
+        //     label: "Update Profile",
+        //     route: "/clients/register",
+        //     icon: (
+        //       <FontAwesomeIcon icon={faBoxesStacked} className="fill-current" size="lg" />
+        //     ),
+        //   },
+    //  
+        // ],
       },
       
       {
         icon: (
-          <FontAwesomeIcon icon={faUserGraduate} className="fill-current" size="lg" />
+          <FontAwesomeIcon icon={faBookOpen} className="fill-current" size="lg" />
         ),
-        label: "Admissions",
-        route: "#",
+        label: "Courses",
+        route: "",
         children: [
      
           {
-            label: "Apply",
-            route: "/admission/courses",
+            label: "Register A New Course",
+            route: "/client-dashboard/courses",
           },
           {
-            label: "Registered Courses",
-            route: "/clients/view",
+            label: "My Courses",
+            route: "/client-dashboard/my-courses",
             // Optionally add an icon here if needed
           },
         ],
       },
+      // {
+      //   icon: (
+      //     <FontAwesomeIcon icon={faUserGraduate} className="fill-current" size="lg" />
+      //   ),
+      //   label: "My Admissions",
+      //   route: "#",
+
+      // },
 
 
       {
         icon: (
           <FontAwesomeIcon icon={faFileInvoiceDollar} className="fill-current" size="lg" />
         ),
-        label: "Payments",
-        route: "#",
-        children: [
-          {
-            label: "My Payments",
-            route: "/payments",
-          },
+        label: "My Payments",
+        route: "/client-dashboard/my-payments",
+        // children: [
+        //   {
+        //     label: "My Payments",
+        //     route: "/payments",
+        //   },
          
+        // ],
+      },
+
+      {
+        icon: (
+          <FontAwesomeIcon icon={faPen} className="fill-current" size="lg" />
+        ),
+        label: "Assessments",
+        route: "",
+        children: [
+     
+          {
+            label: "My Assessments",
+            route: "",
+          },
+          {
+            label: "Take Assessment",
+            route: "",
+            // Optionally add an icon here if needed
+          },
         ],
       },
 
@@ -233,27 +261,15 @@ const clientMenu = [
         icon: (
           <FontAwesomeIcon icon={faAward} className="fill-current" size="lg" />
         ),
-        label: "Certificates",
-        route: "#",
-        children: [
-          {
-            label: "My Certificates",
-            route: "/certificates/certificates",
-          },
-       
-        ],
+        label: "My Certificates",
+        route: "/certificates/certificates",
+        
       },
 
 
 
 
-      {
-        icon: (
-          <FontAwesomeIcon icon={faBookOpen} className="fill-current" size="lg" />
-        ),
-        label: "Courses",
-        route: "/admission/courses",
-      },
+   
     ],
   }
   ]
@@ -294,40 +310,7 @@ const clientMenu = [
     }, []);
 
 
-    // useEffect(() => {
-    //   const fetchClientId = async () => {
-    //     const token = localStorage.getItem("token");
-    //     if (token) {
-    //       try {
-    //         const response = await fetch(
-    //           `${process.env.NEXT_PUBLIC_API_URL}/client-id`,
-    //           {
-    //             method: "GET",
-    //             headers: {
-    //               Authorization: `Bearer ${token}`,
-    //               "Content-Type": "application/json",
-    //             },
-    //           },
-    //         );
-    //         if (!response.ok) throw new Error("Network response was not ok");
-    //         const data = await response.json();
-      
-    //         setStatus(data.status);
-    //       } catch (error) {
-    //         console.error("Error fetching client ID:", error);
-    //       }
-    //     }
-    //   };
-  
-    //   fetchClientId();
-    // }, []);
-
-
-    // useEffect(() => {
-    //   if (status === 'pending') {
-    //     <Register/>
-    //   }
-    // }, [status, router]);
+   
   
     const menuToRender = role === "admin" ? adminMenu : clientMenu;
   

@@ -131,10 +131,10 @@ const CoursesTable = () => {
           },
         }
       );
-      setIsSubmitting(false);
       if (response.data.status) {
         window.location.href = response.data.data.authorization_url;
       }
+      setIsSubmitting(false);
     } catch (error) {
       console.error('Payment initiation failed:', error);
     }
