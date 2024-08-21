@@ -260,12 +260,12 @@ const MyPaymentsTable = () => {
 
   return (
     <div>
-      <button
+      {/* <button
         className="mb-4 px-4 py-2 bg-blue-500 text-white rounded"
         onClick={handleAddPaymentClick}
       >
         <FontAwesomeIcon icon={faPlus} /> Add Payment
-      </button>
+      </button> */}
 <div>
 
 </div>

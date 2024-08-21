@@ -55,7 +55,7 @@ useEffect(() => {
       <Breadcrumb pageName="My Registration Form" />
 
       <div className="flex flex-col gap-10">
-        {status === 'profile_created' || status === 'registered' || status === 'ADMITTED' ? (
+        {status === 'pending' || status === 'registered' || status === 'ADMITTED' ? (
           <RegistrationComplete />
         ) : (
           <MyRegistrationForm />
