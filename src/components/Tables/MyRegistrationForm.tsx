@@ -304,7 +304,7 @@ const uploadFile = async (file) => {
   } finally {
     setUploading(false);
   }
-};;
+};
   
 
   

@@ -2,8 +2,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownload, faEye, faSpinner, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { faFilePdf } from "@fortawesome/free-solid-svg-icons/faFilePdf";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from 'next/navigation';
 
 const MyCoursesAfterPayment = () => {
@@ -11,6 +10,8 @@ const MyCoursesAfterPayment = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [file, setFile] = useState(null);
   const modalRef = useRef(null);
   const router = useRouter();
   const [clientId, setClientId] = useState("=") ;
@@ -86,6 +87,7 @@ const MyCoursesAfterPayment = () => {
 
   const closeModal = useCallback(() => {
     setSelectedCourse(null);
+    setFile(null); // Reset the file when closing the modal
   }, []);
 
   const handleClickOutside = useCallback((event) => {
@@ -105,6 +107,55 @@ const MyCoursesAfterPayment = () => {
     };
   }, [selectedCourse, handleClickOutside]);
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setFile(file); // Store the file in the state
+  };
+
+  const handlePaymentUpdate = useCallback(
+    async (event) => {
+      event.preventDefault();
+
+      // Create a FormData object to handle file upload and form submission together
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("client_id", clientId);
+      formData.append("course_id", selectedCourse.course_id);
+
+      try {
+        setIsSubmitting(true);
+        const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error("No auth token found");
+        }
+        
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/proof-of-payment`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            body: formData,
+          }
+        );
+
+        if (response.ok) {
+          setError(null);
+          closeModal();
+        } else {
+          throw new Error("Payment submission failed");
+        }
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setIsSubmitting(false);
+        router.push('/client-dashboard/my-courses')
+      }
+    },
+    [file, formData.client_id, selectedCourse, closeModal]
+  );
+
   if (loading) {
     return <p>Loading...</p>;
   }
@@ -112,34 +163,6 @@ const MyCoursesAfterPayment = () => {
   if (error) {
     return <p>Error: {error}</p>;
   }
-
-  const handlePayment = async () => {
-    try {
-      setIsSubmitting(true);
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_PAYSTACK_URL}`, // Ensure this endpoint is correct
-        {
-          email: formData.email,
-          amount: (selectedCourse.cost)*100, 
-          // amount: (selectedCourse.cost).toString(), 
-          callback_url: `${process.env.NEXT_PUBLIC_VERIFY_FRONETEND}/verify?course_id=${encodeURIComponent(selectedCourse.course_id)}&clientId=${encodeURIComponent(clientId)}`, // The callback URL
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (response.data.status) {
-        window.location.href = response.data.data.authorization_url;
-      }
-      setIsSubmitting(false);
-    } catch (error) {
-      console.error('Payment initiation failed:', error);
-    }
-
-  };
 
   return (
     <div>
@@ -205,13 +228,6 @@ const MyCoursesAfterPayment = () => {
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <div className="flex items-center space-x-3.5">
-                      {/* <button
-                        className="inline-flex items-center justify-center bg-primary px-10 py-4 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-10"
-                        onClick={() => handleEyeClick(course_list)}
-                      >APPLY
-                      
-                      </button> */}
-
                       {course_list.status === "Paid"
                         ? <button
                         style={{background:'grey'}}
@@ -239,49 +255,56 @@ const MyCoursesAfterPayment = () => {
 
       {selectedCourse && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div
-            className="w-1/2 bg-white rounded shadow-lg p-6 relative"
-            ref={modalRef}
-          >
-            <h2 className="text-lg font-semibold mb-4">Course Details</h2>
-            <p>
-              <strong>Course Name:</strong> {selectedCourse.course_name}
-            </p>
-            <p>
-              <strong>Cost:</strong> NGN{" "}
-              {Number(selectedCourse.cost).toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </p>
-            {/* <button
-              onClick={handlePayment}
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
-            >
-              Pay for Course
-            </button> */}
+          <div ref={modalRef} className="relative bg-white p-8 rounded-lg">
+            <h2 className="text-2xl font-semibold mb-4">
+              Apply for {selectedCourse.course_name}
+            </h2>
+            <form onSubmit={handlePaymentUpdate}>
+            <input
+              type="text"
+              name="course_id"
+              value={selectedCourse.course_id}
+              hidden
+            />
+              <div className="flex items-center justify-center">
+                <input type="hidden" name="client_id" value={clientId} />
+                <div className="mb-4">
+                  <label
+                    htmlFor="file"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Upload Payment Proof
+                  </label>
+                  <input
+                    type="file"
+                    id="file"
+                    name="file"
+                    onChange={handleFileChange}
+                    required
+                  />
+                </div>
+              </div>
 
+              <div className="flex justify-center">
+                <button
+                  type="submit"
+                  className="inline-flex items-center justify-center bg-primary px-6 py-3 text-white font-semibold rounded-md hover:bg-opacity-90"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <FontAwesomeIcon
+                      icon={faSpinner}
+                      className="animate-spin mr-2"
+                    />
+                  ) : (
+                    "Submit"
+                  )}
+                </button>
+              </div>
+            </form>
             <button
-            type="submit"
-  onClick={handlePayment}
-  disabled={isSubmitting}
-  className={`mt-4 px-4 py-2 bg-blue-500 text-white rounded ${
-    isSubmitting ? "cursor-not-allowed opacity-50" : ""
-  }`}
->
-  {isSubmitting ? (
-    <span>
-      Please wait... <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
-    </span>
-  ) : (
-    'Pay for Course'
-  )}
-</button>
-
-
-            <button
+              className="absolute top-0 right-0 m-4 text-gray-600 hover:text-gray-900"
               onClick={closeModal}
-              className="absolute top-2 right-2 text-gray-500"
             >
               Close
             </button>

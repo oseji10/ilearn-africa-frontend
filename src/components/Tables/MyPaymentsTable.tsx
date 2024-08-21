@@ -346,7 +346,7 @@ const MyPaymentsTable = () => {
                       {payment.status === 1
                         ? "PAID"
                         : payment.status === 0
-                          ? "UNPAID"
+                          ? "PENDING"
                           : "N/A"}
                           </p>
                   </td>

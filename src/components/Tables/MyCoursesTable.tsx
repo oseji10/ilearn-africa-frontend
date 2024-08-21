@@ -142,6 +142,15 @@ const MyCoursesTable = () => {
                         Download Brochure <FontAwesomeIcon icon={faDownload} />
                       </button>
                     </div>
+
+                    <div className="flex items-center space-x-3.5">
+                    <button
+                        className="hover:text-primary"
+                        // onClick={() => handleEyeClick(downloadBrochure)} 
+                      >
+                        Download Course Materials <FontAwesomeIcon icon={faDownload} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
