@@ -211,6 +211,10 @@ const [success, setSuccess] = useState("");
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    if (!file) {
+        alert("Please upload your highest qualification before submitting the form.");
+        return;
+      }
     const token = localStorage.getItem("token");
     try {
       const response = await axios.put(
@@ -798,6 +802,7 @@ const uploadFile = async (file) => {
             className="relative mb-5.5 block w-full cursor-pointer appearance-none rounded border border-dashed border-primary bg-gray px-4 py-4 dark:bg-meta-4 sm:py-7.5"
           >
             <input
+            required
               onChange={handleFileChange}
               type="file"
               accept="image/*,application/pdf"

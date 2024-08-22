@@ -118,17 +118,15 @@ const ClientsTable = () => {
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <p 
                     className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
-                      client.status === "admitted"
-                        ? "bg-success text-success"
-                        : client.status === "profile_created"
-                          ? "bg-danger text-danger"
-                          : client.status === "registered" ? 
-                          "bg-warning text-warning"
-                          : ""
+                      client.status === "admitted"  ? "bg-success text-success" : client.status === "profile_created"  ? "bg-danger text-danger" : client.status === "registered" ? "bg-warning text-warning" : client.status === "pending" ? "bg-warning text-warning" : ""
+
+                          
+
+                          
                     }`}
                     
                     >
-                      {client.status === "profile_created" ? "Profile Created" : client.status === "registered" ? "Registered" : "N/A"}
+                      {client.status === "profile_created" ? "Profile Created" : client.status === "registered" ? "Registered" : client.status === "pending" ? "Pending" : "N/A"}
                     </p>
                   </td>
 

@@ -262,14 +262,21 @@ const SignUp: React.FC = () => {
                   Phone Number
                 </label>
                 <div className="relative">
-                  <input
-                    type="text"
-                    name="phone_number"
-                    placeholder="Enter your phone number"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                  />
+                <input
+  type="text"  // Change this to text to allow better control over input length
+  name="phone_number"
+  maxLength={11}
+  placeholder="Enter your phone number"
+  value={phoneNumber}
+  onChange={(e) => {
+    // Allow only numeric input and limit to 11 digits
+    const value = e.target.value.replace(/\D/g, ''); // Remove non-digit characters
+    if (value.length <= 11) {
+      setPhoneNumber(value);
+    }
+  }}
+  className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+/>
 
                   <span className="absolute right-4 top-4">
                     <FontAwesomeIcon

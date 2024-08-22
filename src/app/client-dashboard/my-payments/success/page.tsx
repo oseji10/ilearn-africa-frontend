@@ -49,7 +49,7 @@ const Profile = () => {
                 </div>
                 <div className="flex flex-col items-center justify-center gap-1 px-4 xsm:flex-row">
                   <span className="font-semibold text-black dark:text-white">
-                    View Course Outline
+                    Download Course Material
                   </span>
                   
                 </div>

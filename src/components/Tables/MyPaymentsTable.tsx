@@ -208,17 +208,16 @@ const MyPaymentsTable = () => {
       closeModal,
     ]
   );
-
+  const [downloadingInvoice, setDownloadingInvoice] = useState(null);
   const downloadInvoice = async (transaction_reference) => {
-    setIsDownloading(true);
-    const token = localStorage.getItem("token");
-    if (!token) {
-      throw new Error("No auth token found");
-    }
-
-    
+    setDownloadingInvoice(transaction_reference); // Start the spinner for this transaction
 
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No auth token found");
+      }
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/generate-receipt`,
         {
@@ -246,7 +245,7 @@ const MyPaymentsTable = () => {
     } catch (error) {
       console.error("An error occurred while downloading the invoice", error);
     } finally {
-      setIsDownloading(false); // Hide spinner
+      setDownloadingInvoice(null); // Always stop the spinner after the process is done
     }
   };
 
@@ -336,40 +335,35 @@ const MyPaymentsTable = () => {
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <p
                     className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
-                        payment.status === 1
+                        payment.status === "1"
                           ? "bg-success text-success"
-                          : payment.status === 0
+                          : payment.status === "0"
                             ? "bg-warning text-warning"
                             : ""
                       }`}
                     >
-                      {payment.status === 1
+                      {payment.status === "1"
                         ? "PAID"
-                        : payment.status === 0
+                        : payment.status === "0"
                           ? "PENDING"
                           : "N/A"}
                           </p>
                   </td>
-
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <div className="flex items-center space-x-3.5">
                       <button
                         className="hover:text-primary"
-                        onClick={() => handleEyeClick(payment)} 
+                        onClick={() => handleEyeClick(payment)}
                       >
                         <FontAwesomeIcon icon={faEye} />
                       </button>
-                      <button
-                        className="hover:text-primary"
-                        onClick={() => downloadInvoice(payment.transaction_reference)}
-                        disabled={isDownloading}
-                      >
-                        {isDownloading ? (
-                          <span className={styles.loader}></span> // Display spinner
-                        ) : (
+                      {downloadingInvoice === payment.transaction_reference ? (
+                        <span className={styles.loader}></span> // Show spinner only for the selected transaction
+                      ) : (
+                        <button onClick={() => downloadInvoice(payment.transaction_reference)}>
                           <FontAwesomeIcon icon={faDownload} />
-                        )}
-                      </button>
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

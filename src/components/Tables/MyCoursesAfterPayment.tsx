@@ -150,7 +150,7 @@ const MyCoursesAfterPayment = () => {
         setError(error.message);
       } finally {
         setIsSubmitting(false);
-        router.push('/client-dashboard/my-courses')
+        router.push('/client-dashboard/my-payments/successful-upload')
       }
     },
     [file, formData.client_id, selectedCourse, closeModal]
@@ -222,7 +222,7 @@ const MyCoursesAfterPayment = () => {
                       {course_list.status === "Paid"
                         ? "Registered Already"
                         : course_list.status === "Not Paid"
-                          ? "Registrable"
+                          ? "Available"
                           : "N/A"}
                     </p>
                   </td>
@@ -233,7 +233,7 @@ const MyCoursesAfterPayment = () => {
                         style={{background:'grey'}}
                         className="inline-flex items-center justify-center  px-10 py-4 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-10"
                         disabled
-                      >APPLY
+                      >ENROLL
                       </button>
                         : course_list.status === "Not Paid"
                           ?  

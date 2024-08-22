@@ -340,7 +340,7 @@ const handleSignIn = async (event) => {
               <form onSubmit={handleSignIn}>
                 <div className="mb-4">
                   <label className="mb-2.5 block font-medium text-black dark:text-white">
-                    Email
+                    Email or Phone Number
                   </label>
                   <div className="relative">
                     <input

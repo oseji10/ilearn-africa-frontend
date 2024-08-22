@@ -42,24 +42,32 @@ const adminMenu = [
         icon: (
           <FontAwesomeIcon icon={faUsers} className="fill-current" size="lg" />
         ),
-        label: "Users",
-        route: "#",
-        children: [
-          {
-            label: "Register Client",
-            route: "/clients/register",
-            icon: (
-              <FontAwesomeIcon icon={faBoxesStacked} className="fill-current" size="lg" />
-            ),
-          },
-          {
-            label: "All Clients",
-            route: "/clients/clients",
-            // Optionally add an icon here if needed
-          },
-        ],
+        label: "Clients",
+        route: "/clients/clients",
+        // children: [
+        //   {
+        //     label: "Register Client",
+        //     route: "/clients/register",
+        //     icon: (
+        //       <FontAwesomeIcon icon={faBoxesStacked} className="fill-current" size="lg" />
+        //     ),
+        //   },
+        //   {
+        //     label: "All Clients",
+        //     route: "/clients/clients",
+        //     // Optionally add an icon here if needed
+        //   },
+        // ],
       },
       
+      {
+        icon: (
+          <FontAwesomeIcon icon={faBookOpen} className="fill-current" size="lg" />
+        ),
+        label: "Courses",
+        route: "/admission/courses",
+      },
+
       {
         icon: (
           <FontAwesomeIcon icon={faUserGraduate} className="fill-current" size="lg" />
@@ -96,12 +104,12 @@ const adminMenu = [
         route: "#",
         children: [
           {
-            label: "All Payments",
+            label: "Successful Payments",
             route: "/payments",
           },
           {
-            label: "Make Payment",
-            route: "/clients/view",
+            label: "Pending Payments",
+            route: "/payments/pending",
             // Optionally add an icon here if needed
           },
         ],
@@ -146,13 +154,7 @@ const adminMenu = [
         ],
       },
 
-      {
-        icon: (
-          <FontAwesomeIcon icon={faBookOpen} className="fill-current" size="lg" />
-        ),
-        label: "Courses",
-        route: "/admission/courses",
-      },
+     
 
     ],
   },
