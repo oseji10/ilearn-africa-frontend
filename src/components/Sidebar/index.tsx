@@ -205,7 +205,7 @@ const clientMenu = [
      
           {
             label: "Register A New Course",
-            route: "/client-dashboard/courses",
+            route: "/client-dashboard/my-registration/payment-options",
           },
           {
             label: "My Courses",
