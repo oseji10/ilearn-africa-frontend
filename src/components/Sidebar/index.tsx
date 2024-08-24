@@ -81,17 +81,17 @@ const adminMenu = [
           },
           {
             label: "Admitted Clients",
-            route: "/clients/admitted",
+            route: "/admission/admitted",
           },
-          {
-            label: "Register Course",
-            route: "/admission/courses",
-          },
-          {
-            label: "Registered Courses",
-            route: "/clients/view",
-            // Optionally add an icon here if needed
-          },
+          // {
+          //   label: "Register Course",
+          //   route: "/admission/courses",
+          // },
+          // {
+          //   label: "Registered Courses",
+          //   route: "/clients/view",
+          //   // Optionally add an icon here if needed
+          // },
         ],
       },
 
@@ -127,10 +127,14 @@ const adminMenu = [
             route: "/certificates/certificates",
           },
           {
-            label: "Upload Certificate",
-            route: "/certificates/upload",
-            // Optionally add an icon here if needed
+            label: "Process Certificates",
+            route: "/certificates/process-certificates",
           },
+          // {
+          //   label: "Upload Certificate",
+          //   route: "/certificates/upload",
+          //   // Optionally add an icon here if needed
+          // },
         ],
       },
 

@@ -27,6 +27,8 @@ const MyPaymentsTable = () => {
   const [amount, setAmount] = useState("");
   const [loadingClientId, setLoadingClientId] = useState(null);
 
+
+  
   const handlePaymentMethodChange = useCallback((e) => {
     setPaymentMethod(e.target.value);
   }, []);
