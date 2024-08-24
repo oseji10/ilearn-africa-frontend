@@ -39,7 +39,7 @@ const [payments_count, setPayments] = useState("");
           );
           if (!response.ok) throw new Error("Network response was not ok");
           const data = await response.json();
-          // console.log("HH", data)
+          
           setClients(data.clients); 
           setApplications(data.applications_count); 
           setAdmissions(data.admitted_count); 
@@ -54,7 +54,7 @@ const [payments_count, setPayments] = useState("");
   }, []);
   return (
     <>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
+      {/* <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
         <CardDataStats title="Total Clients" total={clients}
         rate="" 
         >
@@ -69,7 +69,7 @@ const [payments_count, setPayments] = useState("");
         <CardDataStats title="Admitted" total={admitted_count} rate="" >
           <FontAwesomeIcon icon={faGraduationCap} className="fill-primary dark:fill-white" />
         </CardDataStats>
-      </div>
+      </div> */}
 
       <div className="mt-4 grid grid-cols-12 gap-4 md:mt-6 md:gap-6 2xl:mt-7.5 2xl:gap-7.5">
         {/* <ChartOne /> */}
