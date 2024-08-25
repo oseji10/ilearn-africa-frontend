@@ -291,16 +291,16 @@ const MyPaymentsTable = () => {
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <p
                     className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
-                        payment.status === "1"
+                        payment.status === 1
                           ? "bg-success text-success"
-                          : payment.status === "0"
+                          : payment.status === 0
                             ? "bg-warning text-warning"
                             : ""
                       }`}
                     >
-                      {payment.status === "1"
+                      {payment.status === 1
                         ? "PAID"
-                        : payment.status === "0"
+                        : payment.status === 0
                           ? "PENDING"
                           : "N/A"}
                           </p>

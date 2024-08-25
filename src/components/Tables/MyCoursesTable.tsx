@@ -57,7 +57,7 @@ const MyCoursesTable = () => {
             },
           }
         );
-
+        // console.log(response.data)
         setCourses(response.data.my_courses); // Set the entire array of courses
         setLoading(false);
       } catch (err) {
@@ -109,13 +109,16 @@ const MyCoursesTable = () => {
           <table className="w-full table-auto">
             <thead>
               <tr className="bg-gray-2 text-left dark:bg-meta-4">
-                <th className="min-w-[220px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
+                <th className="min-w-[100px] px-4 py-4 font-medium text-black dark:text-white ">
                   Course ID
                 </th>
-                <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
+                <th className="min-w-[100px] px-4 py-4 font-medium text-black dark:text-white">
                   Course Name
                 </th>
-                <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
+                <th className="min-w-[100px] px-4 py-4 font-medium text-black dark:text-white">
+                  Awarding Institution
+                </th>
+                <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
                   Actions
                 </th>
               </tr>
@@ -123,7 +126,7 @@ const MyCoursesTable = () => {
             <tbody>
               {my_courses.map((my_course, key) => (
                 <tr key={key}>
-                  <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
+                  <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark ">
                     <h5 className="font-medium text-black dark:text-white">
                       {my_course.course_id}
                     </h5>
@@ -133,6 +136,13 @@ const MyCoursesTable = () => {
                       {my_course.courses.course_name}
                     </p>
                   </td>
+
+                  <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
+                    <p className="text-black dark:text-white">
+                      {my_course.courses.centers.center_name}
+                    </p>
+                  </td>
+
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <div className="flex items-center space-x-3.5">
                     <button
