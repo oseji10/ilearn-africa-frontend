@@ -64,6 +64,7 @@ const CoursesTable = () => {
           },
         }
       );
+      console.log(response.data)
       setCourses(response.data.courses);
       setFilteredCourses(response.data.courses); // Set initial filtered courses
       setLoading(false);
@@ -147,6 +148,11 @@ const CoursesTable = () => {
     {
       name: "Course Name",
       selector: (row) => row.course_name,
+      sortable: true,
+    },
+    {
+      name: "Institution",
+      selector: (row) => row.centers.center_name,
       sortable: true,
     },
     {
