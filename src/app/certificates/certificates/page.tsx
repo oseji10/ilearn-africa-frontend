@@ -11,6 +11,7 @@ import { MetaInformation } from "@/components/Meta";
 
 import AdmissionsTable from "@/components/Tables/AdmissionsTable";
 import AdmittedClientsTable from "@/components/Tables/AdmittedClientsTable";
+import ClientCertificates from "@/components/Tables/ClientCertificates";
 
 
 
@@ -20,7 +21,7 @@ const TablesPage = () => {
       <Breadcrumb pageName="Graduated Clients" />
 
       <div className="flex flex-col gap-10">
-        <AdmittedClientsTable/>
+        <ClientCertificates/>
       </div>
     </DefaultLayout>
   );

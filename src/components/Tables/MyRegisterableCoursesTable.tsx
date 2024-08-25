@@ -13,7 +13,7 @@ const MyRegisterableCoursesTable = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const modalRef = useRef(null);
   const router = useRouter();
-  const [clientId, setClientId] = useState("=") ;
+  const [clientId, setClientId] = useState("") ;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({

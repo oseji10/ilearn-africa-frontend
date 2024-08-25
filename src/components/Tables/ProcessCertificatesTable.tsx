@@ -59,7 +59,7 @@ const router = useRouter();
       admission_number: selectedAdmission.admission_number,
     };
     if (!confirmReceipt) {
-      alert("You must confirm receipt of the payment.");
+      alert("Please confirm that you authorize the issuance of this certificate.");
       // return;
     }
   
@@ -82,7 +82,7 @@ const router = useRouter();
   
       if (response.ok) {
         alert(
-          `Admission ${approved ? "approved" : "disapproved"} successfully`
+          `This certicate has been ${approved ? "issued" : "disapproved for issuance"} successfully`
         );
         closeModal();
       } else {
@@ -230,7 +230,7 @@ const router = useRouter();
                   className="mr-2"
                   required
                 />
-                <label className="text-gray-700">Confirm receipt of payment</label>
+                <label className="text-gray-700">By clicking this button, you confirm that this client is eligible to be issued this certificate under your authorization.</label>
               </div>
       
             <button

@@ -268,7 +268,7 @@ const clientMenu = [
           <FontAwesomeIcon icon={faAward} className="fill-current" size="lg" />
         ),
         label: "My Certificates",
-        route: "/certificates/certificates",
+        route: "/client-dashboard/my-certificates",
         
       },
 

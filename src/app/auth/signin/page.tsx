@@ -195,6 +195,12 @@ const SignIn: React.FC = () => {
               <span className="absolute left-3 top-2.5 text-gray-400">
                 <FontAwesomeIcon icon={faUser} />
               </span>
+              {/* <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-300">
+              Don't have an account?{" "} */}
+              <a className="text-primary hover:underline" href="">
+               Forgot password?
+              </a>
+            {/* </p> */}
             </div>
 
             {/* Buttons */}

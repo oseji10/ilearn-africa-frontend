@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faPrint, faPlus, faDownload } from "@fortawesome/free-solid-svg-icons";
+import { faEye, faPrint, faPlus, faDownload, faEnvelope, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { format } from 'date-fns';
 import styles from "./spinner.module.css";
 
@@ -19,6 +19,7 @@ const MyPaymentsTable = () => {
   const [clientDetails, setClientDetails] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const modalRef = useRef(null);
+  const [activeTransaction, setActiveTransaction] = useState(null); 
 
   const [paymentMethod, setPaymentMethod] = useState("");
   const [transactionReference, setTransactionReference] = useState("");
@@ -26,7 +27,7 @@ const MyPaymentsTable = () => {
   const [selectedCourse, setSelectedCourse] = useState("");
   const [amount, setAmount] = useState("");
   const [loadingClientId, setLoadingClientId] = useState(null);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   
   const handlePaymentMethodChange = useCallback((e) => {
@@ -162,94 +163,7 @@ const MyPaymentsTable = () => {
     [clientId]
   );
 
-  const handlePaymentSubmit = useCallback(
-    async (event) => {
-      event.preventDefault();
-
-      const paymentData = {
-        client_id: clientDetails.client_id,
-        course_id: selectedCourse,
-        payment_method: paymentMethod,
-        transaction_reference: transactionReference,
-        amount: amount,
-      };
-
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("No auth token found");
-        }
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/manual-payment`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(paymentData),
-          }
-        );
-
-        if (response.ok) {
-          setError(null);
-          closeModal();
-        } else {
-          throw new Error("Payment submission failed");
-        }
-      } catch (error) {
-        setError(error.message);
-      }
-    },
-    [
-      clientDetails,
-      selectedCourse,
-      paymentMethod,
-      transactionReference,
-      amount,
-      closeModal,
-    ]
-  );
-  const [downloadingInvoice, setDownloadingInvoice] = useState(null);
-  const downloadInvoice = async (transaction_reference) => {
-    setDownloadingInvoice(transaction_reference); // Start the spinner for this transaction
-
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("No auth token found");
-      }
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/generate-receipt`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ transaction_reference }),
-        }
-      );
-
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", `Payement_Receipt-${transaction_reference}.pdf`);
-        document.body.appendChild(link);
-        link.click();
-        link.parentNode.removeChild(link);
-      } else {
-        console.error("Failed to download the invoice", response.statusText);
-      }
-    } catch (error) {
-      console.error("An error occurred while downloading the invoice", error);
-    } finally {
-      setDownloadingInvoice(null); // Always stop the spinner after the process is done
-    }
-  };
+  
 
   if (loading) {
     return <p>Loading...</p>;
@@ -259,15 +173,55 @@ const MyPaymentsTable = () => {
     return <p>Error: {error}</p>;
   }
 
+
+
+
+
+  const handleApproval = async (event, transaction_reference) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setActiveTransaction(transaction_reference); // Set the active transaction
+
+    const approvalData = {
+      transaction_reference: transaction_reference
+    };
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No auth token found");
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/generate-receipt`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          mode: "cors",
+          body: JSON.stringify(approvalData)
+        }
+      );
+
+      if (response.ok) {
+        alert("Receipt sent successfully");
+        // Clear the active transaction once the process is complete
+        setActiveTransaction(null);
+      } else {
+        setError("There was an error emailing this receipt");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      setError("An error occurred");
+    }
+    setIsSubmitting(false);
+  };
+
+
+
   return (
     <div>
-      {/* <button
-        className="mb-4 px-4 py-2 bg-blue-500 text-white rounded"
-        onClick={handleAddPaymentClick}
-      >
-        <FontAwesomeIcon icon={faPlus} /> Add Payment
-      </button> */}
-<div>
+   <div>
 
 </div>
       <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
@@ -353,19 +307,24 @@ const MyPaymentsTable = () => {
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <div className="flex items-center space-x-3.5">
-                      <button
-                        className="hover:text-primary"
-                        onClick={() => handleEyeClick(payment)}
-                      >
-                        <FontAwesomeIcon icon={faEye} />
-                      </button>
-                      {downloadingInvoice === payment.transaction_reference ? (
-                        <span className={styles.loader}></span> // Show spinner only for the selected transaction
-                      ) : (
-                        <button onClick={() => downloadInvoice(payment.transaction_reference)}>
-                          <FontAwesomeIcon icon={faDownload} />
-                        </button>
-                      )}
+                    {payment.status === 1 && (
+  <button
+    disabled={isSubmitting}
+    className="px-4 py-2 bg-green-500 text-white rounded"
+    onClick={(event) => handleApproval(event, payment.transaction_reference)}
+  >
+    {isSubmitting && activeTransaction === payment.transaction_reference ? (
+      <span>
+        Sending. Please wait... <FontAwesomeIcon icon={faSpinner} spin />
+      </span>
+    ) : (
+      <span>
+        <FontAwesomeIcon icon={faEnvelope} /> Email Receipt
+      </span>
+    )}
+  </button>
+)}
+
                     </div>
                   </td>
                 </tr>
