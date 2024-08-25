@@ -27,7 +27,6 @@ const AdmissionsTable = () => {
         // console.log(response.data.admissions[0].admission_number)
 
         setAdmissions(response.data.admissions);
-        // console.log(response.data)
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -147,21 +146,7 @@ const AdmissionsTable = () => {
     }
   };
 
-  const renderDownloadButton = (admission) => {
-    if (admission.status === "ADMITTED") {
-      return (
-        <button
-          className="hover:text-primary"
-          data-admission-number={admission.admission_number}
-          onClick={handleDownloadClick}
-        >
-          <FontAwesomeIcon icon={faDownload} />
-        </button>
-      );
-    } else {
-      return null;
-    }
-  };
+
 
   return (
     <div>
@@ -203,7 +188,7 @@ const AdmissionsTable = () => {
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <p className="text-black dark:text-white">
-                      {admission.payments?.courses?.course_id} - {admission.payments?.courses?.course_name}
+                      {admission.payments.courses?.course_id} - {admission.payments.courses?.course_name}
                     </p>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
@@ -226,7 +211,7 @@ const AdmissionsTable = () => {
                       </button>
                     
 
-                      {renderDownloadButton(admission)}
+                      
 
                     </div>
                   </td>

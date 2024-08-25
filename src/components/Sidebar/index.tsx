@@ -8,7 +8,7 @@ import SidebarItem from "@/components/Sidebar/SidebarItem";
 import ClickOutside from "@/components/ClickOutside";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAward, faBookAtlas, faBookOpen, faFileExport, faFileInvoiceDollar, faPen, faTableColumns, faUserGraduate, faUsers } from "@fortawesome/free-solid-svg-icons";
+import { faAward, faBookAtlas, faBookOpen, faBuilding, faFileExport, faFileInvoiceDollar, faPen, faTableColumns, faUserGraduate, faUsers } from "@fortawesome/free-solid-svg-icons";
 import { faBoxesStacked } from "@fortawesome/free-solid-svg-icons/faBoxesStacked";
 import { faBook } from "@fortawesome/free-solid-svg-icons/faBook";
 import { useRouter } from "next/navigation";
@@ -60,6 +60,14 @@ const adminMenu = [
         // ],
       },
       
+      {
+        icon: (
+          <FontAwesomeIcon icon={faBuilding} className="fill-current" size="lg" />
+        ),
+        label: "Centers",
+        route: "/centers/centers",
+      },
+
       {
         icon: (
           <FontAwesomeIcon icon={faBookOpen} className="fill-current" size="lg" />
@@ -329,7 +337,7 @@ const clientMenu = [
         >
           {/* <!-- SIDEBAR HEADER --> */}
           <div className="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
-            <Link href="/">
+            <Link href="/dashboard">
               <Image
                 width={150}
                 height={23}

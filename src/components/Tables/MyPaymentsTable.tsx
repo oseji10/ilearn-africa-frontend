@@ -30,28 +30,7 @@ const MyPaymentsTable = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   
-  const handlePaymentMethodChange = useCallback((e) => {
-    setPaymentMethod(e.target.value);
-  }, []);
 
-  const handleTransactionReferenceChange = useCallback((e) => {
-    setTransactionReference(e.target.value);
-  }, []);
-
-  const handleCourseChange = useCallback(
-    (e) => {
-      const selectedCourseId = e.target.value;
-      setSelectedCourse(selectedCourseId);
-
-      const course = courses.find(
-        (course) => course.course_id === selectedCourseId
-      );
-      if (course) {
-        setAmount(course.cost); // Assuming the amount is stored in course.course_amount
-      }
-    },
-    [courses]
-  );
 
   useEffect(() => {
     const fetchPayments = async () => {
@@ -102,66 +81,8 @@ const MyPaymentsTable = () => {
     fetchCourses();
   }, []);
 
-  const handleEyeClick = useCallback((payment) => {
-    setSelectedPayment(payment);
-  }, []);
 
-  const closeModal = useCallback(() => {
-    setSelectedPayment(null);
-    setIsClientModalOpen(false);
-    setIsPaymentModalOpen(false);
-    setClientDetails(null);
-    setClientId("");
-  }, []);
 
-  const handleClickOutside = useCallback(
-    (event) => {
-      if (modalRef.current && !modalRef.current.contains(event.target)) {
-        closeModal();
-      }
-    },
-    [closeModal]
-  );
-
-  useEffect(() => {
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [handleClickOutside]);
-
-  const handleAddPaymentClick = useCallback(() => {
-    setIsClientModalOpen(true);
-  }, []);
-
-  const handleClientSubmit = useCallback(
-    async (event) => {
-      event.preventDefault();
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("No auth token found");
-        }
-
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/clients/${clientId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        setClientDetails(response.data.client[0]);
-        setIsClientModalOpen(false);
-        setIsPaymentModalOpen(true);
-      } catch (err) {
-        console.error("Failed to fetch client details:", err.message);
-        setError("Failed to fetch client details. Please try again.");
-      }
-    },
-    [clientId]
-  );
 
   
 
@@ -334,102 +255,6 @@ const MyPaymentsTable = () => {
         </div>
       </div>
 
-      {isClientModalOpen && (
-        <div className="modal">
-          <div className="modal-content" ref={modalRef}>
-            <h2>Add Payment</h2>
-            <form onSubmit={handleClientSubmit}>
-              <div className="mb-4">
-                <label htmlFor="clientId">Client ID</label>
-                <input
-                  type="text"
-                  id="clientId"
-                  value={clientId}
-                  onChange={(e) => setClientId(e.target.value)}
-                  required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                />
-              </div>
-              <button
-                type="submit"
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-              >
-                Next
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {isPaymentModalOpen && (
-        <div className="modal">
-          <div className="modal-content" ref={modalRef}>
-            <h2>Manual Payment</h2>
-            <form onSubmit={handlePaymentSubmit}>
-              <div className="mb-4">
-                <label htmlFor="paymentMethod">Payment Method</label>
-                <select
-                  id="paymentMethod"
-                  value={paymentMethod}
-                  onChange={handlePaymentMethodChange}
-                  required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                >
-                  <option value="">Select Payment Method</option>
-                  <option value="Bank Transfer">Bank Transfer</option>
-                  <option value="Credit Card">Credit Card</option>
-                  <option value="Cash">Cash</option>
-                </select>
-              </div>
-              <div className="mb-4">
-                <label htmlFor="transactionReference">Transaction Reference</label>
-                <input
-                  type="text"
-                  id="transactionReference"
-                  value={transactionReference}
-                  onChange={handleTransactionReferenceChange}
-                  required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="course">Course</label>
-                <select
-                  id="course"
-                  value={selectedCourse}
-                  onChange={handleCourseChange}
-                  required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                >
-                  <option value="">Select Course</option>
-                  {courses.map((course) => (
-                    <option key={course.course_id} value={course.course_id}>
-                      {course.course_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="mb-4">
-                <label htmlFor="amount">Amount</label>
-                <input
-                  type="number"
-                  id="amount"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                />
-              </div>
-              <button
-                type="submit"
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-              >
-                Submit Payment
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -2,17 +2,17 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDownload, faEye } from '@fortawesome/free-solid-svg-icons';
-import Modal from 'react-modal';
+import { faDownload, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
+// import Modal from 'react-modal';
 
 const AdmittedClientsTable = () => {
   const [admissions, setAdmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedAdmission, setSelectedAdmission] = useState(null);
-  const [admissionNumber, setAdmissionNumber] = useState("");
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [activeTransaction, setActiveTransaction] = useState(null); 
 
-  
   useEffect(() => {
     const fetchAdmissions = async () => {
       try {
@@ -26,10 +26,8 @@ const AdmittedClientsTable = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        // console.log(response.data.admissions[0].admission_number)
 
         setAdmissions(response.data.admissions);
-        // console.log(response.data)
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -40,86 +38,17 @@ const AdmittedClientsTable = () => {
     fetchAdmissions();
   }, []);
 
-  const handleEyeClick = (admission) => {
-    setSelectedAdmission(admission);
-  };
-
-  const handleAdmissionNumberChange = useCallback((e) => {
-    setAdmissionNumber(e.target.value);
-  }, []);
-
-  const closeModal = () => {
-    setSelectedAdmission(null);
-  };
-
-  const modalRef = useRef();
-
-  const handleClickOutside = useCallback((event) => {
-    if (modalRef.current && !modalRef.current.contains(event.target)) {
-      closeModal();
-    }
-  }, []);
-
-  useEffect(() => {
-    if (selectedAdmission) {
-      document.addEventListener('mousedown', handleClickOutside);
-    } else {
-      document.removeEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [selectedAdmission, handleClickOutside]);
 
 
-
-
-  const handleApproval = async (approved) => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No auth token found');
-      }
-  
-      // const admissionNumber = selectedAdmission.admission_number;
-  
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admissions/${selectedAdmission.admission_number}`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        // body: JSON.stringify({
-        //   admissionNumber,
-        //   approved,
-        // }),
-      });
-  
-      if (response.ok) {
-        alert(`Admission ${approved ? 'approved' : 'disapproved'} successfully`);
-        closeModal();
-      } else {
-        alert('There was an issue processing the admission');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred');
-    }
-  };
-  
-  const handleDownloadClick = (event) => {
-    const button = event.currentTarget;
-    const admissionNumber = button.dataset.admissionNumber;
-    downloadLetter(admissionNumber);
-  };
   const downloadLetter = async (admissionNumber) => {
- 
-    console.log(admissionNumber)
-     const token = localStorage.getItem("token");
+    // console.log(admissionNumber);
+    setIsDownloading(true);
+    setActiveTransaction(admissionNumber);
+    const token = localStorage.getItem("token");
     if (!token) {
       throw new Error("No auth token found");
     }
-  
+
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/admissions/admission_letter?admission_number=${admissionNumber}`,
@@ -131,7 +60,7 @@ const AdmittedClientsTable = () => {
           },
         }
       );
-  
+
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
@@ -141,29 +70,20 @@ const AdmittedClientsTable = () => {
         document.body.appendChild(link);
         link.click();
         link.parentNode.removeChild(link);
+        setActiveTransaction(null);
       } else {
         console.error("Failed to download the admission letter", response.statusText);
       }
     } catch (error) {
       console.error("An error occurred while downloading the admission letter", error);
     }
-  };
-
-  const renderDownloadButton = (admission) => {
-    if (admission.status === "ADMITTED") {
-      return (
-        <button
-          className="hover:text-primary"
-          data-admission-number={admission.admission_number}
-          onClick={handleDownloadClick}
-        >
-          <FontAwesomeIcon icon={faDownload} />
-        </button>
-      );
-    } else {
-      return null;
+    finally {
+      setIsDownloading(false); // Hide spinner
     }
   };
+
+
+
 
   return (
     <div>
@@ -196,8 +116,7 @@ const AdmittedClientsTable = () => {
                     <h5 className="font-medium text-black dark:text-white">
                       {admission.client_id} 
                     </h5>
-                    </td>
-                  {/* <input type='text' value={admission.admission_number} id='admission_number' /> */}
+                  </td>
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
                     <h5 className="font-medium text-black dark:text-white">
                       {admission.clients?.firstname} {admission.clients?.surname} {admission.clients?.othernames}
@@ -212,7 +131,7 @@ const AdmittedClientsTable = () => {
                     <p 
                       className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
                         admission.status === "ADMITTED"
-                          ? "bg-success text-warning"
+                          ? "bg-success text-success"
                           : admission.status === "COMPLETED"
                           ? "bg-success text-success"
                           : admission.status === "pending"
@@ -225,13 +144,26 @@ const AdmittedClientsTable = () => {
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <div className="flex items-center space-x-3.5">
-                      <button className="hover:text-primary" onClick={() => handleEyeClick(admission)}>
-                        <FontAwesomeIcon icon={faEye} className="fill-current" size="sm" />
-                      </button>
-                    
-
-                      {renderDownloadButton(admission)}
-
+                      
+                    {admission.status === "COMPLETED" && (
+                      <button
+    disabled={isDownloading}
+    className="px-4 py-2 bg-green-500 text-white rounded"
+    onClick={(event) => downloadLetter(admission.admission_number)}
+  >
+    {isDownloading && activeTransaction === admission.admission_number ? (
+      <span>
+        Sending. Please wait... <FontAwesomeIcon icon={faSpinner} spin />
+      </span>
+    ) : (
+      <span>
+        {/* <FontAwesomeIcon icon={faEnvelope} /> */}
+         Download/Email Admission
+      </span>
+    )}
+  </button>
+)}
+                      
                     </div>
                   </td>
                 </tr>
@@ -247,55 +179,29 @@ const AdmittedClientsTable = () => {
             className="bg-white p-6 rounded shadow-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto"
             ref={modalRef}
           >
-            <h2 className="text-xl font-semibold mb-4">ADMISSIONS APPROVAL</h2>
-            {/* <h3 className="text-xl font-semibold mb-4">Personal Details</h3> */}
-            <hr/><br/>
-            <table width={"100%"}>
-              <tbody>
-                <tr>
-                  <td width={"25%"}><strong>Client ID:</strong></td>
-                  <td>{selectedAdmission.client_id}</td>
-                </tr>
-                <tr>
-                  <td width={"15%"}><strong>Name:</strong></td>
-                  <td>{selectedAdmission.clients?.firstname} {selectedAdmission.clients?.surname} {selectedAdmission?.clients.othernames}</td>
-                </tr>
-                <tr>
-                  <td width={"15%"}><strong>Email:</strong></td>
-                  <td>{selectedAdmission.clients.user?.email}</td>
-                </tr>
-                <tr>
-                  <td width={"15%"}><strong>Phone Number:</strong></td>
-                  <td>{selectedAdmission.clients.user?.phone_number}</td>
-                </tr>
-                <tr>
-                  <td width={"15%"}><strong>Gender:</strong></td>
-                  <td>{selectedAdmission.clients?.gender}</td>
-                </tr>
-              </tbody>
-            </table>
-          {/* <p>Hh{selectedAdmission?.admission_number}</p> */}
-            <form>
-  {/* <button
-    type="button"
-    className="mt-4 px-4 py-2 bg-green-500 text-white rounded"
-    onClick={() => handleApproval(true)}
-  >
-    Approve
-  </button> &nbsp; */}
-  {/* <button
-    type="button"
-    className="mt-4 px-4 py-2 bg-red-500 text-white rounded"
-    onClick={() => handleApproval(false)}
-    style={{backgroundColor:"red", color:"white"}}
-  >
-    Disapprove
-  </button> */}
-</form>
-
-          <span style={{alignItems:"center"}}>
-            <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded" onClick={closeModal}>Close</button>
-          </span>
+            <h2 className="text-lg font-medium mb-4">
+              Admission Approval: {selectedAdmission.admission_number}
+            </h2>
+            <div className="space-y-4">
+              <button
+                className="bg-green-500 text-white px-4 py-2 rounded"
+                onClick={() => handleApproval(true)}
+              >
+                Approve
+              </button>
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded"
+                onClick={() => handleApproval(false)}
+              >
+                Disapprove
+              </button>
+            </div>
+            <button
+              onClick={closeModal}
+              className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
