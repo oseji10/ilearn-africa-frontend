@@ -27,14 +27,14 @@ const router = useRouter();
         if (!token) throw new Error("No auth token found");
 
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/admitted`,
+          `${process.env.NEXT_PUBLIC_API_URL}/certificates`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
         );
-        setAdmissions(response.data.admissions);
+        setAdmissions(response.data.certificates);
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -58,10 +58,10 @@ const router = useRouter();
     const approvalData = {
       admission_number: selectedAdmission.admission_number,
     };
-    if (!confirmReceipt) {
-      alert("Please confirm that you authorize the issuance of this certificate.");
-      // return;
-    }
+    // if (!confirmReceipt) {
+    //   alert("Please confirm that you authorize the issuance of this certificate.");
+    //   // return;
+    // }
   
     try {
       const token = localStorage.getItem("token");
@@ -74,9 +74,9 @@ const router = useRouter();
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
-            mode: "cors",
+            // mode: "cors",
           },
-          body: JSON.stringify(approvalData), // Pass the approval status
+          // body: JSON.stringify(approvalData), // Pass the approval status
         }
       );
   

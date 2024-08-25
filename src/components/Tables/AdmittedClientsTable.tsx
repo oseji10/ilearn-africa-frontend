@@ -212,13 +212,15 @@ const AdmittedClientsTable = () => {
                     <p 
                       className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
                         admission.status === "ADMITTED"
+                          ? "bg-success text-warning"
+                          : admission.status === "COMPLETED"
                           ? "bg-success text-success"
                           : admission.status === "pending"
                             ? "bg-danger text-danger"
                             : ""
                       }`}
                     >
-                      {admission.status === "pending" ? "PENDING" : admission.status === "ADMITTED" ? "ADMITTED" : "N/A"}
+                      {admission.status === "pending" ? "PENDING" : admission.status === "ADMITTED" ? "ADMITTED" : admission.status === "COMPLETED" ? "GRADUATED" : "N/A"}
                     </p>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
