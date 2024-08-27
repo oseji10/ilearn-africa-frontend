@@ -32,7 +32,7 @@ const PaymentVerification = () => {
 
           const data = await response.json();
           if (data.status && data.data.status === "success") {
-            console.log("Payment verified successfully");
+            // console.log("Payment verified successfully");
 
             // Send the verification result to your backend for further processing
             await fetch(`${process.env.NEXT_PUBLIC_API_URL}/store-payment`, {

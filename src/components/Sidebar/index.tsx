@@ -73,7 +73,7 @@ const adminMenu = [
           <FontAwesomeIcon icon={faBookOpen} className="fill-current" size="lg" />
         ),
         label: "Courses",
-        route: "/admission/courses",
+        route: "/courses",
       },
 
       {
@@ -312,7 +312,7 @@ const clientMenu = [
             );
             if (!response.ok) throw new Error("Network response was not ok");
             const data = await response.json();
-            console.log(data)
+            // console.log(data)
             setRole(data); // Assuming the role is returned in `data.role`
           } catch (error) {
             console.error("Error fetching user role:", error);
