@@ -1,10 +1,10 @@
-"use client";
 import dynamic from "next/dynamic";
 import React, { useEffect, useState } from "react";
 import CardDataStats from "../CardDataStats";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCartShopping, faGraduationCap, faMouse, faUsers } from "@fortawesome/free-solid-svg-icons";
 
+// Ensure that these components are needed, if not remove them
 const MapOne = dynamic(() => import("@/components/Maps/MapOne"), {
   ssr: false,
 });
@@ -14,11 +14,11 @@ const ChartThree = dynamic(() => import("@/components/Charts/ChartThree"), {
 });
 
 const ECommerce: React.FC = () => {
-  const [clients, setClients] = useState("");
-  const [applications_count, setApplications] = useState("");
-  const [admitted_count, setAdmissions] = useState("");
-  const [payments_count, setPayments] = useState("");
-  const [role, setRole] = useState("");
+  const [clients, setClients] = useState<string>("");
+  const [applications_count, setApplications] = useState<string>("");
+  const [admitted_count, setAdmissions] = useState<string>("");
+  const [payments_count, setPayments] = useState<string>("");
+  const [role, setRole] = useState<number | null>(null); // Changed to number or null
 
   useEffect(() => {
     const fetchStatistics = async () => {
@@ -68,7 +68,7 @@ const ECommerce: React.FC = () => {
           );
           if (!response.ok) throw new Error("Network response was not ok");
           const data = await response.json();
-          setRole(data.role);
+          setRole(Number(data.role)); // Ensure role is a number
         } catch (error) {
           console.error("Error fetching client ID:", error);
         }
@@ -127,19 +127,10 @@ const ECommerce: React.FC = () => {
       )}
 
       {role === 3 && (
-        // <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
-        //   <CardDataStats title="Total Clients" total={clients} rate="">
-        //     <FontAwesomeIcon
-        //       icon={faUsers}
-        //       className="fill-primary dark:fill-white"
-        //       size="lg"
-        //     />
-        //   </CardDataStats>
-        // </div>
         <p></p>
       )}
 
-      {role !== 1 && role !== 2 && role !== 3 && (
+      {(role !== 1 && role !== 2 && role !== 3) && (
         <div className="text-center text-gray-500">
           <p>Details are not available for your role.</p>
         </div>

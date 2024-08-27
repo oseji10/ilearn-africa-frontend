@@ -1,26 +1,24 @@
-import {  useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import ClickOutside from "@/components/ClickOutside";
 import { useRouter } from 'next/navigation';
-import React, { useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
+import ClickOutside from "@/components/ClickOutside";
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const router = useRouter();
-  const [firstName, setFirstName] = useState ("");
-  const [otherNames, setOtherNames] = useState ("");
-  const [surName, setSurName] = useState ("");
-  const [role, setRole] = useState ("");
-  const [phone_number, setPhoneNumber] = useState("")
+  const [firstName, setFirstName] = useState("");
+  const [otherNames, setOtherNames] = useState("");
+  const [surName, setSurName] = useState("");
+  const [role, setRole] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
 
   const handleLogout = async () => {
     const token = localStorage.getItem('token');
 
     if (!token) {
-      // Redirect to login if no token is found
       router.push('/');
       return;
     }
@@ -34,21 +32,14 @@ const DropdownUser = () => {
         }
       });
 
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
+      if (!response.ok) throw new Error('Network response was not ok');
 
-      // Clear the token from local storage
       localStorage.removeItem('token');
-
-      // Redirect to the login page after logging out
       router.push('/');
     } catch (error) {
       console.error('Logout failed:', error);
-      // Handle logout error (e.g., display error message)
     }
   };
-
 
   useEffect(() => {
     const fetchClientId = async () => {
@@ -67,11 +58,10 @@ const DropdownUser = () => {
           );
           if (!response.ok) throw new Error("Network response was not ok");
           const data = await response.json();
-        //  console.log(data)
-         setFirstName(data.firstname)
-         setOtherNames(data.othernames)
-         setSurName(data.surname)
-         setPhoneNumber(data.phone_number)
+          setFirstName(data.firstname);
+          setOtherNames(data.othernames);
+          setSurName(data.surname);
+          setPhoneNumber(data.phone_number);
         } catch (error) {
           console.error("Error fetching client ID:", error);
         }
@@ -79,7 +69,6 @@ const DropdownUser = () => {
     };
     fetchClientId();
   }, []);
-
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -98,7 +87,6 @@ const DropdownUser = () => {
           );
           if (!response.ok) throw new Error("Network response was not ok");
           const data = await response.json();
-          // console.log(data)
           setRole(data); // Assuming the role is returned in `data.role`
         } catch (error) {
           console.error("Error fetching user role:", error);
@@ -122,28 +110,21 @@ const DropdownUser = () => {
         className="flex items-center gap-4"
         href="#"
       >
-<span className="hidden text-right lg:block">
-  <span className="block text-sm font-medium text-black dark:text-white">
-    {/* Thomas Anree */}
-    {firstName} {otherNames} {surName}<br/>
-    {phone_number} 
-  </span>
-  <span className="block text-xs">
-    {/* UX Designer */}
-    {roleLabels[role] || role}
-  </span>
-</span>
-
+        <span className="hidden text-right lg:block">
+          <span className="block text-sm font-medium text-black dark:text-white">
+            {firstName} {otherNames} {surName}<br/>
+            {phoneNumber}
+          </span>
+          <span className="block text-xs">
+            {roleLabels[role] || role}
+          </span>
+        </span>
 
         <span className="h-12 w-12 rounded-full">
           <Image
             width={112}
             height={112}
-            src={"/images/user/user.png"}
-            style={{
-              width: "auto",
-              height: "auto",
-            }}
+            src="/images/user/user.png"
             alt="User"
           />
         </span>
@@ -160,20 +141,16 @@ const DropdownUser = () => {
             fillRule="evenodd"
             clipRule="evenodd"
             d="M0.410765 0.910734C0.736202 0.585297 1.26384 0.585297 1.58928 0.910734L6.00002 5.32148L10.4108 0.910734C10.7362 0.585297 11.2638 0.585297 11.5893 0.910734C11.9147 1.23617 11.9147 1.76381 11.5893 2.08924L6.58928 7.08924C6.26384 7.41468 5.7362 7.41468 5.41077 7.08924L0.410765 2.08924C0.0853277 1.76381 0.0853277 1.23617 0.410765 0.910734Z"
-            fill=""
           />
         </svg>
       </Link>
 
-      {/* <!-- Dropdown Start --> */}
       {dropdownOpen && (
-        <div
-          className={`absolute right-0 mt-4 flex w-62.5 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark`}
-        >
+        <div className="absolute right-0 mt-4 flex w-62.5 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
           <ul className="flex flex-col gap-5 border-b border-stroke px-6 py-7.5 dark:border-strokedark">
             <li>
               <Link
-                href=""
+                href="/profile"
                 className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
               >
                 <svg
@@ -186,62 +163,42 @@ const DropdownUser = () => {
                 >
                   <path
                     d="M11 9.62499C8.42188 9.62499 6.35938 7.59687 6.35938 5.12187C6.35938 2.64687 8.42188 0.618744 11 0.618744C13.5781 0.618744 15.6406 2.64687 15.6406 5.12187C15.6406 7.59687 13.5781 9.62499 11 9.62499ZM11 2.16562C9.28125 2.16562 7.90625 3.50624 7.90625 5.12187C7.90625 6.73749 9.28125 8.07812 11 8.07812C12.7188 8.07812 14.0938 6.73749 14.0938 5.12187C14.0938 3.50624 12.7188 2.16562 11 2.16562Z"
-                    fill=""
                   />
                   <path
-                    d="M17.7719 21.4156H4.2281C3.5406 21.4156 2.9906 20.8656 2.9906 20.1781V17.0844C2.9906 13.7156 5.7406 10.9656 9.10935 10.9656H12.925C16.2937 10.9656 19.0437 13.7156 19.0437 17.0844V20.1781C19.0094 20.8312 18.4594 21.4156 17.7719 21.4156ZM4.53748 19.8687H17.4969V17.0844C17.4969 14.575 15.4344 12.5125 12.925 12.5125H9.07498C6.5656 12.5125 4.5031 14.575 4.5031 17.0844V19.8687H4.53748Z"
-                    fill=""
+                    d="M17.7719 21.4156H4.2281C3.5406 21.4156 2.9906 20.8656 2.9906 20.1781V17.0844C2.9906 13.7156 5.7406 10.9656 9.10935 10.9656H12.925C16.2937 10.9656 19.0437 13.7156 19.0437 17.0844V20.1781C19.0437 20.8656 18.4937 21.4156 17.7719 21.4156ZM4.2281 18.3481V19.9356H17.7719V18.3481H4.2281Z"
                   />
                 </svg>
-                My Profile
+                Profile
               </Link>
             </li>
-      
-  
-          </ul>
 
-
-
-          <ul className="flex flex-col gap-5 border-b border-stroke px-6 py-7.5 dark:border-strokedark">
             <li>
               <Link
-                href="/profile"
+                href="/"
+                onClick={handleLogout}
                 className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
               >
-               <FontAwesomeIcon icon={faPen} />
-                Change Password
+                <svg
+                  className="fill-current"
+                  width="22"
+                  height="22"
+                  viewBox="0 0 22 22"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M11 18.375C5.25362 18.375 0.625 13.7464 0.625 8.00002C0.625 2.25362 5.25362 -2.375 11 -2.375C16.7464 -2.375 21.375 2.25362 21.375 8.00002C21.375 13.7464 16.7464 18.375 11 18.375ZM11 0.624985C6.16455 0.624985 2.375 4.41454 2.375 8.00002C2.375 11.5855 6.16455 15.375 11 15.375C15.8355 15.375 19.625 11.5855 19.625 8.00002C19.625 4.41454 15.8355 0.624985 11 0.624985Z"
+                  />
+                  <path
+                    d="M12.5761 12.2822C12.1586 12.6997 11.4876 12.6997 11.0701 12.2822L8.8701 10.0822C8.4526 9.66473 8.4526 8.99373 8.8701 8.57622L11.0701 6.37622C11.4876 5.95873 12.1586 5.95873 12.5761 6.37622C12.9936 6.79372 12.9936 7.46473 12.5761 7.88222L11.4458 8.99485H16.875C17.6376 8.99485 18.2476 9.60485 18.2476 10.3674V11.8499C18.2476 12.6125 17.6376 13.2225 16.875 13.2225H11.4458L12.5761 12.2822Z"
+                  />
+                </svg>
+                Logout
               </Link>
             </li>
-      
-  
           </ul>
-
-
-          <button 
-          onClick={handleLogout}
-          className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
-            <svg
-              className="fill-current"
-              width="22"
-              height="22"
-              viewBox="0 0 22 22"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M15.5375 0.618744H11.6531C10.7594 0.618744 10.0031 1.37499 10.0031 2.26874V4.64062C10.0031 5.05312 10.3469 5.39687 10.7594 5.39687C11.1719 5.39687 11.55 5.05312 11.55 4.64062V2.23437C11.55 2.16562 11.5844 2.13124 11.6531 2.13124H15.5375C16.3625 2.13124 17.0156 2.78437 17.0156 3.60937V18.3562C17.0156 19.1812 16.3625 19.8344 15.5375 19.8344H11.6531C11.5844 19.8344 11.55 19.8 11.55 19.7312V17.3594C11.55 16.9469 11.2062 16.6031 10.7594 16.6031C10.3125 16.6031 10.0031 16.9469 10.0031 17.3594V19.7312C10.0031 20.625 10.7594 21.3812 11.6531 21.3812H15.5375C17.2219 21.3812 18.5625 20.0062 18.5625 18.3562V3.64374C18.5625 1.95937 17.1875 0.618744 15.5375 0.618744Z"
-                fill=""
-              />
-              <path
-                d="M6.05001 11.7563H12.2031C12.6156 11.7563 12.9594 11.4125 12.9594 11C12.9594 10.5875 12.6156 10.2438 12.2031 10.2438H6.08439L8.21564 8.07813C8.52501 7.76875 8.52501 7.2875 8.21564 6.97812C7.90626 6.66875 7.42501 6.66875 7.11564 6.97812L3.67814 10.4844C3.36876 10.7938 3.36876 11.275 3.67814 11.5844L7.11564 15.0906C7.25314 15.2281 7.45939 15.3312 7.66564 15.3312C7.87189 15.3312 8.04376 15.2625 8.21564 15.125C8.52501 14.8156 8.52501 14.3344 8.21564 14.025L6.05001 11.7563Z"
-                fill=""
-              />
-            </svg>
-            Log Out
-          </button>
         </div>
       )}
-      {/* <!-- Dropdown End --> */}
     </ClickOutside>
   );
 };
