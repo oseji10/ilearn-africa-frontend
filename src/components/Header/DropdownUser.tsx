@@ -4,6 +4,8 @@ import Image from "next/image";
 import ClickOutside from "@/components/ClickOutside";
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPen } from "@fortawesome/free-solid-svg-icons";
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -12,7 +14,7 @@ const DropdownUser = () => {
   const [otherNames, setOtherNames] = useState ("");
   const [surName, setSurName] = useState ("");
   const [role, setRole] = useState ("");
-
+  const [phone_number, setPhoneNumber] = useState("")
 
   const handleLogout = async () => {
     const token = localStorage.getItem('token');
@@ -69,6 +71,7 @@ const DropdownUser = () => {
          setFirstName(data.firstname)
          setOtherNames(data.othernames)
          setSurName(data.surname)
+         setPhoneNumber(data.phone_number)
         } catch (error) {
           console.error("Error fetching client ID:", error);
         }
@@ -122,7 +125,8 @@ const DropdownUser = () => {
 <span className="hidden text-right lg:block">
   <span className="block text-sm font-medium text-black dark:text-white">
     {/* Thomas Anree */}
-    {firstName} {otherNames} {surName}
+    {firstName} {otherNames} {surName}<br/>
+    {phone_number} 
   </span>
   <span className="block text-xs">
     {/* UX Designer */}
@@ -169,7 +173,7 @@ const DropdownUser = () => {
           <ul className="flex flex-col gap-5 border-b border-stroke px-6 py-7.5 dark:border-strokedark">
             <li>
               <Link
-                href="/profile"
+                href=""
                 className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
               >
                 <svg
@@ -195,6 +199,24 @@ const DropdownUser = () => {
       
   
           </ul>
+
+
+
+          <ul className="flex flex-col gap-5 border-b border-stroke px-6 py-7.5 dark:border-strokedark">
+            <li>
+              <Link
+                href="/profile"
+                className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+              >
+               <FontAwesomeIcon icon={faPen} />
+                Change Password
+              </Link>
+            </li>
+      
+  
+          </ul>
+
+
           <button 
           onClick={handleLogout}
           className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">

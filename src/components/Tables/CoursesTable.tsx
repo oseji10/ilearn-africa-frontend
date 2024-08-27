@@ -28,6 +28,7 @@ const CoursesTable = () => {
   const [formData, setFormData] = useState({
     course_id2: "",
     material_type: "",
+    material_name: "",
     document: "",
   });
 
@@ -187,6 +188,7 @@ const CoursesTable = () => {
       const data = new FormData();
       data.append("course_id2", formData.course_id2);
       data.append("material_type", formData.material_type);
+      data.append("material_name", formData.material_name);
       data.append("document", formData.document); // Appending the file
   
       await axios.post(
@@ -207,6 +209,7 @@ const CoursesTable = () => {
         course_id2: "",
         material_type: "",
         document: "",
+        material_name: "",
       });
     } catch (error) {
       console.error("Error uploading course material:", error);
@@ -322,10 +325,10 @@ const CoursesTable = () => {
 
       {isModalOpen && (
         <div
-          ref={modal1Ref}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
-        >
-          <div className="modal-box bg-white p-4 rounded shadow-md">
+        ref={modal2Ref}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
+      >
+        <div className="modal-box bg-white p-4 rounded shadow-md w-full max-w-lg md:max-w-md">
             <h3 className="font-bold text-lg">Add Course</h3>
             <input
               type="text"
@@ -366,14 +369,14 @@ const CoursesTable = () => {
             </select>
             <div className="modal-action mt-4 flex justify-end">
               <button
-                className="btn"
+                className="mt-4 px-4 py-2 text-black rounded"
                 onClick={closeModal}
                 disabled={isSubmitting}
               >
                 Cancel
               </button>
               <button
-                className="btn btn-primary"
+                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
                 onClick={handleCourseUpload}
                 disabled={isSubmitting}
               >
@@ -388,68 +391,78 @@ const CoursesTable = () => {
         </div>
       )}
 
-      {isModal2Open && (
-        <div
-          ref={modal2Ref}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
-        >
-          <div className="modal-box bg-white p-4 rounded shadow-md">
-            <h3 className="font-bold text-lg">Upload Course Material</h3>
-           
+{isModal2Open && (
+  <div
+    ref={modal2Ref}
+    className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
+  >
+    <div className="modal-box bg-white p-4 rounded shadow-md w-full max-w-lg md:max-w-md">
+      <h3 className="font-bold text-lg">Upload Course Material</h3>
 
-<select
-              name="course_id2"
-              value={formData.course_id2}
-              onChange={handleChange2}
-              className="mt-2 w-full p-2 border rounded"
-            >
-              <option value="">Select Course</option>
-              {courseLists.map((course) => (
-                <option key={course.course_id} value={course.course_id}>
-                  {course.course_name}
-                </option>
-              ))}
-            </select>
-
-            <select
-              name="material_type"
-              value={formData.material_type}
-              onChange={handleChange2}
-              className="mt-2 w-full p-2 border rounded"
-            >
-              <option value="">Select Material Type</option>
-              <option value="Course Material">Course Material</option>
-              <option value="Brochure">Brochure</option>
-            </select>
-            <input
-              type="file"
-              name="document"
+      <select
+        name="course_id2"
+        value={formData.course_id2}
+        onChange={handleChange2}
+        className="mt-2 w-full p-2 border rounded"
+      >
+        <option value="">Select Course</option>
+        {courseLists.map((course) => (
+          <option key={course.course_id} value={course.course_id}>
+            {course.course_name}
+          </option>
+        ))}
+      </select>
+      <input
+              type="text"
+              name="material_name"
+              placeholder="Material Name"
+              value={formData.material_name}
               onChange={handleChange2}
               className="mt-2 w-full p-2 border rounded"
             />
-            <div className="modal-action mt-4 flex justify-end">
-              <button
-                className="btn"
-                onClick={closeModal2}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={handleFileUpload}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <FontAwesomeIcon icon={faSpinner} spin />
-                ) : (
-                  "Submit"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <select
+        name="material_type"
+        value={formData.material_type}
+        onChange={handleChange2}
+        className="mt-2 w-full p-2 border rounded"
+      >
+        <option value="">Select Material Type</option>
+        <option value="Course Material">Course Material</option>
+        <option value="Brochure">Brochure</option>
+      </select>
+
+      <input
+        type="file"
+        name="document"
+        onChange={handleChange2}
+        className="mt-2 w-full p-2 border rounded"
+      />
+
+      <div className="modal-action mt-4 flex justify-end">
+        <button
+          // style={{color: 'black'}}
+          className="mt-4 px-4 py-2 text-black rounded"
+          onClick={closeModal2}
+          disabled={isSubmitting}
+        >
+          Cancel
+        </button>
+        <button
+          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
+          onClick={handleFileUpload}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <FontAwesomeIcon icon={faSpinner} spin />
+          ) : (
+            "Submit"
+          )}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
