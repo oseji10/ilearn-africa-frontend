@@ -13,6 +13,7 @@ const CentersTable = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [openDetails, setDetailsOpen] = useState(false);
   const [centerList, setCenterList] = useState([]);
   const [selectedCenterList, setSelectedCenterList] = useState({
     course_id: "",
@@ -76,6 +77,16 @@ const CentersTable = () => {
     setIsModalOpen(false);
   }, []);
 
+
+  const viewDetails = (center) => {
+    setSelectedCenterList(center); // Set the selected center's details
+    setDetailsOpen(true); // Open the details modal
+  };
+
+  const closeDetails = useCallback(() => {
+    setDetailsOpen(false);
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setSelectedCenterList((prevState) => ({
@@ -119,12 +130,12 @@ const CentersTable = () => {
 
   const columns = [
     {
-      name: "Center",
+      name: "Center ID",
       selector: (row) => row.center_id,
       sortable: true,
     },
     {
-      name: "Center",
+      name: "Center Name",
       selector: (row) => row.center_name,
       sortable: true,
     },
@@ -155,17 +166,17 @@ const CentersTable = () => {
       cell: (row) => (
         <div className="flex space-x-2">
           <button
-            onClick={() => alert(`View details for ${row.course_id}`)}
-            className="px-4 py-2 bg-blue-500 text-white rounded"
-          >
-            <FontAwesomeIcon icon={faEye} />
-          </button>
-          <button
+  onClick={() => viewDetails(row)} // Pass the entire row (center data) to viewDetails
+  className="px-4 py-2 bg-blue-500 text-white rounded"
+>
+  <FontAwesomeIcon icon={faEye} />
+</button>
+          {/* <button
             onClick={() => alert(`Delete ${row.course_id}`)}
             className="px-4 py-2 bg-red-500 text-white rounded"
           >
             <FontAwesomeIcon icon={faTrash} />
-          </button>
+          </button> */}
         </div>
       ),
     },
@@ -220,20 +231,7 @@ const CentersTable = () => {
           >
             <h2 className="text-lg font-semibold mb-4">Center Details</h2>
 
-            {/* <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Center ID:
-              </label>
-              <input
-                type="text"
-                name="center_id"
-                value={selectedCenterList.center_id}
-                onChange={handleChange}
-                className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                required
-              />
-            </div> */}
-
+           
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700">
                 Center Name:
@@ -267,6 +265,44 @@ const CentersTable = () => {
                 ) : (
                   "Submit"
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+
+
+{openDetails && selectedCenterList &&(
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div
+            className="w-full max-w-md bg-white rounded shadow-lg p-6 relative"
+            ref={modalRef}
+          >
+            <h2 className="text-lg font-semibold mb-4">Center Details</h2>
+
+           
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">
+                <b>Center ID:</b>
+              </label>
+              {selectedCenterList.center_id}
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">
+               <b>Center Name:</b>
+              </label>
+              {selectedCenterList.center_name}
+            </div>
+
+            <div className="flex justify-end">
+            <button
+                onClick={closeDetails}
+                className="mr-2 px-4 py-2 bg-gray-500 text-black rounded"
+              >
+                Cancel
               </button>
             </div>
           </div>
