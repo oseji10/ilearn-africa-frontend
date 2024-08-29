@@ -115,20 +115,19 @@ const MyCoursesAfterPayment = () => {
   const handlePaymentUpdate = useCallback(
     async (event) => {
       event.preventDefault();
-
-      // Create a FormData object to handle file upload and form submission together
+  
       const formData = new FormData();
       formData.append("file", file);
       formData.append("client_id", clientId);
       formData.append("course_id", selectedCourse.course_id);
-
+  
       try {
         setIsSubmitting(true);
         const token = localStorage.getItem("token");
         if (!token) {
           throw new Error("No auth token found");
         }
-        
+  
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/proof-of-payment`,
           {
@@ -139,7 +138,7 @@ const MyCoursesAfterPayment = () => {
             body: formData,
           }
         );
-
+  
         if (response.ok) {
           setError(null);
           closeModal();
@@ -150,11 +149,12 @@ const MyCoursesAfterPayment = () => {
         setError(error.message);
       } finally {
         setIsSubmitting(false);
-        router.push('/client-dashboard/my-payments/successful-upload')
+        router.push('/client-dashboard/my-payments/successful-upload');
       }
     },
-    [file, formData.client_id, selectedCourse, closeModal]
+    [file, clientId, selectedCourse, closeModal, router]
   );
+  
 
   if (loading) {
     return <p>Loading...</p>;

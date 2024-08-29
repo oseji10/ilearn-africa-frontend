@@ -2,11 +2,12 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faPrint, faPlus, faDownload } from "@fortawesome/free-solid-svg-icons";
+import { faEye, faPrint, faPlus, faDownload, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { format } from 'date-fns';
 import styles from "./spinner.module.css";
 import Router from "next/navigation";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const PendingPaymentsTable = () => {
   const [payments, setPayments] = useState([]);
@@ -29,6 +30,10 @@ const PendingPaymentsTable = () => {
   const [selectedCourse, setSelectedCourse] = useState("");
   const [amount, setAmount] = useState("");
   const [loadingClientId, setLoadingClientId] = useState(null);
+  const [link, setLink] = useState("");
+  const [otherReference, setOtherReference] = useState("");
+  const [proof, setProof] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const router = useRouter();
 
@@ -38,6 +43,10 @@ const PendingPaymentsTable = () => {
 
   const handleTransactionReferenceChange = useCallback((e) => {
     setTransactionReference(e.target.value);
+  }, []);
+
+  const handleLinkChange = useCallback((e) => {
+    setLink(e.target.value);
   }, []);
 
   const handleConfirmReceiptChange = useCallback((e) => {
@@ -76,7 +85,8 @@ const PendingPaymentsTable = () => {
           }
         );
         setPayments(response.data.payments);
-        // console.log(response.data.payments);
+        setOtherReference(response.data.payments.other_reference);
+        console.log(response.data);
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -105,9 +115,39 @@ const PendingPaymentsTable = () => {
       }
     };
 
+
+
+    const fetchProof = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error("No auth token found");
+        }
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/proof-of-payment/${payment.other_reference}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setProof(response.data);
+        console.log("hi")
+      } catch (err) {
+        console.error("Failed to fetch courses:", err.message);
+      }
+    };
+  
     fetchPayments();
     fetchCourses();
-  }, []);
+    fetchProof();
+    router.refresh()
+  }, [router, otherReference]);
+
+
+  
+
+
 
   const handleEyeClick = useCallback((payment) => {
     setSelectedPayment(payment);
@@ -142,97 +182,97 @@ const PendingPaymentsTable = () => {
     setIsClientModalOpen(true);
   }, []);
 
-  const handleClientSubmit = useCallback(
-    async (event) => {
-      event.preventDefault();
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("No auth token found");
-        }
+  // const handleClientSubmit = useCallback(
+  //   async (event) => {
+  //     event.preventDefault();
+  //     try {
+  //       const token = localStorage.getItem("token");
+  //       if (!token) {
+  //         throw new Error("No auth token found");
+  //       }
 
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/clients/${clientId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+  //       const response = await axios.get(
+  //         `${process.env.NEXT_PUBLIC_API_URL}/clients/${clientId}`,
+  //         {
+  //           headers: {
+  //             Authorization: `Bearer ${token}`,
+  //           },
+  //         }
+  //       );
 
-        setClientDetails(response.data.client[0]);
-        setIsClientModalOpen(false);
-        setIsPaymentModalOpen(true);
-      } catch (err) {
-        console.error("Failed to fetch client details:", err.message);
-        setError("Failed to fetch client details. Please try again.");
-      }
-    },
-    [clientId]
-  );
+  //       setClientDetails(response.data.client[0]);
+  //       setIsClientModalOpen(false);
+  //       setIsPaymentModalOpen(true);
+  //     } catch (err) {
+  //       console.error("Failed to fetch client details:", err.message);
+  //       setError("Failed to fetch client details. Please try again.");
+  //     }
+  //   },
+  //   [clientId]
+  // );
 
-  const handlePaymentSubmit = useCallback(
-    async (event) => {
-      event.preventDefault();
+  // const handlePaymentSubmit = useCallback(
+  //   async (event) => {
+  //     event.preventDefault();
 
-      const paymentData = {
-        client_id: clientDetails.client_id,
-        course_id: selectedCourse,
-        payment_method: paymentMethod,
-        transaction_reference: transactionReference,
-        amount: amount,
+  //     const paymentData = {
+  //       client_id: clientDetails.client_id,
+  //       course_id: selectedCourse,
+  //       payment_method: paymentMethod,
+  //       transaction_reference: transactionReference,
+  //       amount: amount,
         
-      };
+  //     };
 
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("No auth token found");
-        }
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/manual-payment`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(paymentData),
-          }
-        );
+  //     try {
+  //       const token = localStorage.getItem("token");
+  //       if (!token) {
+  //         throw new Error("No auth token found");
+  //       }
+  //       const response = await fetch(
+  //         `${process.env.NEXT_PUBLIC_API_URL}/manual-payment`,
+  //         {
+  //           method: "POST",
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //             Authorization: `Bearer ${token}`,
+  //           },
+  //           body: JSON.stringify(paymentData),
+  //         }
+  //       );
 
-        if (response.ok) {
-          setError(null);
-          closeModal();
-        } else {
-          throw new Error("Payment submission failed");
-        }
-      } catch (error) {
-        setError(error.message);
-      }
-    },
-    [
-      clientDetails,
-      selectedCourse,
-      paymentMethod,
-      transactionReference,
-      amount,
-      closeModal,
-    ]
-  );
+  //       if (response.ok) {
+  //         setError(null);
+  //         closeModal();
+  //       } else {
+  //         throw new Error("Payment submission failed");
+  //       }
+  //     } catch (error) {
+  //       setError(error.message);
+  //     }
+  //   },
+  //   [
+  //     clientDetails,
+  //     selectedCourse,
+  //     paymentMethod,
+  //     transactionReference,
+  //     amount,
+  //     closeModal,
+  //   ]
+  // );
 
   const confirmPayment = useCallback(
     async (event) => {
       event.preventDefault();
-
+      setIsSubmitting(true);
       if (!confirmReceipt) {
-        setError("You must confirm receipt of the payment.");
+        setError("You must confirm receipt of this payment.");
         return;
       }
 
       const paymentData = {
         client_id: selectedPayment.client_id,
-        transaction_reference: transactionReference,
+        // transaction_reference: transactionReference,
         other_reference: selectedPayment.other_reference
       };
 
@@ -262,8 +302,10 @@ const PendingPaymentsTable = () => {
       } catch (error) {
         setError(error.message);
       }
+      setIsSubmitting(false);
+      router.refresh()
     },
-    [selectedPayment, transactionReference, confirmReceipt, closeModal]
+    [selectedPayment, transactionReference, confirmReceipt, router, closeModal]
   );
 
   if (loading) {
@@ -347,6 +389,8 @@ const PendingPaymentsTable = () => {
                       }`}>{payment.status === 0 ? "PENDING" : payment.status === 1 ? "PAID" : ""}</p>
                   </td>
                   <td className="whitespace-nowrap px-4 py-4">
+
+                    
                     <button
                       className="px-4 py-2 bg-green-500 text-white rounded"
                       onClick={() => {
@@ -356,6 +400,8 @@ const PendingPaymentsTable = () => {
                     >
                       <FontAwesomeIcon icon={faEye} /> Confirm Payment
                     </button>
+
+                    
                   </td>
                 </tr>
               ))}
@@ -364,111 +410,26 @@ const PendingPaymentsTable = () => {
         </div>
       </div>
 
-      {isClientModalOpen && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
-          <div className="bg-white p-6 rounded shadow-lg" ref={modalRef}>
-            <h2 className="text-xl font-semibold mb-4">Search Client</h2>
-            <form onSubmit={handleClientSubmit}>
-              <label className="block mb-2">Client ID:</label>
-              <input
-                type="text"
-                value={clientId}
-                onChange={(e) => setClientId(e.target.value)}
-                className="border rounded px-3 py-2 w-full mb-4"
-                required
-              />
-              <button
-                type="submit"
-                className="bg-blue-500 text-white px-4 py-2 rounded"
-              >
-                Search
-              </button>
-            </form>
-            {error && <p className="text-red-500 mt-4">{error}</p>}
-            <button
-              onClick={closeModal}
-              className="bg-gray-500 text-white px-4 py-2 rounded mt-4"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+      
 
-      {isPaymentModalOpen && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
-          <div className="bg-white p-6 rounded shadow-lg" ref={modalRef}>
-            <h2 className="text-xl font-semibold mb-4">Payment Details</h2>
-            <form onSubmit={handlePaymentSubmit}>
-              <label className="block mb-2">Course:</label>
-              <select
-                value={selectedCourse}
-                onChange={handleCourseChange}
-                className="border rounded px-3 py-2 w-full mb-4"
-                required
-              >
-                <option value="">Select a course</option>
-                {courses.map((course) => (
-                  <option key={course.course_id} value={course.course_id}>
-                    {course.course_name}
-                  </option>
-                ))}
-              </select>
-              <label className="block mb-2">Amount:</label>
-              <input
-                type="text"
-                value={amount}
-                readOnly
-                className="border rounded px-3 py-2 w-full mb-4"
-              />
-              <label className="block mb-2">Payment Method:</label>
-              <input
-                type="text"
-                value={paymentMethod}
-                onChange={handlePaymentMethodChange}
-                className="border rounded px-3 py-2 w-full mb-4"
-                required
-              />
-              <label className="block mb-2">Transaction Reference:</label>
-              <input
-                type="text"
-                value={transactionReference}
-                onChange={handleTransactionReferenceChange}
-                className="border rounded px-3 py-2 w-full mb-4"
-                required
-              />
-              <button
-                type="submit"
-                className="bg-blue-500 text-white px-4 py-2 rounded"
-              >
-                Submit Payment
-              </button>
-            </form>
-            {error && <p className="text-red-500 mt-4">{error}</p>}
-            <button
-              onClick={closeModal}
-              className="bg-gray-500 text-white px-4 py-2 rounded mt-4"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+      
 
-      {isConfirmPaymentModalOpen && (
+      {isConfirmPaymentModalOpen && selectedPayment && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
           <div className="bg-white p-6 rounded shadow-lg" ref={modalRef}>
             <h2 className="text-xl font-semibold mb-4">Confirm Payment</h2>
             <form onSubmit={confirmPayment}>
-              <label className="block mb-2">Transaction Reference:</label>
-              <input
-                type="text"
-                value={transactionReference}
-                onChange={handleTransactionReferenceChange}
-                className="border rounded px-3 py-2 w-full mb-4"
-                required
-              />
+              
+            <Link
+                    href={`${process.env.NEXT_PUBLIC_DOWNLOAD_LINK}${selectedPayment.proof.file_path}`}
+                    className="text-sm text-primary hover:underline"
+                    target="_blank"
+                  >
+                    View receipt
+                  </Link>
               <div className="flex items-center mb-4">
+               
+                
                 <input
                   type="checkbox"
                   checked={confirmReceipt}
@@ -476,14 +437,30 @@ const PendingPaymentsTable = () => {
                   className="mr-2"
                   required
                 />
-                <label className="text-gray-700">Confirm receipt of payment</label>
+                <label className="text-gray-700">I confirm that I have received this payment.</label>
               </div>
-              <button
+              {/* <button
                 type="submit"
                 className="bg-blue-500 text-white px-4 py-2 rounded"
               >
                 Confirm Payment
-              </button>
+              </button> */}
+
+              <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`mt-4 px-4 py-2 bg-blue-500 text-white rounded ${
+                isSubmitting ? "cursor-not-allowed opacity-50" : ""
+              }`}
+            >
+              {isSubmitting ? (
+                <span>
+                  Please wait... <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
+                </span>
+              ) : (
+                'Confirm Payment'
+              )}
+            </button>
             </form>
             {error && <p className="text-red-500 mt-4">{error}</p>}
             <button

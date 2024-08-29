@@ -145,7 +145,7 @@ const AdmittedClientsTable = () => {
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <div className="flex items-center space-x-3.5">
                       
-                    {admission.status === "COMPLETED" && (
+                    {admission.status === "ADMITTED" && admission.status === "COMPLETED" && (
                       <button
     disabled={isDownloading}
     className="px-4 py-2 bg-green-500 text-white rounded"

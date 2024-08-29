@@ -226,14 +226,14 @@ const clientMenu = [
           },
         ],
       },
-      // {
-      //   icon: (
-      //     <FontAwesomeIcon icon={faUserGraduate} className="fill-current" size="lg" />
-      //   ),
-      //   label: "My Admissions",
-      //   route: "#",
+      {
+        icon: (
+          <FontAwesomeIcon icon={faUserGraduate} className="fill-current" size="lg" />
+        ),
+        label: "My Admissions",
+        route: "/client-dashboard/my-admissions",
 
-      // },
+      },
 
 
       {

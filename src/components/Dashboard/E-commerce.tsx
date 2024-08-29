@@ -1,3 +1,4 @@
+"use client"
 import dynamic from "next/dynamic";
 import React, { useEffect, useState } from "react";
 import CardDataStats from "../CardDataStats";
@@ -5,13 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCartShopping, faGraduationCap, faMouse, faUsers } from "@fortawesome/free-solid-svg-icons";
 
 // Ensure that these components are needed, if not remove them
-const MapOne = dynamic(() => import("@/components/Maps/MapOne"), {
-  ssr: false,
-});
 
-const ChartThree = dynamic(() => import("@/components/Charts/ChartThree"), {
-  ssr: false,
-});
 
 const ECommerce: React.FC = () => {
   const [clients, setClients] = useState<string>("");

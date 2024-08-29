@@ -858,8 +858,13 @@ const uploadFile = async (file) => {
           {previewUrl && (
             <div className="mt-5">
               {file && file.type.startsWith('image/') ? (
-                <img
-                  src={previewUrl}
+                // <img
+                //   src={previewUrl}
+                //   alt="Preview"
+                //   className="max-w-full h-auto"
+                // />
+                <Image 
+                src={previewUrl}
                   alt="Preview"
                   className="max-w-full h-auto"
                 />
