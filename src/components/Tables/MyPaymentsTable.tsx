@@ -49,7 +49,7 @@ const MyPaymentsTable = () => {
           }
         );
         setPayments(response.data.payments);
-        console.log(response.data)
+        // console.log(response.data)
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -138,6 +138,55 @@ const MyPaymentsTable = () => {
     setIsSubmitting(false);
   };
 
+  const downloadReceipt = async (event, transaction_reference) => {
+    // console.log(admissionNumber);
+    event.preventDefault();
+    setIsDownloading(true);
+    setActiveTransaction(transaction_reference);
+
+    const transactionData = {
+      transaction_reference: transaction_reference
+    };
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No auth token found");
+    }
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/generate-receipt`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          mode: "cors",
+          body: JSON.stringify(transactionData)
+        }
+      );
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `receipt-${transaction_reference}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+        setActiveTransaction(null);
+      } else {
+        console.error("Failed to download the receipt", response.statusText);
+      }
+    } catch (error) {
+      console.error("An error occurred while downloading the receipt", error);
+    }
+    finally {
+      setIsDownloading(false); // Hide spinner
+    }
+  };
 
 
   return (
@@ -229,6 +278,12 @@ const MyPaymentsTable = () => {
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <div className="flex items-center space-x-3.5">
                     {payment.status === 1 && (
+                      <>
+                      <FontAwesomeIcon icon={faDownload} 
+                      // onClick={downloadReceipt}
+                      onClick={(event) => downloadReceipt(event, payment.transaction_reference)}
+                      />
+                      
   <button
     disabled={isSubmitting}
     className="px-4 py-2 bg-green-500 text-white rounded"
@@ -244,6 +299,7 @@ const MyPaymentsTable = () => {
       </span>
     )}
   </button>
+  </>
 )}
 
                     </div>

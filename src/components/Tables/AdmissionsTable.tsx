@@ -1,32 +1,39 @@
 "use client";
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import axios from 'axios';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDownload, faEye } from '@fortawesome/free-solid-svg-icons';
-import Modal from 'react-modal';
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import axios from "axios";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye } from "@fortawesome/free-solid-svg-icons";
+import DataTable from "react-data-table-component";
+import { TextField } from "@mui/material";
 
 const AdmissionsTable = () => {
   const [admissions, setAdmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedAdmission, setSelectedAdmission] = useState(null);
-  const [admissionNumber, setAdmissionNumber] = useState("");
+  const [search, setSearch] = useState("");
+  const [filteredAdmissions, setFilteredAdmissions] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const modalRef = useRef(null);
+
   useEffect(() => {
     const fetchAdmissions = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         if (!token) {
-          throw new Error('No auth token found');
+          throw new Error("No auth token found");
         }
 
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/admissions`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        // console.log(response.data.admissions[0].admission_number)
-
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/admissions`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         setAdmissions(response.data.admissions);
+        setFilteredAdmissions(response.data.admissions);
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -37,246 +44,176 @@ const AdmissionsTable = () => {
     fetchAdmissions();
   }, []);
 
-  const handleEyeClick = (admission) => {
+  useEffect(() => {
+    const filteredData = admissions.filter(
+      (admission) =>
+        (admission.firstname?.toLowerCase() || "").includes(search.toLowerCase()) ||
+        (admission.surname?.toLowerCase() || "").includes(search.toLowerCase()) ||
+        (admission.othernames?.toLowerCase() || "").includes(search.toLowerCase()) ||
+        (admission.email?.toLowerCase() || "").includes(search.toLowerCase()) ||
+        (admission.phone?.toLowerCase() || "").includes(search.toLowerCase())
+    );
+    setFilteredAdmissions(filteredData);
+  }, [search, admissions]);
+
+  const handleEyeClick = useCallback((admission) => {
     setSelectedAdmission(admission);
-  };
-
-  const handleAdmissionNumberChange = useCallback((e) => {
-    setAdmissionNumber(e.target.value);
   }, []);
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setSelectedAdmission(null);
-  };
-
-  const modalRef = useRef();
-
-  const handleClickOutside = useCallback((event) => {
-    if (modalRef.current && !modalRef.current.contains(event.target)) {
-      closeModal();
-    }
   }, []);
+
+  const handleClickOutside = useCallback(
+    (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        closeModal();
+      }
+    },
+    [closeModal]
+  );
 
   useEffect(() => {
     if (selectedAdmission) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     } else {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     }
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [selectedAdmission, handleClickOutside]);
 
+  const handleSelectRow = (id) => {
+    setSelectedRows((prev) =>
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+    );
+  };
 
+  const handleSelectAll = (e) => {
+    const isChecked = e.target.checked;
+    setSelectedRows(isChecked ? admissions.map((row) => row.id) : []);
+  };
 
-
-  const handleApproval = async (approved) => {
+  const handleBulkAction = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No auth token found');
-      }
-  
-      // const admissionNumber = selectedAdmission.admission_number;
-  
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admissions/${selectedAdmission.admission_number}`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        // body: JSON.stringify({
-        //   admissionNumber,
-        //   approved,
-        // }),
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/admit-all`, {
+        ids: selectedRows,
       });
-  
-      if (response.ok) {
-        alert(`Admission ${approved ? 'approved' : 'disapproved'} successfully`);
-        closeModal();
-      } else {
-        alert('There was an issue processing the admission');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred');
-    }
-  };
-  
-  const handleDownloadClick = (event) => {
-    const button = event.currentTarget;
-    const admissionNumber = button.dataset.admissionNumber;
-    downloadLetter(admissionNumber);
-  };
-  const downloadLetter = async (admissionNumber) => {
- 
-    console.log(admissionNumber)
-     const token = localStorage.getItem("token");
-    if (!token) {
-      throw new Error("No auth token found");
-    }
-  
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admissions/admission_letter?admission_number=${admissionNumber}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-  
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", `admission_letter-${admissionNumber}.pdf`);
-        document.body.appendChild(link);
-        link.click();
-        link.parentNode.removeChild(link);
-      } else {
-        console.error("Failed to download the admission letter", response.statusText);
-      }
-    } catch (error) {
-      console.error("An error occurred while downloading the admission letter", error);
+      // Refresh data or handle success
+    } catch (err) {
+      // Handle error
+      console.error(err.message);
     }
   };
 
-
+  const columns = [
+    {
+      name: <input type="checkbox" onChange={handleSelectAll} />,
+      cell: (row) => (
+        <input
+          type="checkbox"
+          checked={selectedRows.includes(row.id)}
+          onChange={() => handleSelectRow(row.id)}
+        />
+      ),
+      sortable: false,
+    },
+    {
+      name: "Client ID",
+      selector: (row) => row.client_id || "N/A",
+      sortable: true,
+    },
+    {
+      name: "Name",
+      selector: (row) =>
+        `${row.clients?.firstname || "N/A"} ${row.clients?.surname || "N/A"} ${row.clients?.othernames || "N/A"}`,
+      sortable: true,
+    },
+    {
+      name: "Course Applied",
+      selector: (row) =>
+        `${row.payments?.courses?.course_id || "N/A"} ${row.payments?.courses?.course_name || "N/A"}`,
+      sortable: true,
+    },
+    {
+      name: "Status",
+      selector: (row) => (
+        <p
+          className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
+            row.status === "ADMITTED"
+              ? "bg-success text-success"
+              : row.status === "pending"
+              ? "bg-warning text-warning"
+              : ""
+          }`}
+        >
+          {row.status === "ADMITTED"
+            ? "Admitted"
+            : row.status === "pending"
+            ? "Pending"
+            : "N/A"}
+        </p>
+      ),
+      sortable: true,
+    },
+    {
+      name: "Actions",
+      cell: (row) => (
+        <div className="flex items-center space-x-3.5">
+          <button className="hover:text-primary" onClick={() => handleEyeClick(row)}>
+            <FontAwesomeIcon icon={faEye} className="fill-current" size="sm" /> View Admission
+          </button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div>
-      <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
-        <div className="max-w-full overflow-x-auto">
-          <table className="w-full table-auto">
-            <thead>
-              <tr className="bg-gray-2 text-left dark:bg-meta-4">
-                <th className="min-w-[220px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
-                  Client ID
-                </th>
-                <th className="min-w-[220px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
-                  Name
-                </th>
-                <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
-                  Course Registered
-                </th>
-                <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
-                  Status
-                </th>
-                <th className="px-4 py-4 font-medium text-black dark:text-white">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {admissions.map((admission, key) => (
-                <tr key={key}>
-                  <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
-                    <h5 className="font-medium text-black dark:text-white">
-                      {admission.client_id} 
-                    </h5>
-                    </td>
-                  {/* <input type='text' value={admission.admission_number} id='admission_number' /> */}
-                  <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
-                    <h5 className="font-medium text-black dark:text-white">
-                      {admission.clients?.firstname} {admission.clients?.surname} {admission.clients?.othernames}
-                    </h5>
-                  </td>
-                  <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    <p className="text-black dark:text-white">
-                      {admission.payments.courses?.course_id} - {admission.payments.courses?.course_name}
-                    </p>
-                  </td>
-                  <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    <p 
-                      className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
-                        admission.status === "ADMITTED"
-                          ? "bg-success text-success"
-                          : admission.status === "pending"
-                            ? "bg-danger text-danger"
-                            : ""
-                      }`}
-                    >
-                      {admission.status === "pending" ? "PENDING" : admission.status === "ADMITTED" ? "ADMITTED" : "N/A"}
-                    </p>
-                  </td>
-                  <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    <div className="flex items-center space-x-3.5">
-                      <button className="hover:text-primary" onClick={() => handleEyeClick(admission)}>
-                        <FontAwesomeIcon icon={faEye} className="fill-current" size="sm" />
-                      </button>
-                    
-
-                      
-
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <div className="flex items-center mb-4">
+        <TextField
+          label="Search"
+          variant="outlined"
+          size="small"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+&nbsp; &nbsp;
+<button
+          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded"
+          onClick={handleBulkAction}
+        >
+          Admit Selected
+        </button>
       </div>
 
-      {selectedAdmission && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div
-            className="bg-white p-6 rounded shadow-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto"
-            ref={modalRef}
-          >
-            <h2 className="text-xl font-semibold mb-4">ADMISSIONS APPROVAL</h2>
-            {/* <h3 className="text-xl font-semibold mb-4">Personal Details</h3> */}
-            <hr/><br/>
-            <table width={"100%"}>
-              <tbody>
-                <tr>
-                  <td width={"25%"}><strong>Client ID:</strong></td>
-                  <td>{selectedAdmission.client_id}</td>
-                </tr>
-                <tr>
-                  <td width={"15%"}><strong>Name:</strong></td>
-                  <td>{selectedAdmission.clients?.firstname} {selectedAdmission.clients?.surname} {selectedAdmission?.clients.othernames}</td>
-                </tr>
-                <tr>
-                  <td width={"15%"}><strong>Email:</strong></td>
-                  <td>{selectedAdmission.clients.user?.email}</td>
-                </tr>
-                <tr>
-                  <td width={"15%"}><strong>Phone Number:</strong></td>
-                  <td>{selectedAdmission.clients.user?.phone_number}</td>
-                </tr>
-                <tr>
-                  <td width={"15%"}><strong>Gender:</strong></td>
-                  <td>{selectedAdmission.clients?.gender}</td>
-                </tr>
-              </tbody>
-            </table>
-          {/* <p>Hh{selectedAdmission?.admission_number}</p> */}
-            <form>
-  <button
-    type="button"
-    className="mt-4 px-4 py-2 bg-green-500 text-white rounded"
-    onClick={() => handleApproval(true)}
-  >
-    Approve
-  </button> &nbsp;
-  {/* <button
-    type="button"
-    className="mt-4 px-4 py-2 bg-red-500 text-white rounded"
-    onClick={() => handleApproval(false)}
-    style={{backgroundColor:"red", color:"white"}}
-  >
-    Disapprove
-  </button> */}
-</form>
+      {/* <div className="mt-4">
+      
+      </div> */}
 
-          <span style={{alignItems:"center"}}>
-            <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded" onClick={closeModal}>Close</button>
-          </span>
+      <DataTable
+        columns={columns}
+        data={filteredAdmissions}
+        progressPending={loading}
+        pagination
+        paginationPerPage={10}
+        paginationRowsPerPageOptions={[10, 20, 30]}
+      />
+
+     
+
+      {selectedAdmission && (
+        <div ref={modalRef} className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg">
+            <h2 className="text-lg font-bold mb-4">Admission Details</h2>
+            <p><strong>Client ID:</strong> {selectedAdmission.client_id}</p>
+            <p><strong>Name:</strong> {selectedAdmission.clients?.firstname} {selectedAdmission.clients?.surname}</p>
+            <p><strong>Course Applied:</strong> {selectedAdmission.payments?.courses?.course_name}</p>
+            <p><strong>Status:</strong> {selectedAdmission.status}</p>
+            <button className="mt-4 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded" onClick={closeModal}>
+              Close
+            </button>
           </div>
         </div>
       )}

@@ -45,7 +45,8 @@ const PaymentVerification = () => {
               body: JSON.stringify({
                 transaction_reference: reference,
                 status: 1, // Store 1 in the database for a successful payment
-                amount: `${data.data.amount}`,
+                amount: (data.data.amount / 100),
+
                 course_id: courseId,
                 payment_method: "PAYSTACK",
                 payment_gateway: "PAYSTACK",
@@ -53,14 +54,15 @@ const PaymentVerification = () => {
             });
 
             // Redirect user to the course page or show success message
-            router.push(`/payments/success?status=success`);
+            router.push(`/client-dashboard/my-payments/success?status=success`);
           } else {
-            console.error("Payment verification failed");
-            router.push(`/payments/failure?status=failed`);
+            // console.error("Payment verification failed");
+            router.push(`/client-dashboard/my-payments/failure?status=failed`);
           }
         } catch (error) {
-          console.error("Payment verification failed:", error);
-          router.push(`/course/${courseId}?status=failed`);
+          // console.error("Payment verification failed:", error);
+          // router.push(`/course/${courseId}?status=failed`);
+          router.push(`/client-dashboard/my-payments/failure?status=failed`);
         }
       }
     };

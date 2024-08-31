@@ -197,7 +197,7 @@ const SignIn: React.FC = () => {
               </span>
               {/* <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-300">
               Don't have an account?{" "} */}
-              <a className="text-primary hover:underline" href="">
+              <a className="text-primary hover:underline" href="/auth/forgot-password">
                Forgot password?
               </a>
             {/* </p> */}

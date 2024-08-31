@@ -12,6 +12,8 @@ export const metadata: Metadata = {
     // "This is Next.js Profile page for TailAdmin - Next.js Tailwind CSS Admin Dashboard Template",
 };
 
+
+
 const Profile = () => {
   return (
     <DefaultLayout>
@@ -34,22 +36,17 @@ const Profile = () => {
                           /> <strong>Payment Successful!</strong>
               </h2>
               <p className="font-medium">What do you want to do next?</p>
-              <div className="mx-auto mb-5.5 mt-4.5 grid max-w-150 grid-cols-3 rounded-md border border-stroke py-2.5 shadow-1 dark:border-strokedark dark:bg-[#37404F]">
+              <div className="mx-auto mb-5.5 mt-4.5 grid max-w-150 grid-cols-2 rounded-md border border-stroke py-2.5 shadow-1 dark:border-strokedark dark:bg-[#37404F]">
                 <div className="flex flex-col items-center justify-center gap-1 border-r border-stroke px-4 dark:border-strokedark xsm:flex-row">
                   <span className="font-semibold text-black dark:text-white">
-                    <a href="">Print Receipt</a>
+                    <a href="/client-dashboard/my-payments">Print Receipt</a>
                   </span>
                   
                 </div>
-                <div className="flex flex-col items-center justify-center gap-1 border-r border-stroke px-4 dark:border-strokedark xsm:flex-row">
-                  <span className="font-semibold text-black dark:text-white">
-                    Check Admission Status
-                  </span>
-                 
-                </div>
+               
                 <div className="flex flex-col items-center justify-center gap-1 px-4 xsm:flex-row">
                   <span className="font-semibold text-black dark:text-white">
-                    Download Course Material
+                  <a href="/client-dashboard/my-courses">Download Course Material</a>
                   </span>
                   
                 </div>

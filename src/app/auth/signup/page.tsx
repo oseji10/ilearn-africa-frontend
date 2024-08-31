@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  faCheck,
   faEnvelope,
   faPhone,
   faSpinner,
@@ -22,6 +23,7 @@ const SignUp: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [progress, setProgress] = useState(100);
   const [success, setSuccess] = useState("");
+  const [successMessage, setSuccessMessage] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,10 +48,17 @@ const SignUp: React.FC = () => {
     );
 
     if (response.ok) {
-      setSuccess(
-        "Signup was successful! Please check your email for login details."
-      );
+      const data = await response.json();
+      setSuccess(data.message);
+      setSuccessMessage(data.message);
+      setEmail('');
+    setPhoneNumber('');
+    setFirstName('');
+    setSurName('');
+    setOtherNames('');
+    const timer = setTimeout(() => {
       router.push("/auth/signin");
+    }, 10 * 1000);
     } else {
       const data = await response.json();
       setError(data.message);
@@ -79,16 +88,18 @@ const SignUp: React.FC = () => {
 
       return () => clearInterval(timer);
     }
-  }, [error, success]);
+  }, [error, success, successMessage]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-red-100 relative ">
       {/* Success Popup */}
       {success && (
-        <div className="fixed right-4 top-4 flex h-24 w-80 flex-col rounded-md bg-green-500 p-4 text-white shadow-lg">
+        <div className="fixed right-4 top-4 flex h-35 w-80 flex-col rounded-md bg-green-500 p-4 text-white shadow-lg">
           <div className="mb-2 flex items-start">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-700">
+            {/* <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-700"> */}
+            <div className="flex-shrink-0">
               {/* Success Icon */}
+              <FontAwesomeIcon icon={faCheck} size="2x" />
             </div>
             <div className="ml-3">
               <h5 className="text-lg font-semibold">Success</h5>
@@ -107,10 +118,13 @@ const SignUp: React.FC = () => {
         </div>
       )}
 
+{/* {success && (
+  <div className="relative w-full rounded-lg p-4 flex md:items-center items-start space-x-4 rtl:space-x-reverse bg-success bg-opacity-10 border-current text-success"><div className="text-sm [&amp;_p]:leading-relaxed grow">{success}</div></div>
+)} */}
 
       {/* Error Popup */}
       {error && (
-        <div className="fixed top-4 right-4 flex items-start bg-red-500 text-white p-4 rounded-lg shadow-lg z-50 w-80">
+        <div style={{background: 'red'}} className="fixed top-4 right-4 flex items-start bg-red-500 text-white p-4 rounded-lg shadow-lg z-50 w-80">
           <div className="flex-shrink-0">
             <FontAwesomeIcon icon={faUser} size="2x" />
           </div>
@@ -127,9 +141,15 @@ const SignUp: React.FC = () => {
         </div>
       )}
 
+{successMessage && (
+  <p className="bg-green-100 text-black p-4 rounded-md sm:text-sm md:text-base lg:text-lg">{successMessage}</p>
+)}
+
       <div className="w-full max-w-4xl bg-white rounded-lg shadow-lg p-6 flex flex-col md:flex-row">
         {/* Left Side - Logo and Description */}
+        
         <div className="md:w-1/2 flex flex-col items-center justify-center p-4">
+
           {/* <Link href="/"> */}
             <a href="/">
               <Image
@@ -247,17 +267,20 @@ const SignUp: React.FC = () => {
 
             {/* Buttons */}
             <div className="flex flex-col space-y-4">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full flex items-center justify-center rounded-lg bg-primary text-white py-2 hover:bg-primary-dark disabled:opacity-50"
-              >
-                {isSubmitting ? (
-                  <FontAwesomeIcon icon={faSpinner} spin />
-                ) : (
-                  "Sign Up"
-                )}
-              </button>
+            <button
+  type="submit"
+  disabled={isSubmitting}
+  className="w-full flex items-center justify-center rounded-lg bg-primary text-white py-2 hover:bg-primary-dark disabled:opacity-50"
+>
+  {isSubmitting ? (
+    <>
+      Please wait... <FontAwesomeIcon icon={faSpinner} spin />
+    </>
+  ) : (
+    "Sign Up"
+  )}
+</button>
+
 
               <button
                 type="button"

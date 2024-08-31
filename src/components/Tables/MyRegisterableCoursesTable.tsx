@@ -187,19 +187,19 @@ const MyRegisterableCoursesTable = () => {
                     </p>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    <p
+                  <p
                       className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
-                        course_list.status === 1
-                          ? "bg-success text-success"
-                          : course_list.status === 0
-                            ? "bg-warning text-warning"
+                        course_list.status === "Paid"
+                          ? "bg-warning text-warning"
+                          : course_list.status === "Not Paid"
+                            ? "bg-success text-success"
                             : ""
                       }`}
                     >
-                      {course_list.status === 1
-                        ? "Active"
-                        : course_list.status === 0
-                          ? "Disabled"
+                      {course_list.status === "Paid"
+                        ? "Registered Already"
+                        : course_list.status === "Not Paid"
+                          ? "Available"
                           : "N/A"}
                     </p>
                   </td>
