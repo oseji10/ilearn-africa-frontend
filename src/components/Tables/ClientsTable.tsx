@@ -291,7 +291,7 @@ const ClientsTable = () => {
                           <td>{detail?.end_date}</td>
                         </tr>
                       ))}
-          <a style={{color: 'blue'}} target="_blank" href={`${process.env.NEXT_PUBLIC_DOWNLOAD_LINK}${selectedClient.documents.file_path}`}>Click to View Uploaded Document</a>
+          <a style={{color: 'blue'}} target="_blank" href={`${process.env.NEXT_PUBLIC_DOWNLOAD_LINK}${selectedClient?.documents?.file_path}`}>Click to View Uploaded Document</a>
 
                     </>
                   )}
