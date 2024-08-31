@@ -1,33 +1,44 @@
 "use client";
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import axios from 'axios';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDownload, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
-// import Modal from 'react-modal';
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import axios from "axios";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import DataTable from "react-data-table-component";
+import { TextField } from "@mui/material";
+import { useRouter } from "next/navigation";
 
 const AdmittedClientsTable = () => {
   const [admissions, setAdmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedAdmission, setSelectedAdmission] = useState(null);
+  const [search, setSearch] = useState("");
+  const [filteredAdmissions, setFilteredAdmissions] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const modalRef = useRef(null);
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [activeTransaction, setActiveTransaction] = useState(null); 
+  const [activeTransaction, setActiveTransaction] = useState(null);
 
   useEffect(() => {
     const fetchAdmissions = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         if (!token) {
-          throw new Error('No auth token found');
+          throw new Error("No auth token found");
         }
 
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/admitted`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/admitted`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           },
-        });
-
+        );
         setAdmissions(response.data.admissions);
+        setFilteredAdmissions(response.data.admissions);
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -38,120 +49,108 @@ const AdmittedClientsTable = () => {
     fetchAdmissions();
   }, []);
 
+  useEffect(() => {
+    const filteredData = admissions.filter(
+      (admission) =>
+        (admission.firstname?.toLowerCase() || "").includes(search.toLowerCase()) ||
+        (admission.surname?.toLowerCase() || "").includes(search.toLowerCase()) ||
+        (admission.othernames?.toLowerCase() || "").includes(search.toLowerCase()) ||
+        (admission.email?.toLowerCase() || "").includes(search.toLowerCase()) ||
+        (admission.phone?.toLowerCase() || "").includes(search.toLowerCase()),
+    );
+    setFilteredAdmissions(filteredData);
+  }, [search, admissions]);
 
+  const handleEyeClick = useCallback((client) => {
+    setSelectedClient(client);
+  }, []);
 
-  const downloadLetter = async (admissionNumber) => {
-    // console.log(admissionNumber);
-    setIsDownloading(true);
-    setActiveTransaction(admissionNumber);
-    const token = localStorage.getItem("token");
-    if (!token) {
-      throw new Error("No auth token found");
-    }
+  const closeModal = useCallback(() => {
+    setSelectedClient(null);
+  }, []);
 
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admissions/admission_letter?admission_number=${admissionNumber}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", `admission_letter-${admissionNumber}.pdf`);
-        document.body.appendChild(link);
-        link.click();
-        link.parentNode.removeChild(link);
-        setActiveTransaction(null);
-      } else {
-        console.error("Failed to download the admission letter", response.statusText);
+  const handleClickOutside = useCallback(
+    (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        closeModal();
       }
-    } catch (error) {
-      console.error("An error occurred while downloading the admission letter", error);
+    },
+    [closeModal],
+  );
+
+  useEffect(() => {
+    if (selectedAdmission) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
     }
-    finally {
-      setIsDownloading(false); // Hide spinner
-    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [selectedAdmission, handleClickOutside]);
+
+  const handleSelectRow = (id) => {
+    setSelectedRows((prev) =>
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id],
+    );
   };
 
 
 
-
-  return (
-    <div>
-      <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
-        <div className="max-w-full overflow-x-auto">
-          <table className="w-full table-auto">
-            <thead>
-              <tr className="bg-gray-2 text-left dark:bg-meta-4">
-                <th className="min-w-[220px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
-                  Client ID
-                </th>
-                <th className="min-w-[220px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
-                  Name
-                </th>
-                <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
-                  Course Registered
-                </th>
-                <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
-                  Status
-                </th>
-                <th className="px-4 py-4 font-medium text-black dark:text-white">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {admissions.map((admission, key) => (
-                <tr key={key}>
-                  <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
-                    <h5 className="font-medium text-black dark:text-white">
-                      {admission.client_id} 
-                    </h5>
-                  </td>
-                  <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
-                    <h5 className="font-medium text-black dark:text-white">
-                      {admission.clients?.firstname} {admission.clients?.surname} {admission.clients?.othernames}
-                    </h5>
-                  </td>
-                  <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    <p className="text-black dark:text-white">
-                      {admission.payments?.courses?.course_id} - {admission.payments?.courses?.course_name}
-                    </p>
-                  </td>
-                  <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    <p 
+  const columns = [
+    
+    {
+      name: "Client ID",
+      selector: (row) => <p>{row.client_id || "N/A"}</p>,
+      sortable: true,
+    },
+    {
+      name: "Name",
+      selector: (row) =>
+        `${row.clients?.firstname || "N/A"} ${row.clients?.surname || "N/A"} ${row.clients?.othernames || "N/A"}`,
+      sortable: true,
+    },
+    {
+      name: "Course Applied",
+      selector: (row) => <p>{row.payments?.courses?.course_id || "N/A"} - {row.payments?.courses?.course_name || "N/A"}</p>,
+      sortable: true,
+    },
+    {
+      name: "Admission Number",
+      selector: (row) => <p>{row.admission_number || "N/A"}</p>,
+      sortable: true,
+    },
+    {
+      name: "Status",
+      selector: (row) => (
+        <p 
                       className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
-                        admission.status === "ADMITTED"
+                        row.status === "ADMITTED"
                           ? "bg-success text-success"
-                          : admission.status === "COMPLETED"
+                          : row.status === "COMPLETED"
                           ? "bg-success text-success"
-                          : admission.status === "pending"
+                          : row.status === "pending"
                             ? "bg-danger text-danger"
                             : ""
                       }`}
                     >
-                      {admission.status === "pending" ? "PENDING" : admission.status === "ADMITTED" ? "ADMITTED" : admission.status === "COMPLETED" ? "GRADUATED" : "N/A"}
+                      {row.status === "pending" ? "PENDING" : row.status === "ADMITTED" ? "ADMITTED" : row.status === "COMPLETED" ? "GRADUATED" : "N/A"}
                     </p>
-                  </td>
-                  <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    <div className="flex items-center space-x-3.5">
-                      
-                    {admission.status === "ADMITTED" && admission.status === "COMPLETED" && (
+      ),
+      sortable: true,
+    },
+    {
+      name: "Actions",
+      cell: (row) => (
+        <div className="flex items-center space-x-3.5">
+           {row.status === "ADMITTED" || row.status === "COMPLETED" &&  (
                       <button
     disabled={isDownloading}
     className="px-4 py-2 bg-green-500 text-white rounded"
-    onClick={(event) => downloadLetter(admission.admission_number)}
+    // onClick={(event) => downloadLetter(row.admission_number)}
+    onClick={() => downloadLetter(row)}
   >
-    {isDownloading && activeTransaction === admission.admission_number ? (
+    {isDownloading && activeTransaction === row.admission_number ? (
       <span>
         Sending. Please wait... <FontAwesomeIcon icon={faSpinner} spin />
       </span>
@@ -163,42 +162,102 @@ const AdmittedClientsTable = () => {
     )}
   </button>
 )}
-                      
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
-      </div>
+      ),
+    },
+  ];
+
+  const downloadLetter = async (row) => {
+    const admissionNumber = row.admission_number;
+  
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No auth token found");
+    }
+  
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/admissions/admission_letter?admission_number=${admissionNumber}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `admission_letter-${admissionNumber}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+      } else {
+        console.error("Failed to download the admission letter", response.statusText);
+      }
+    } catch (error) {
+      console.error("An error occurred while downloading the admission letter", error);
+    }
+  };
+
+  return (
+    <div>
+      {/* <div className="mb-4 flex items-center">
+        <TextField
+          label="Search"
+          variant="outlined"
+          size="small"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        &nbsp; &nbsp;
+        <button
+          className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+          onClick={handleBulkAction}
+        >
+          Admit Selected
+        </button>
+      </div> */}
+
+      <DataTable
+        columns={columns}
+        data={filteredAdmissions}
+        progressPending={loading}
+        pagination
+        paginationPerPage={10}
+        paginationRowsPerPageOptions={[10, 50, 100]}
+      />
 
       {selectedAdmission && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div
-            className="bg-white p-6 rounded shadow-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto"
-            ref={modalRef}
-          >
-            <h2 className="text-lg font-medium mb-4">
-              Admission Approval: {selectedAdmission.admission_number}
-            </h2>
-            <div className="space-y-4">
-              <button
-                className="bg-green-500 text-white px-4 py-2 rounded"
-                onClick={() => handleApproval(true)}
-              >
-                Approve
-              </button>
-              <button
-                className="bg-red-500 text-white px-4 py-2 rounded"
-                onClick={() => handleApproval(false)}
-              >
-                Disapprove
-              </button>
-            </div>
+        <div
+          ref={modalRef}
+          className="fixed inset-0 z-50 flex items-center justify-center"
+        >
+          <div className="rounded bg-white p-6 shadow-lg">
+            <h2 className="mb-4 text-lg font-bold">Client Details</h2>
+            <p>
+              <strong>Client ID:</strong> {selectedAdmission.client_id}
+            </p>
+            <p>
+              <strong>Name:</strong> {selectedAdmission.firstname}{" "}
+              {selectedAdmission.surname}
+            </p>
+            <p>
+              <strong>Email:</strong> {selectedAdmission.email}
+            </p>
+            <p>
+              <strong>Phone:</strong> {selectedAdmission.phone}
+            </p>
+            <p>
+              <strong>Status:</strong> {selectedAdmission.status}
+            </p>
             <button
+              className="bg-red-500 hover:bg-red-600 mt-4 rounded px-4 py-2 text-white"
               onClick={closeModal}
-              className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
             >
               Close
             </button>

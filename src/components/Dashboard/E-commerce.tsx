@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import React, { useEffect, useState } from "react";
 import CardDataStats from "../CardDataStats";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCartShopping, faGraduationCap, faMouse, faUsers } from "@fortawesome/free-solid-svg-icons";
+import { faAward, faBook, faBookOpen, faCartShopping, faFileInvoice, faGraduationCap, faIdBadge, faMoneyBill, faMouse, faRibbon, faScroll, faStamp, faUserGraduate, faUsers } from "@fortawesome/free-solid-svg-icons";
 
 // Ensure that these components are needed, if not remove them
 
@@ -77,7 +77,10 @@ const ECommerce: React.FC = () => {
     <>
       {role === 1 && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
-          <CardDataStats title="Total Clients" total={clients} rate="">
+          <CardDataStats 
+          title="Total Clients" 
+          total={clients} 
+          rate="">
             <FontAwesomeIcon
               icon={faUsers}
               className="fill-primary dark:fill-white"
@@ -122,7 +125,39 @@ const ECommerce: React.FC = () => {
       )}
 
       {role === 3 && (
-        <p></p>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-6 2xl:gap-7.5">
+        <a href="/client-dashboard/my-courses"><CardDataStats title="My Courses" total="" rate="">
+          <FontAwesomeIcon
+            icon={faBookOpen}
+            className="fill-primary dark:fill-white"
+            size="lg"
+          />
+        </CardDataStats></a>
+
+        <a href="/client-dashboard/my-payments"><CardDataStats title="My Payments" total="" rate="">
+          <FontAwesomeIcon
+            icon={faFileInvoice}
+            className="fill-primary dark:fill-white"
+            size="lg"
+          />
+        </CardDataStats></a>
+
+        <a href="/client-dashboard/my-admissions"><CardDataStats title="My Admissions" total="" rate="">
+          <FontAwesomeIcon
+            icon={faUserGraduate}
+            className="fill-primary dark:fill-white"
+            size="lg"
+          />
+        </CardDataStats></a>
+
+        <a href="/client-dashboard/my-certificates"><CardDataStats title="My Certificates" total="" rate="">
+          <FontAwesomeIcon
+            icon={faAward}
+            className="fill-primary dark:fill-white"
+            size="lg"
+          />
+        </CardDataStats></a>
+      </div>
       )}
 
       {(role !== 1 && role !== 2 && role !== 3) && (

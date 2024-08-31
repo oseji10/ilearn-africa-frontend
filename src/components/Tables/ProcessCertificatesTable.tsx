@@ -276,6 +276,7 @@ const ProcessCertificatesTable = () => {
             </button>
             &nbsp;
             <button
+            style={{background: 'red'}}
               className="mt-4 rounded bg-red-500 px-4 py-2 text-white hover:bg-gray-700"
               onClick={closeModal}
             >

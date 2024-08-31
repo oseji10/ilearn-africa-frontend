@@ -18,6 +18,8 @@ const ClientCertificates = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [activeTransaction, setActiveTransaction] = useState(null);
 
   const handleConfirmReceiptChange = useCallback((e) => {
     setConfirmReceipt(e.target.checked);
@@ -141,10 +143,21 @@ const ClientCertificates = () => {
       cell: (row) => (
         <div className="flex items-center space-x-3.5">
           <button
+          disabled={isDownloading}
             className="px-4 py-2 bg-green-500 text-white rounded"
-            onClick={() => setSelectedAdmission(row)}
+            onClick={() => downloadCertificate(row)}
           >
-            <FontAwesomeIcon icon={faEye} /> View
+            {isDownloading && activeTransaction === row.admission_number ? (
+      <span>
+        Sending. Please wait... <FontAwesomeIcon icon={faSpinner} spin />
+      </span>
+    ) : (
+      <span>
+        <FontAwesomeIcon icon={faDownload} />&nbsp;
+         Download/Email Certificate
+      </span>
+    )}
+            {/* <FontAwesomeIcon icon={faDownload} /> Download Certificate */}
           </button>
         </div>
       ),
@@ -158,6 +171,52 @@ const ClientCertificates = () => {
   if (error) {
     return <p>Error: {error}</p>;
   }
+
+
+
+
+
+
+  const downloadCertificate= async (row) => {
+    const admissionNumber = row.admission_number;
+  setIsDownloading(true)
+  setActiveTransaction(admissionNumber);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No auth token found");
+    }
+  
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/certificates/client-certificate/${admissionNumber}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          mode: 'cors',
+        }
+      );
+  
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `iLearnCertificate-${admissionNumber}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+      } else {
+        console.error("Failed to download the admission letter", response.statusText);
+      }
+    } catch (error) {
+      console.error("An error occurred while downloading the admission letter", error);
+    }
+    setIsDownloading(false)
+  };
+
 
   return (
     <div>
@@ -242,6 +301,7 @@ const ClientCertificates = () => {
                 )}
               </button>
               <button
+              style={{background: 'red'}}
                 className="px-4 py-2 bg-red-500 text-black rounded"
                 onClick={() => setSelectedAdmission(null)}
               >

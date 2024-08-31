@@ -2,9 +2,10 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye } from "@fortawesome/free-solid-svg-icons";
+import { faEye, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import DataTable from "react-data-table-component";
 import { TextField } from "@mui/material";
+import { useRouter } from "next/navigation";
 
 const AdmissionsTable = () => {
   const [admissions, setAdmissions] = useState([]);
@@ -15,6 +16,9 @@ const AdmissionsTable = () => {
   const [filteredAdmissions, setFilteredAdmissions] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const modalRef = useRef(null);
+  const [serverResponse, setResponse] = useState("");
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchAdmissions = async () => {
@@ -30,7 +34,7 @@ const AdmissionsTable = () => {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
         setAdmissions(response.data.admissions);
         setFilteredAdmissions(response.data.admissions);
@@ -47,11 +51,17 @@ const AdmissionsTable = () => {
   useEffect(() => {
     const filteredData = admissions.filter(
       (admission) =>
-        (admission.firstname?.toLowerCase() || "").includes(search.toLowerCase()) ||
-        (admission.surname?.toLowerCase() || "").includes(search.toLowerCase()) ||
-        (admission.othernames?.toLowerCase() || "").includes(search.toLowerCase()) ||
+        (admission.firstname?.toLowerCase() || "").includes(
+          search.toLowerCase(),
+        ) ||
+        (admission.surname?.toLowerCase() || "").includes(
+          search.toLowerCase(),
+        ) ||
+        (admission.othernames?.toLowerCase() || "").includes(
+          search.toLowerCase(),
+        ) ||
         (admission.email?.toLowerCase() || "").includes(search.toLowerCase()) ||
-        (admission.phone?.toLowerCase() || "").includes(search.toLowerCase())
+        (admission.phone?.toLowerCase() || "").includes(search.toLowerCase()),
     );
     setFilteredAdmissions(filteredData);
   }, [search, admissions]);
@@ -70,7 +80,7 @@ const AdmissionsTable = () => {
         closeModal();
       }
     },
-    [closeModal]
+    [closeModal],
   );
 
   useEffect(() => {
@@ -86,7 +96,7 @@ const AdmissionsTable = () => {
 
   const handleSelectRow = (id) => {
     setSelectedRows((prev) =>
-      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id],
     );
   };
 
@@ -118,10 +128,11 @@ const AdmissionsTable = () => {
         />
       ),
       sortable: false,
+      style: { width: "10px" },
     },
     {
-      name: "Client ID",
-      selector: (row) => row.client_id || "N/A",
+      name: "Client",
+      selector: (row) => <p>{row.client_id || "N/A"}</p>,
       sortable: true,
     },
     {
@@ -132,8 +143,19 @@ const AdmissionsTable = () => {
     },
     {
       name: "Course Applied",
-      selector: (row) =>
-        `${row.payments?.courses?.course_id || "N/A"} ${row.payments?.courses?.course_name || "N/A"}`,
+      selector: (row) => (
+        <p style={{ width: "auto" }}>
+          {row.payments?.courses?.course_id || "N/A"}{" "}
+          {row.payments?.courses?.course_name || "N/A"}
+        </p>
+      ),
+      sortable: true,
+    },
+    {
+      name: "Payment Date",
+      selector: (row) => (
+        <p style={{ width: "100%" }}>{row.payments?.created_at || "N/A"}</p>
+      ),
       sortable: true,
     },
     {
@@ -144,15 +166,15 @@ const AdmissionsTable = () => {
             row.status === "ADMITTED"
               ? "bg-success text-success"
               : row.status === "pending"
-              ? "bg-warning text-warning"
-              : ""
+                ? "bg-warning text-warning"
+                : ""
           }`}
         >
           {row.status === "ADMITTED"
             ? "Admitted"
             : row.status === "pending"
-            ? "Pending"
-            : "N/A"}
+              ? "Pending"
+              : "N/A"}
         </p>
       ),
       sortable: true,
@@ -161,17 +183,75 @@ const AdmissionsTable = () => {
       name: "Actions",
       cell: (row) => (
         <div className="flex items-center space-x-3.5">
-          <button className="hover:text-primary" onClick={() => handleEyeClick(row)}>
-            <FontAwesomeIcon icon={faEye} className="fill-current" size="sm" /> View Admission
+          <button
+            className="inline-flex items-center justify-center bg-primary px-10 py-4 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-10"
+            onClick={() => handleApproval(row)}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+            <>
+                    Please wait... <FontAwesomeIcon icon={faSpinner}
+                      className="animate-spin mr-2"
+                    />
+                  </>
+                  ) : (
+                    "ADMIT"
+                  )}
           </button>
         </div>
+        
       ),
     },
   ];
 
+  const handleApproval = async (row) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No auth token found");
+      }
+      setIsSubmitting(true);
+      const admissionNumber = row.admission_number;
+  
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/admissions/${admissionNumber}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ status: "ADMITTED" }),
+        }
+      );
+  
+      if (response.ok) {
+        const data = await response.json(); 
+        setResponse(data.message);
+        alert(data.message);
+        
+        // Remove the admitted row from the admissions state
+        setAdmissions((prevAdmissions) =>
+          prevAdmissions.filter((admission) => admission.admission_number !== admissionNumber)
+        );
+        setFilteredAdmissions((prevFilteredAdmissions) =>
+          prevFilteredAdmissions.filter((admission) => admission.admission_number !== admissionNumber)
+        );
+        closeModal();
+      } else {
+        alert("There was an issue processing the admission");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("An error occurred");
+    }
+    setIsSubmitting(false);
+  };
+  
+
   return (
     <div>
-      <div className="flex items-center mb-4">
+      <div className="mb-4 flex items-center">
         <TextField
           label="Search"
           variant="outlined"
@@ -179,9 +259,9 @@ const AdmissionsTable = () => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-&nbsp; &nbsp;
-<button
-          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded"
+        &nbsp; &nbsp;
+        <button
+          className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
           onClick={handleBulkAction}
         >
           Admit Selected
@@ -198,20 +278,34 @@ const AdmissionsTable = () => {
         progressPending={loading}
         pagination
         paginationPerPage={10}
-        paginationRowsPerPageOptions={[10, 20, 30]}
+        paginationRowsPerPageOptions={[10, 50, 100]}
       />
 
-     
-
       {selectedAdmission && (
-        <div ref={modalRef} className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg">
-            <h2 className="text-lg font-bold mb-4">Admission Details</h2>
-            <p><strong>Client ID:</strong> {selectedAdmission.client_id}</p>
-            <p><strong>Name:</strong> {selectedAdmission.clients?.firstname} {selectedAdmission.clients?.surname}</p>
-            <p><strong>Course Applied:</strong> {selectedAdmission.payments?.courses?.course_name}</p>
-            <p><strong>Status:</strong> {selectedAdmission.status}</p>
-            <button className="mt-4 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded" onClick={closeModal}>
+        <div
+          ref={modalRef}
+          className="fixed inset-0 z-50 flex items-center justify-center"
+        >
+          <div className="rounded bg-white p-6 shadow-lg">
+            <h2 className="mb-4 text-lg font-bold">Admission Details</h2>
+            <p>
+              <strong>Client ID:</strong> {selectedAdmission.client_id}
+            </p>
+            <p>
+              <strong>Name:</strong> {selectedAdmission.clients?.firstname}{" "}
+              {selectedAdmission.clients?.surname}
+            </p>
+            <p>
+              <strong>Course Applied:</strong>{" "}
+              {selectedAdmission.payments?.courses?.course_name}
+            </p>
+            <p>
+              <strong>Status:</strong> {selectedAdmission.status}
+            </p>
+            <button
+              className="bg-red-500 hover:bg-red-600 mt-4 rounded px-4 py-2 text-white"
+              onClick={closeModal}
+            >
               Close
             </button>
           </div>
