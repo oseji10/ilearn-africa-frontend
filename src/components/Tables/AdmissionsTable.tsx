@@ -6,6 +6,7 @@ import { faEye, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import DataTable from "react-data-table-component";
 import { TextField } from "@mui/material";
 import { useRouter } from "next/navigation";
+import { format } from "date-fns";
 
 const AdmissionsTable = () => {
   const [admissions, setAdmissions] = useState([]);
@@ -105,21 +106,59 @@ const AdmissionsTable = () => {
     setSelectedRows(isChecked ? admissions.map((row) => row.id) : []);
   };
 
+ 
+  
   const handleBulkAction = async () => {
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/admit-all`, {
-        ids: selectedRows,
-      });
-      // Refresh data or handle success
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No auth token found");
+      }
+      
+      setIsSubmitting(true);
+  
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_API_URL}/admit-all`,
+        {
+          ids: selectedRows, // Array of selected admission IDs
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      if (response.status === 200) {
+        alert("Selected admissions have been successfully updated to ADMITTED.");
+  
+        // Remove the admitted rows from the admissions state
+        setAdmissions((prevAdmissions) =>
+          prevAdmissions.filter((admission) => !selectedRows.includes(admission.id))
+        );
+        setFilteredAdmissions((prevFilteredAdmissions) =>
+          prevFilteredAdmissions.filter((admission) => !selectedRows.includes(admission.id))
+        );
+  
+        // Clear selected rows after successful update
+        setSelectedRows([]);
+      } else {
+        alert("Failed to update selected admissions.");
+      }
     } catch (err) {
-      // Handle error
       console.error(err.message);
+      alert("An error occurred while updating admissions.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
+  
+
 
   const columns = [
     {
-      name: <input type="checkbox" onChange={handleSelectAll} />,
+      name: <input type="checkbox" onChange={handleSelectAll}  />,
       cell: (row) => (
         <input
           type="checkbox"
@@ -128,7 +167,7 @@ const AdmissionsTable = () => {
         />
       ),
       sortable: false,
-      style: { width: "10px" },
+      style:{ width: "1px", whiteSpace: "normal" },
     },
     {
       name: "Client",
@@ -138,25 +177,30 @@ const AdmissionsTable = () => {
     {
       name: "Name",
       selector: (row) =>
-        `${row.clients?.firstname || "N/A"} ${row.clients?.surname || "N/A"} ${row.clients?.othernames || "N/A"}`,
+       <p style={{ width: "auto", whiteSpace: "normal" }}>{row.clients?.firstname || "N/A"} {row.clients?.surname || "N/A"} {row.clients?.othernames || "N/A"}</p>,
       sortable: true,
+      wrap: true,
     },
     {
       name: "Course Applied",
       selector: (row) => (
-        <p style={{ width: "auto" }}>
-          {row.payments?.courses?.course_id || "N/A"}{" "}
+        <p style={{ width: "auto", whiteSpace: "normal" }}>
+          {row.payments?.courses?.course_id || "N/A"}{" - "}
           {row.payments?.courses?.course_name || "N/A"}
         </p>
       ),
       sortable: true,
+      wrap: true,
     },
     {
       name: "Payment Date",
       selector: (row) => (
-        <p style={{ width: "100%" }}>{row.payments?.created_at || "N/A"}</p>
+       
+        <p style={{ width: "100%" }}>{format(new Date(row.payments?.created_at), 'EEEE, MMMM do, yyyy') || "N/A"}</p>
+        
       ),
       sortable: true,
+      wrap: true,
     },
     {
       name: "Status",

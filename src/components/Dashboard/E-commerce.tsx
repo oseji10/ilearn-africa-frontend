@@ -98,7 +98,7 @@ const ECommerce: React.FC = () => {
       {role === 1 && (
           <>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-5 2xl:gap-7.5">
-        <CardDataStats
+        <a href="/reports/incomplete-applications"><CardDataStats
             title="Incomplete Profiles"
             total={incomplete_applications}
             rate=""
@@ -107,9 +107,9 @@ const ECommerce: React.FC = () => {
               className="fill-primary dark:fill-white"
               icon={faMouse}
             />
-          </CardDataStats>
+          </CardDataStats></a>
 
-          <CardDataStats 
+          <a href="/reports/registered-clients"><CardDataStats 
           title="Total Registered Clients" 
           total={registered_clients} 
           rate="">
@@ -118,36 +118,36 @@ const ECommerce: React.FC = () => {
               className="fill-primary dark:fill-white"
               size="lg"
             />
-          </CardDataStats>
+          </CardDataStats></a>
         
           
-          <CardDataStats title="Pending Admissions" total={pending_admissions} rate="">
+         <a href="/admission/process-admission"> <CardDataStats title="Pending Admissions" total={pending_admissions} rate="">
             <FontAwesomeIcon
               icon={faGraduationCap}
               className="fill-primary dark:fill-white"
             />
-          </CardDataStats>
+          </CardDataStats></a>
 
-          <CardDataStats title="Currently Admitted Clients" total={currently_admitted_clients} rate="">
+          <a href="/reports/currently-admitted"><CardDataStats title="Currently Admitted Clients" total={currently_admitted_clients} rate="">
             <FontAwesomeIcon
               icon={faUserGraduate}
               className="fill-primary dark:fill-white"
             />
-          </CardDataStats>
+          </CardDataStats></a>
 
-          <CardDataStats title="Graduated Clients" total={all_graduated_clients} rate="">
+          <a href="/reports/graduated"><CardDataStats title="Graduated Clients" total={all_graduated_clients} rate="">
             <FontAwesomeIcon
               icon={faAward}
               className="fill-primary dark:fill-white"
             />
-          </CardDataStats>
+          </CardDataStats></a>
         </div>
 
         
 <br/>
 
 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
-<CardDataStats 
+<a href="/reports/payments-today"><CardDataStats 
 title="Verified Payments Today" 
 total={payments_today} 
 rate="">
@@ -156,8 +156,9 @@ rate="">
     className="fill-primary dark:fill-white"
     size="lg"
   />
-</CardDataStats>
-<CardDataStats
+</CardDataStats></a>
+
+<a href="/reports/payments-this-week"><CardDataStats
   title="Verified Payments This Week"
   total={payments_this_week}
   rate=""
@@ -166,19 +167,20 @@ rate="">
     className="fill-primary dark:fill-white"
     icon={faCalendarWeek}
   />
-</CardDataStats>
-<CardDataStats title="Revenue this Month" total={payments_this_month} rate="">
+</CardDataStats></a>
+
+<a href="/reports/payments-this-month"><CardDataStats title="Revenue this Month" total={payments_this_month} rate="">
   <FontAwesomeIcon
     icon={faCalendarTimes}
     className="fill-primary dark:fill-white"
   />
-</CardDataStats>
-<CardDataStats title="Total Revenue" total={all_payments} rate="">
+</CardDataStats></a>
+<a href="/reports/all-payments"><CardDataStats title="Total Revenue" total={all_payments} rate="">
   <FontAwesomeIcon
     icon={faCalendarAlt}
     className="fill-primary dark:fill-white"
   />
-</CardDataStats>
+</CardDataStats></a>
 
 
 </div>

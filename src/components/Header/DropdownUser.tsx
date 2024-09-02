@@ -126,7 +126,8 @@ const DropdownUser = () => {
           <Image
             width={112}
             height={112}
-            src={`${process.env.NEXT_PUBLIC_DOWNLOAD_LINK}${imageUrl}`}
+            src={imageUrl === null ? "/images/user/user.png" : `${process.env.NEXT_PUBLIC_DOWNLOAD_LINK}${imageUrl}`}
+
             alt="User"
           />
         </span>

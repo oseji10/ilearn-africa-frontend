@@ -143,7 +143,7 @@ const AdmittedClientsTable = () => {
       name: "Actions",
       cell: (row) => (
         <div className="flex items-center space-x-3.5">
-           {row.status === "ADMITTED" || row.status === "COMPLETED" &&  (
+           {/* {row.status === "ADMITTED" || row.status === "COMPLETED" &&  ( */}
                       <button
     disabled={isDownloading}
     className="px-4 py-2 bg-green-500 text-white rounded"
@@ -161,7 +161,7 @@ const AdmittedClientsTable = () => {
       </span>
     )}
   </button>
-)}
+{/* )} */}
         </div>
       ),
     },
