@@ -44,6 +44,37 @@ const ClientsTable = () => {
     fetchClients();
   }, []);
 
+
+
+
+  useEffect(() => {
+    const deleteClient = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error("No auth token found");
+        }
+
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/delete_client/${row.client_id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setClients(response.data.clients);
+        setFilteredClients(response.data.clients);
+        setLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    deleteClient();
+  }, []);
+
   useEffect(() => {
     const filteredData = clients.filter(
       (client) =>
@@ -334,7 +365,7 @@ const ClientsTable = () => {
 
           <button
               className="mt-4 px-4 py-2 bg-red-500 text-white rounded" style={{background: 'red'}}
-              onClick={deleteClient}
+              onClick={deleteClient()}
             >
               Delete
             </button>  

@@ -19,6 +19,7 @@ const CoursesTable = () => {
     course_name: "",
     cost: "",
     center_id: "",
+    certification_name: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -112,21 +113,30 @@ const CoursesTable = () => {
     setIsModal2Open(false);
   }, []);
 
-  const handleChange = (e) => {
-    const { name, type, files, value } = e.target;
+  // const handleChange = (e) => {
+  //   const { name, type, files, value } = e.target;
   
-    if (type === "file") {
-      setFormData({
-        ...formData,
-        [name]: files[0], // Assign the file object
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value,
-      });
-    }
+  //   if (type === "file") {
+  //     setFormData({
+  //       ...formData,
+  //       [name]: files[0], // Assign the file object
+  //     });
+  //   } else {
+  //     setFormData({
+  //       ...formData,
+  //       [name]: value,
+  //     });
+  //   }
+  // };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setSelectedCourse({
+      ...selectedCourse,
+      [name]: value,
+    });
   };
+  
   
 
   const handleChange2 = (e) => {
@@ -170,6 +180,7 @@ const CoursesTable = () => {
         course_name: "",
         cost: "",
         center_id: "",
+        certification_name: "",
       });
     } catch (error) {
       console.error("Error uploading course:", error);
@@ -346,6 +357,16 @@ const CoursesTable = () => {
               onChange={handleChange}
               className="mt-2 w-full p-2 border rounded"
             />
+
+<input
+              type="text"
+              name="certification_name"
+              placeholder="Certification Name"
+              value={selectedCourse.certification_name}
+              onChange={handleChange}
+              className="mt-2 w-full p-2 border rounded"
+            />
+
             <input
               type="number"
               name="cost"
