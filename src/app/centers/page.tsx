@@ -15,7 +15,7 @@ import CentersTable from "@/components/Tables/CentersTable";
 const TablesPage = () => {
   return (
     <DefaultLayout>
-      <Breadcrumb pageName="Affiliates/Centers" />
+      <Breadcrumb pageName="Partners" />
 
       <div className="flex flex-col gap-10">
         <CentersTable/>

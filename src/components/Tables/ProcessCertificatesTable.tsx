@@ -18,6 +18,10 @@ const ProcessCertificatesTable = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isDownloading, setIsDownloading] = useState(false);
   const router = useRouter();
+  const [selectedAdmissions, setSelectedAdmissions] = useState([]);
+  const [isProcessingAll, setIsProcessingAll] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [isSelectAllChecked, setIsSelectAllChecked] = useState(false);
 
   useEffect(() => {
     const fetchAdmissions = async () => {
@@ -73,49 +77,86 @@ const ProcessCertificatesTable = () => {
     setSelectedAdmission(null);
   };
 
-  const handleApproval = async (event, approved) => {
-    event.preventDefault();
-    setIsSubmitting(true);
-    const approvalData = {
-      admission_number: selectedAdmission.admission_number,
-    };
-    if (!confirmReceipt) {
-      alert("Please confirm that you authorize the issuance of this certificate.");
-      setIsSubmitting(false);
+
+
+  const handleSelectAll = () => {
+    if (isSelectAllChecked) {
+      setSelectedAdmissions([]);
+    } else {
+      const allAdmissionIds = filteredAdmissions.map((admission) => admission.admission_number);
+      setSelectedAdmissions(allAdmissionIds);
+    }
+    setIsSelectAllChecked(!isSelectAllChecked);
+  };
+
+  const handleProcessAll = async () => {
+    if (selectedAdmissions.length === 0) {
+      alert("Please select at least one admission to process.");
       return;
     }
+
+    setIsProcessingAll(true);
+    setProgress(0);
 
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No auth token found");
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/certificates`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(approvalData),
-        }
-      );
+      for (let i = 0; i < selectedAdmissions.length; i++) {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/certificates/batch-process`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ admission_number: selectedAdmissions[i] }),
+          }
+        );
 
-      if (response.ok) {
-        alert(`This certificate has been ${approved ? "issued" : "disapproved for issuance"} successfully`);
-        closeModal();
-      } else {
-        setError("There was an issue processing the certificate");
+        if (response.ok) {
+          setProgress(((i + 1) / selectedAdmissions.length) * 100);
+          setAdmissions((prevAdmissions) =>
+            prevAdmissions.filter(
+              (admission) => admission.admission_number !== selectedAdmissions[i]
+            )
+          );
+        } else {
+          throw new Error("Failed to process admission: " + selectedAdmissions[i]);
+        }
       }
-    } catch (error) {
-      console.error("Error:", error);
-      setError("An error occurred");
+
+      alert("All selected admissions have been processed successfully.");
+      setSelectedAdmissions([]);
+    } catch (err) {
+      console.error("Error processing all admissions:", err);
+      alert("An error occurred while processing admissions. Please try again.");
     }
-    setIsSubmitting(false);
-    router.refresh();
+
+    setIsProcessingAll(false);
   };
 
   const columns = [
+    {
+      name: (
+        <input
+          type="checkbox"
+          checked={isSelectAllChecked}
+          onChange={handleSelectAll}
+        />
+      ),
+      cell: (row) => (
+        <input
+          type="checkbox"
+          checked={selectedAdmissions.includes(row.admission_number)}
+          onChange={() => handleCheckboxChange(row.admission_number)}
+        />
+      ),
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+    },
     {
       name: "Client ID",
       selector: (row) => row.client_id,
@@ -183,6 +224,39 @@ const ProcessCertificatesTable = () => {
           Download CSV
         </button>
       </CSVLink>
+
+&nbsp;
+
+<button
+        className={`mt-4 px-4 py-2 bg-blue-500 text-white rounded ${
+          isProcessingAll ? "cursor-not-allowed opacity-50" : ""
+        }`}
+        onClick={handleProcessAll}
+        disabled={isProcessingAll}
+      >
+        {isProcessingAll ? (
+          <span>
+            Please wait...{" "}
+            <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
+          </span>
+        ) : (
+          "Process All"
+        )}
+      </button>
+
+      {isProcessingAll && (
+        <div className="mt-4">
+          <div className="relative w-full h-4 bg-gray-200 rounded">
+            <div
+              className="absolute top-0 left-0 h-4 bg-blue-500 rounded"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+          <p className="mt-2 text-center">{Math.round(progress)}% completed</p>
+        </div>
+      )}
+
+
       <DataTable
         columns={columns}
         data={filteredAdmissions}

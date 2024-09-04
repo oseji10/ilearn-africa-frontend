@@ -112,7 +112,7 @@ const CentersTable = () => {
         }
       );
       fetchCenters(); // Fetch courses again to update the table after submission
-      alert("Course details submitted!");
+      alert("Partner details submitted successfuly!");
       closeModal();
       setSelectedCenterList({
         center_id: "",
@@ -196,7 +196,7 @@ const CentersTable = () => {
         className="inline-flex items-center justify-center bg-primary px-10 py-4 text-center font-medium text-white hover:bg-opacity-90 lg:px-8"
         onClick={openModal}
       >
-        <FontAwesomeIcon icon={faPlus} />&nbsp;Add New Center
+        <FontAwesomeIcon icon={faPlus} />&nbsp;Add New Partner
       </button>
 
       <br /><br />

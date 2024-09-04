@@ -64,7 +64,7 @@ const adminMenu = [
         icon: (
           <FontAwesomeIcon icon={faBuilding} className="fill-current" size="lg" />
         ),
-        label: "Centers",
+        label: "Partners",
         route: "/centers",
       },
 

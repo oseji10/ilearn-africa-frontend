@@ -117,7 +117,7 @@ const AdmittedClientsTable = () => {
     },
     {
       name: "Admission Number",
-      selector: (row) => <p>{row.admission_number || "N/A"}</p>,
+      selector: (row) => <p>{row.id || "N/A"}</p>,
       sortable: true,
     },
     {
