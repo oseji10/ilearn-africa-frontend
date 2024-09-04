@@ -30,7 +30,7 @@ const ProcessCertificatesTable = () => {
         if (!token) throw new Error("No auth token found");
 
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/admitted`,
+          `${process.env.NEXT_PUBLIC_API_URL}/process_certificate`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -76,8 +76,6 @@ const ProcessCertificatesTable = () => {
   const closeModal = () => {
     setSelectedAdmission(null);
   };
-
-
 
   const handleSelectAll = () => {
     if (isSelectAllChecked) {
@@ -137,6 +135,45 @@ const ProcessCertificatesTable = () => {
     setIsProcessingAll(false);
   };
 
+  const handleApproval = async (event) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No auth token found");
+
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/certificate/issue`,
+        { admission_number: selectedAdmission.admission_number },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        alert("Certificate issued successfully!");
+        setAdmissions((prevAdmissions) =>
+          prevAdmissions.map((admission) =>
+            admission.admission_number === selectedAdmission.admission_number
+              ? { ...admission, status: "COMPLETED" }
+              : admission
+          )
+        );
+        closeModal();
+      } else {
+        throw new Error("Failed to issue certificate.");
+      }
+    } catch (err) {
+      console.error("Error issuing certificate:", err);
+      alert("An error occurred while issuing the certificate. Please try again.");
+    }
+
+    setIsSubmitting(false);
+  };
+
   const columns = [
     {
       name: (
@@ -157,11 +194,11 @@ const ProcessCertificatesTable = () => {
       allowOverflow: true,
       button: true,
     },
-    {
-      name: "Client ID",
-      selector: (row) => row.client_id,
-      sortable: true,
-    },
+    // {
+    //   name: "Client ID",
+    //   selector: (row) => row.client_id,
+    //   sortable: true,
+    // },
     {
       name: "Name",
       selector: (row) => `${row.clients?.firstname || ''} ${row.clients?.surname || ''} ${row.clients?.othernames || ''}`,
@@ -172,7 +209,6 @@ const ProcessCertificatesTable = () => {
       selector: (row) => `${row.payments?.courses?.course_id || ''} - ${row.payments?.courses?.course_name || ''}`,
       sortable: true,
     },
-    
     {
       name: "Status",
       selector: (row) => (
@@ -225,133 +261,88 @@ const ProcessCertificatesTable = () => {
         </button>
       </CSVLink>
 
-&nbsp;
+      &nbsp;
 
-<button
+      <button
         className={`mt-4 px-4 py-2 bg-blue-500 text-white rounded ${
-          isProcessingAll ? "cursor-not-allowed opacity-50" : ""
+          isProcessingAll ? "cursor-not-allowed" : ""
         }`}
         onClick={handleProcessAll}
         disabled={isProcessingAll}
       >
         {isProcessingAll ? (
-          <span>
-            Please wait...{" "}
-            <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
-          </span>
+          <>
+            <FontAwesomeIcon icon={faSpinner} spin /> Processing...
+          </>
         ) : (
-          "Process All"
+          "Process All Selected"
         )}
       </button>
 
-      {isProcessingAll && (
-        <div className="mt-4">
-          <div className="relative w-full h-4 bg-gray-200 rounded">
-            <div
-              className="absolute top-0 left-0 h-4 bg-blue-500 rounded"
-              style={{ width: `${progress}%` }}
-            ></div>
-          </div>
-          <p className="mt-2 text-center">{Math.round(progress)}% completed</p>
-        </div>
-      )}
-
+      <input
+        type="text"
+        placeholder="Search by name, course, or client ID..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="mb-4 p-2 border border-gray-300 rounded"
+      />
 
       <DataTable
         columns={columns}
         data={filteredAdmissions}
         pagination
-        subHeader
-        subHeaderComponent={
-          <input
-            type="text"
-            placeholder="Search Admissions"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        }
-        subHeaderAlign="right"
         highlightOnHover
+        pointerOnHover
         striped
-        responsive
-        fixedHeader
-        fixedHeaderScrollHeight="500px"
       />
 
       {selectedAdmission && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded bg-white p-6 shadow-lg">
-            <h2 className="mb-4 text-xl font-semibold">CERTIFICATE ISSUANCE</h2>
-            <hr />
-            <br />
-            <table width={"100%"}>
-              <tbody>
-                <tr>
-                  <td width={"25%"}>
-                    <strong>Client ID:</strong>
-                  </td>
-                  <td>{selectedAdmission.client_id}</td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>Admission Number:</strong>
-                  </td>
-                  <td>{selectedAdmission.admission_number}</td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>Name:</strong>
-                  </td>
-                  <td>
-                    {selectedAdmission.clients?.firstname}{" "}
-                    {selectedAdmission.clients?.surname}{" "}
-                    {selectedAdmission.clients?.othernames}
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>Course Registered:</strong>
-                  </td>
-                  <td>
-                    {selectedAdmission.payments?.courses?.course_id} -{" "}
-                    {selectedAdmission.payments?.courses?.course_name}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <br />
-            <div className="flex items-center mb-4">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg p-8 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Admission Details</h3>
+            {/* <p className="mb-2">Client ID: {selectedAdmission.client_id}</p> */}
+            <p className="mb-2">
+              Name: {`${selectedAdmission.clients.firstname} ${selectedAdmission.clients.surname} ${selectedAdmission.clients.othernames}`}
+            </p>
+            <p className="mb-2">
+              Course Registered:{" "}
+              {`${selectedAdmission.payments?.courses?.course_id || ''} - ${selectedAdmission.payments?.courses?.certification_name || ''}`}
+            </p>
+            <p className="mb-4">
+              Status:{" "}
+              {selectedAdmission.status === "ADMITTED"
+                ? "NOT ISSUED"
+                : selectedAdmission.status === "COMPLETED"
+                ? "ISSUED"
+                : "N/A"}
+            </p>
+            <label className="mb-4">
               <input
                 type="checkbox"
                 checked={confirmReceipt}
                 onChange={handleConfirmReceiptChange}
-                className="mr-2"
-                required
               />
-              <label className="text-gray-700">
-                By clicking this button, you confirm that this client is eligible to be issued this certificate under your authorization.
-              </label>
-            </div>
+              &nbsp; Confirm receipt of all necessary documents
+            </label>
+            <br />
             <button
-              onClick={(event) => handleApproval(event, true)}
-              disabled={isSubmitting}
               className={`mt-4 px-4 py-2 bg-blue-500 text-white rounded ${
-                isSubmitting ? "cursor-not-allowed opacity-50" : ""
+                isSubmitting || !confirmReceipt ? "cursor-not-allowed" : ""
               }`}
+              onClick={handleApproval}
+              disabled={isSubmitting || !confirmReceipt}
             >
               {isSubmitting ? (
-                <span>
-                  Please wait... <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
-                </span>
+                <>
+                  <FontAwesomeIcon icon={faSpinner} spin /> Please wait...
+                </>
               ) : (
-                'Issue Certificate'
+                "Issue Certificate"
               )}
             </button>
-            &nbsp;
+
             <button
-            style={{background: 'red'}}
-              className="mt-4 rounded bg-red-500 px-4 py-2 text-white hover:bg-gray-700"
+              className="mt-4 ml-4 px-4 py-2 bg-gray-500 text-white rounded"
               onClick={closeModal}
             >
               Close

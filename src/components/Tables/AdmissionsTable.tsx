@@ -169,11 +169,11 @@ const AdmissionsTable = () => {
       sortable: false,
       style:{ width: "1px", whiteSpace: "normal" },
     },
-    {
-      name: "Client",
-      selector: (row) => <p>{row.client_id || "N/A"}</p>,
-      sortable: true,
-    },
+    // {
+    //   name: "Client",
+    //   selector: (row) => <p>{row.client_id || "N/A"}</p>,
+    //   sortable: true,
+    // },
     {
       name: "Name",
       selector: (row) =>
