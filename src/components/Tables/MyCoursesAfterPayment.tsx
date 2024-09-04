@@ -112,57 +112,12 @@ const MyCoursesAfterPayment = () => {
     setFile(file); // Store the file in the state
   };
 
-  // const handlePaymentUpdate = useCallback(
-  //   async (event) => {
-  //     event.preventDefault();
-  
-  //     const formData = new FormData();
-  //     formData.append("file", file);
-  //     formData.append("client_id", clientId);
-  //     formData.append("course_id", selectedCourse.course_id);
-  
-  //     try {
-  //       setIsSubmitting(true);
-  //       const token = localStorage.getItem("token");
-  //       if (!token) {
-  //         throw new Error("No auth token found");
-  //       }
-  
-  //       const response = await fetch(
-  //         `${process.env.NEXT_PUBLIC_API_URL}/proof-of-payment`,
-  //         {
-  //           method: "POST",
-  //           headers: {
-  //             Authorization: `Bearer ${token}`,
-  //           },
-  //           body: formData,
-  //         }
-  //       );
-  
-  //       if (response.ok) {
-  //         setError(null);
-  //         closeModal();
-  //       } else {
-  //         throw new Error("Payment submission failed");
-  //       }
-  //     } catch (error) {
-  //       setError(error.message);
-  //     } finally {
-  //       setIsSubmitting(false);
-  //       router.push('/client-dashboard/my-payments/successful-upload');
-  //     }
-  //   },
-  //   [file, clientId, selectedCourse, closeModal, router]
-  // );
-
-
-
   const handlePaymentUpdate = useCallback(
     async (event) => {
       event.preventDefault();
   
       const formData = new FormData();
-      // formData.append("file", file);
+      formData.append("file", file);
       formData.append("client_id", clientId);
       formData.append("course_id", selectedCourse.course_id);
   
@@ -199,6 +154,51 @@ const MyCoursesAfterPayment = () => {
     },
     [file, clientId, selectedCourse, closeModal, router]
   );
+
+
+
+  // const handlePaymentUpdate = useCallback(
+  //   async (event) => {
+  //     event.preventDefault();
+  
+  //     const formData = new FormData();
+  //     // formData.append("file", file);
+  //     formData.append("client_id", clientId);
+  //     formData.append("course_id", selectedCourse.course_id);
+  
+  //     try {
+  //       setIsSubmitting(true);
+  //       const token = localStorage.getItem("token");
+  //       if (!token) {
+  //         throw new Error("No auth token found");
+  //       }
+  
+  //       const response = await fetch(
+  //         `${process.env.NEXT_PUBLIC_API_URL}/proof-of-payment`,
+  //         {
+  //           method: "POST",
+  //           headers: {
+  //             Authorization: `Bearer ${token}`,
+  //           },
+  //           body: formData,
+  //         }
+  //       );
+  
+  //       if (response.ok) {
+  //         setError(null);
+  //         closeModal();
+  //       } else {
+  //         throw new Error("Payment submission failed");
+  //       }
+  //     } catch (error) {
+  //       setError(error.message);
+  //     } finally {
+  //       setIsSubmitting(false);
+  //       router.push('/client-dashboard/my-payments/successful-upload');
+  //     }
+  //   },
+  //   [file, clientId, selectedCourse, closeModal, router]
+  // );
   
   
 
@@ -303,7 +303,7 @@ onClick={() => handleEyeClick(course_list)}
       </div>
 
 
-      {selectedCourse && (
+      {/* {selectedCourse && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div ref={modalRef} className="relative bg-white p-8 rounded-lg">
             <h2 className="text-2xl font-semibold mb-4">
@@ -346,10 +346,10 @@ onClick={() => handleEyeClick(course_list)}
             </button>
           </div>
         </div>
-      )}
+      )} */}
 
 
-      {/* {selectedCourse && (
+      {selectedCourse && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div ref={modalRef} className="relative bg-white p-8 rounded-lg">
             <h2 className="text-2xl font-semibold mb-4">
@@ -406,7 +406,7 @@ onClick={() => handleEyeClick(course_list)}
             </button>
           </div>
         </div>
-      )} */}
+      )}
     </div>
   );
 };

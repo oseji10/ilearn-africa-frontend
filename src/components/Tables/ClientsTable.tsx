@@ -10,7 +10,8 @@ const ClientsTable = () => {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedClient, setSelectedClient] = useState(null);
+  const [selectedClient, setSelectedClient] = useState(null)
+  const [selectedClientDelete, setSelectedClientDelete] = useState(null);
   const [search, setSearch] = useState("");
   const [filteredClients, setFilteredClients] = useState([]);
   const modalRef = useRef(null);
@@ -58,6 +59,11 @@ const ClientsTable = () => {
 
   const handleEyeClick = useCallback((client) => {
     setSelectedClient(client);
+  }, []);
+
+
+  const handleClientDelete = useCallback((client) => {
+    setSelectedClientDelete(client);
   }, []);
 
   const closeModal = useCallback(() => {
@@ -145,10 +151,10 @@ const ClientsTable = () => {
           </button>
           {/* <button className="hover:text-primary">
             <FontAwesomeIcon icon={faFilePdf} className="fill-current" size="sm" />
-          </button>
-          <button className="hover:text-primary">
-            <FontAwesomeIcon icon={faTrash} className="fill-current" size="sm" />
           </button> */}
+          <button className="hover:text-primary" onClick={handleClientDelete}>
+            <FontAwesomeIcon icon={faTrash} className="fill-current" size="sm" /> Delete
+          </button>
         </div>
       ),
     },
@@ -298,6 +304,41 @@ const ClientsTable = () => {
               </tbody>
             </table>
 
+            <button
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
+              onClick={closeModal}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+
+
+
+
+
+
+
+
+{selectedClientDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div
+            className="bg-white p-6 rounded shadow-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto"
+            ref={modalRef}
+          >
+            <h2 className="text-xl font-semibold mb-4">Delete Client?</h2>
+            <h3 className="text-xl font-semibold mb-4">Are you sure you want to delete this client?</h3>
+
+
+          <button
+              className="mt-4 px-4 py-2 bg-red-500 text-white rounded" style={{background: 'red'}}
+              onClick={deleteClient}
+            >
+              Delete
+            </button>  
+&nbsp;&nbsp;
             <button
               className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
               onClick={closeModal}

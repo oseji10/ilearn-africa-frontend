@@ -382,12 +382,12 @@ const uploadFile = async (file) => {
                 <form onSubmit={handleSubmit}>
                   <div className="mb-5.5 flex flex-col gap-5.5 sm:flex-row">
                     <div className="w-full sm:w-1/2">
-                      <label
+                      {/* <label
                         className="mb-3 block text-sm font-medium text-black dark:text-white"
                         htmlFor="clientId"
                       >
                         Client ID
-                      </label>
+                      </label> */}
                       <div className="relative">
                         <input
                           className="w-full rounded border border-stroke bg-gray px-4.5 py-3 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
@@ -397,7 +397,7 @@ const uploadFile = async (file) => {
                           placeholder="Client ID"
                           value={formData.client_id}
                           onChange={handleChange}
-                          disabled
+                          hidden
                         />
                       </div>
                     </div>
@@ -419,6 +419,7 @@ const uploadFile = async (file) => {
                           id="title"
                           value={formData.title}
                           onChange={handleChange}
+                          required
                         >
                           <option value="">Title</option>
                           <option value="Mr">Mr.</option>
@@ -451,6 +452,7 @@ const uploadFile = async (file) => {
                           placeholder="First Name"
                           value={formData.firstname}
                           onChange={handleChange}
+                          required
                         />
                       </div>
                     </div>
@@ -481,6 +483,7 @@ const uploadFile = async (file) => {
                           placeholder="Surname"
                           value={formData.surname}
                           onChange={handleChange}
+                          required
                         />
                       </div>
                     </div>
@@ -534,6 +537,7 @@ const uploadFile = async (file) => {
                         id="gender"
                         value={formData.gender}
                         onChange={handleChange}
+                        required
                       >
                         <option value="">Select Gender</option>
                         <option value="Male">Male</option>
@@ -563,6 +567,7 @@ const uploadFile = async (file) => {
                         id="marital_status"
                         value={formData.marital_status}
                         onChange={handleChange}
+                        required
                       >
                         <option value="">Select Marital Status</option>
                         <option value="Single">Single</option>
@@ -594,6 +599,7 @@ const uploadFile = async (file) => {
                             </label>
                             <div className="relative">
                               <select
+                              required
                                 className="w-full rounded border border-stroke bg-gray px-4.5 py-3 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
                                 name="qualification_id"
                                 id={`educationalQualification-${index}`}
@@ -625,6 +631,7 @@ const uploadFile = async (file) => {
                               Course Studied
                             </label>
                             <input
+                            required
                               className="w-full rounded border border-stroke bg-gray px-4.5 py-3 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
                               type="text"
                               name="course_studied"
@@ -645,6 +652,7 @@ const uploadFile = async (file) => {
                             </label>
                             <div className="relative">
                               <select
+                              required
                                 className="w-full rounded border border-stroke bg-gray px-4.5 py-3 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
                                 name="grade"
                                 id={`grade-${index}`}
@@ -671,6 +679,7 @@ const uploadFile = async (file) => {
                               Date Acquired
                             </label>
                             <input
+                            required
                               className="w-full rounded border border-stroke bg-gray px-4.5 py-3 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
                               type="date"
                               name="date_acquired"
@@ -714,6 +723,7 @@ const uploadFile = async (file) => {
                               Start Date
                             </label>
                             <input
+                            required
                               className="w-full rounded border border-stroke bg-gray px-4.5 py-3 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
                               type="date"
                               name="start_date"
@@ -731,6 +741,7 @@ const uploadFile = async (file) => {
                               End Date
                             </label>
                             <input
+                            required
                               className="w-full rounded border border-stroke bg-gray px-4.5 py-3 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
                               type="date"
                               name="end_date"
@@ -748,6 +759,7 @@ const uploadFile = async (file) => {
                               Organization
                             </label>
                             <input
+                            required
                               className="w-full rounded border border-stroke bg-gray px-4.5 py-3 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
                               type="text"
                               name="organization"
@@ -765,6 +777,7 @@ const uploadFile = async (file) => {
                               Job Title
                             </label>
                             <input
+                            required
                               className="w-full rounded border border-stroke bg-gray px-4.5 py-3 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
                               type="text"
                               name="job_title"

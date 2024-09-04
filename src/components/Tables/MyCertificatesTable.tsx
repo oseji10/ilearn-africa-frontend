@@ -139,7 +139,7 @@ const MyCertificatesTable = () => {
             <thead>
               <tr className="bg-gray-2 text-left dark:bg-meta-4">
                 <th className="min-w-[220px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
-                  Client ID
+                  Admission Number
                 </th>
                 <th className="min-w-[220px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
                   Name
@@ -160,7 +160,8 @@ const MyCertificatesTable = () => {
                 <tr key={key}>
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
                     <h5 className="font-medium text-black dark:text-white">
-                      {certificate.client_id}
+                      {/* {certificate.client_id} */}
+                      iLA/{String(certificate?.id).padStart(4, '0')}/2024
                     </h5>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">

@@ -18,6 +18,11 @@ const MyAdmissionsTable = () => {
     client_id: "",
   });
 
+
+  // const admissionId = admission?.id;
+  // const formattedId = String(admissionId).padStart(4, '0');
+  // const result = `iLA/${formattedId}/2024`;
+  
   useEffect(() => {
     const fetchClientId = async () => {
       const token = localStorage.getItem("token");
@@ -131,11 +136,11 @@ const MyAdmissionsTable = () => {
             <thead>
               <tr className="bg-gray-2 text-left dark:bg-meta-4">
                 <th className="min-w-[220px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
-                  Client ID
+                  Admission Number
                 </th>
-                <th className="min-w-[220px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
+                {/* <th className="min-w-[220px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
                   Name
-                </th>
+                </th> */}
                 <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
                   Course Registered
                 </th>
@@ -152,14 +157,14 @@ const MyAdmissionsTable = () => {
                 <tr key={key}>
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
                     <h5 className="font-medium text-black dark:text-white">
-                      {admission.client_id} 
+                    iLA/{String(admission?.id).padStart(4, '0')}/2024
                     </h5>
                   </td>
-                  <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
+                  {/* <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
                     <h5 className="font-medium text-black dark:text-white">
                       {admission.clients?.firstname} {admission.clients?.surname} {admission.clients?.othernames}
                     </h5>
-                  </td>
+                  </td> */}
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <p className="text-black dark:text-white">
                       {admission.payments?.courses?.course_id} - {admission.payments?.courses?.course_name}

@@ -202,9 +202,9 @@ const MyPaymentsTable = () => {
                 style={{ textAlign: "left" }}
                 className="bg-gray-2 text-left dark:bg-meta-4"
               >
-                <th className="min-w-[220px] px-4 py-4 font-medium text-black dark:text-white">
+                {/* <th className="min-w-[220px] px-4 py-4 font-medium text-black dark:text-white">
                   Client ID
-                </th>
+                </th> */}
                 <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
                   Client Name
                 </th>
@@ -236,9 +236,9 @@ const MyPaymentsTable = () => {
             <tbody>
               {payments.map((payment) => (
                 <tr key={payment.transaction_reference}>
-                  <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
+                  {/* <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     {payment.client_id}
-                  </td>
+                  </td> */}
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                   {payment.clients.title} {payment.clients.firstname} {payment.clients.othernames} {payment.clients.surname}
                   </td>

@@ -75,26 +75,25 @@ const PendingPaymentsTable = () => {
         if (!token) {
           throw new Error("No auth token found");
         }
-
+  
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL}/pending-payments`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
-            },
+            }
           }
         );
         setPayments(response.data.payments);
         setOtherReference(response.data.payments.other_reference);
-        console.log(response.data);
         setLoading(false);
       } catch (err) {
         setError(err.message);
         setLoading(false);
-        router.refresh()
+        // router.refresh() <-- Remove this line
       }
     };
-
+  
     const fetchCourses = async () => {
       try {
         const token = localStorage.getItem("token");
@@ -106,7 +105,7 @@ const PendingPaymentsTable = () => {
           {
             headers: {
               Authorization: `Bearer ${token}`,
-            },
+            }
           }
         );
         setCourses(response.data.courses);
@@ -114,36 +113,36 @@ const PendingPaymentsTable = () => {
         console.error("Failed to fetch courses:", err.message);
       }
     };
-
-
-
-    const fetchProof = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("No auth token found");
-        }
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/proof-of-payment/${payment.other_reference}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+  
+    // Make sure payment is defined before using it in fetchProof
+    if (otherReference) {
+      const fetchProof = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          if (!token) {
+            throw new Error("No auth token found");
           }
-        );
-        setProof(response.data);
-        console.log("hi")
-      } catch (err) {
-        console.error("Failed to fetch courses:", err.message);
-      }
-    };
+          const response = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/proof-of-payment/${otherReference}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              }
+            }
+          );
+          setProof(response.data);
+        } catch (err) {
+          console.error("Failed to fetch proof of payment:", err.message);
+        }
+      };
+  
+      fetchProof();
+    }
   
     fetchPayments();
     fetchCourses();
-    fetchProof();
-    router.refresh()
-  }, [router, otherReference]);
-
+  }, [otherReference]); // Remove `router` from dependencies
+  
 
   
 
@@ -303,7 +302,7 @@ const PendingPaymentsTable = () => {
         setError(error.message);
       }
       setIsSubmitting(false);
-      router.refresh()
+      // router.refresh()
     },
     [selectedPayment, transactionReference, confirmReceipt, router, closeModal]
   );

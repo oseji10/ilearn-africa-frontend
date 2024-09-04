@@ -55,10 +55,11 @@ useEffect(() => {
 
   return (
     <DefaultLayout>
-      <Breadcrumb pageName="My Registration Form" />
+      <Breadcrumb pageName="Course Registration" />
 
       <div className="flex flex-col gap-10">
-        
+        <p>
+        Please select the course you paid for:</p>
           <MyCoursesAfterPayment />
        
       </div>
