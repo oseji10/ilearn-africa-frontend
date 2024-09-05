@@ -28,27 +28,31 @@ const AdmittedClientsTable = () => {
         if (!token) {
           throw new Error("No auth token found");
         }
-
+  
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/admitted`,
+          `${process.env.NEXT_PUBLIC_API_URL}/admitted-clients`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          },
+          }
         );
-        setAdmissions(response.data.admissions);
-        setFilteredAdmissions(response.data.admissions);
+        
+        // Log response to check structure
+        console.log(response.data);
+        
+        setAdmissions(response.data.admissions); // Adjust this based on API response structure
+        setFilteredAdmissions(response.data.admissions); // Adjust this based on API response structure
         setLoading(false);
       } catch (err) {
         setError(err.message);
         setLoading(false);
       }
     };
-
+  
     fetchAdmissions();
   }, []);
-
+  
   useEffect(() => {
     const filteredData = admissions.filter(
       (admission) =>
@@ -117,7 +121,9 @@ const AdmittedClientsTable = () => {
     },
     {
       name: "Admission Number",
-      selector: (row) => <p>{row.id || "N/A"}</p>,
+      selector: (row) => <p>{`iLA/${String(row.id).padStart(4, '0')}/2024` || "N/A"}</p>,
+
+      // iLA/{String(admission?.id).padStart(4, '0')}/2024
       sortable: true,
     },
     {

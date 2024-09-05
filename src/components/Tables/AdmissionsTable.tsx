@@ -196,7 +196,10 @@ const AdmissionsTable = () => {
       name: "Payment Date",
       selector: (row) => (
        
-        <p style={{ width: "100%" }}>{format(new Date(row.payments?.created_at), 'EEEE, MMMM do, yyyy') || "N/A"}</p>
+        <p style={{ width: "100%" }}>
+          {/* {format(new Date(row.payments?.created_at), 'EEEE, MMMM do, yyyy') || "N/A"} */}
+          {/* {format(new Date(row.payments?.created_at), 'EEEE, MMMM do, yyyy') || "N/A"} */}
+          </p>
         
       ),
       sortable: true,

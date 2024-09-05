@@ -141,7 +141,7 @@ const deleteClient = async (client) => {
     {
       name: "Name",
       selector: (row) =>
-        `${row.firstname} ${row.surname} ${row.othernames}`,
+        `${row.firstname || ""} ${row.surname || ""} ${row.othernames || ""}`,
       sortable: true,
     },
     {

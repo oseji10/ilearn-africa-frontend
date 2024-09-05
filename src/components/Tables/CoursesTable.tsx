@@ -284,7 +284,7 @@ const CoursesTable = () => {
     },
     {
       name: "Institution",
-      selector: (row) => row.centers.center_name,
+      selector: (row) => row.centers?.center_name,
       sortable: true,
     },
     {
@@ -388,8 +388,8 @@ const CoursesTable = () => {
       <h3 className="font-bold text-lg">Course Details</h3>
         <p>Course ID: <b>{selectedRow.course_id}</b></p> 
         <p>Course Name: <b>{selectedRow.certification_name}</b></p>
-        <p>Certification Name: <b>{selectedRow.course_name}</b></p>
-        <p>Partner Name:<b>{selectedRow.centers.center_name}</b> </p>
+        <p>Certification Name: <b>{selectedRow?.course_name}</b></p>
+        {/* <p>Partner Name:<b>{selectedRow?.centers.center_name}</b> </p> */}
       <div className="modal-action mt-4 flex justify-end">
         </div>
         <button
