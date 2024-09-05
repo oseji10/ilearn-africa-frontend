@@ -15,6 +15,7 @@ const ClientsTable = () => {
   const [search, setSearch] = useState("");
   const [filteredClients, setFilteredClients] = useState([]);
   const modalRef = useRef(null);
+  const modalRef2 = useRef(null);
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -47,33 +48,35 @@ const ClientsTable = () => {
 
 
 
-  useEffect(() => {
-    const deleteClient = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("No auth token found");
-        }
+  // Move the deleteClient function outside of useEffect
+const deleteClient = async (client) => {
+  //  console.log("Client object:", client);
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No auth token found");
+    }
 
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/delete_client/${row.client_id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setClients(response.data.clients);
-        setFilteredClients(response.data.clients);
-        setLoading(false);
-      } catch (err) {
-        setError(err.message);
-        setLoading(false);
+    const response = await axios.delete(
+      `${process.env.NEXT_PUBLIC_API_URL}/delete_client/${client.client_id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
-    };
+    );
 
-    deleteClient();
-  }, []);
+    // Filter out the deleted client from the list
+    setClients(clients.filter((c) => c.client_id !== client.client_id));
+    setFilteredClients(filteredClients.filter((c) => c.client_id !== client.client_id));
+    setSelectedClientDelete(null); // Close the modal
+  } catch (err) {
+    setError(err.message);
+  }
+};
+
+
+
 
   useEffect(() => {
     const filteredData = clients.filter(
@@ -101,17 +104,22 @@ const ClientsTable = () => {
     setSelectedClient(null);
   }, []);
 
+  const closeModal2 = useCallback(() => {
+    setSelectedClientDelete(null);
+  }, []);
+
   const handleClickOutside = useCallback(
     (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
         closeModal();
+        closeModal2();
       }
     },
     [closeModal]
   );
 
   useEffect(() => {
-    if (selectedClient) {
+    if (selectedClient || selectedClientDelete) {
       document.addEventListener("mousedown", handleClickOutside);
     } else {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -119,7 +127,7 @@ const ClientsTable = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [selectedClient, handleClickOutside]);
+  }, [selectedClient, selectedClientDelete, handleClickOutside]);
 
   if (loading) {
     return <p>Loading...</p>;
@@ -183,7 +191,7 @@ const ClientsTable = () => {
           {/* <button className="hover:text-primary">
             <FontAwesomeIcon icon={faFilePdf} className="fill-current" size="sm" />
           </button> */}
-          <button className="hover:text-primary" onClick={handleClientDelete}>
+          <button className="hover:text-primary" onClick={() => handleClientDelete(row)}>
             <FontAwesomeIcon icon={faTrash} className="fill-current" size="sm" /> Delete
           </button>
         </div>
@@ -357,22 +365,23 @@ const ClientsTable = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div
             className="bg-white p-6 rounded shadow-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto"
-            ref={modalRef}
+            ref={modalRef2}
           >
             <h2 className="text-xl font-semibold mb-4">Delete Client?</h2>
+            {/* <h2 className="text-xl font-semibold mb-4">Hh{selectedClientDelete.user.client_id}</h2> */}
             <h3 className="text-xl font-semibold mb-4">Are you sure you want to delete this client?</h3>
 
-
-          <button
-              className="mt-4 px-4 py-2 bg-red-500 text-white rounded" style={{background: 'red'}}
-              onClick={deleteClient()}
-            >
-              Delete
-            </button>  
+<button
+style={{background: 'red'}}
+  className="mt-4 px-4 py-2 bg-red-500 text-white rounded"
+  onClick={() => deleteClient(selectedClientDelete)} // Corrected this line
+>
+  Delete
+</button> 
 &nbsp;&nbsp;
-            <button
+<button
               className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
-              onClick={closeModal}
+              onClick={closeModal2}
             >
               Close
             </button>

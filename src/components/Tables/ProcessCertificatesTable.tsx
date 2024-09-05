@@ -92,48 +92,47 @@ const ProcessCertificatesTable = () => {
       alert("Please select at least one admission to process.");
       return;
     }
-
+  
     setIsProcessingAll(true);
     setProgress(0);
-
+  
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No auth token found");
-
-      for (let i = 0; i < selectedAdmissions.length; i++) {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/certificates/batch-process`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ admission_number: selectedAdmissions[i] }),
-          }
-        );
-
-        if (response.ok) {
-          setProgress(((i + 1) / selectedAdmissions.length) * 100);
-          setAdmissions((prevAdmissions) =>
-            prevAdmissions.filter(
-              (admission) => admission.admission_number !== selectedAdmissions[i]
-            )
-          );
-        } else {
-          throw new Error("Failed to process admission: " + selectedAdmissions[i]);
+  
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/certificates/batch-process`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ admission_number: selectedAdmissions }), // Send the array of admission numbers
         }
+      );
+  
+      if (response.ok) {
+        setProgress(100);
+        setAdmissions((prevAdmissions) =>
+          prevAdmissions.filter(
+            (admission) => !selectedAdmissions.includes(admission.admission_number)
+          )
+        );
+        alert("All selected admissions have been processed successfully.");
+        setSelectedAdmissions([]);
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to process admissions");
       }
-
-      alert("All selected admissions have been processed successfully.");
-      setSelectedAdmissions([]);
     } catch (err) {
       console.error("Error processing all admissions:", err);
       alert("An error occurred while processing admissions. Please try again.");
     }
-
+  
     setIsProcessingAll(false);
   };
+  
 
   const handleApproval = async (event) => {
     event.preventDefault();
