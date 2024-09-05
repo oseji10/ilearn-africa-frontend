@@ -419,13 +419,13 @@ const PendingPaymentsTable = () => {
             <h2 className="text-xl font-semibold mb-4">Confirm Payment</h2>
             <form onSubmit={confirmPayment}>
               
-            <Link
-                    href={`${process.env.NEXT_PUBLIC_DOWNLOAD_LINK}${selectedPayment.proof.file_path}`}
+            {/* <Link
+                    href={`${process.env.NEXT_PUBLIC_DOWNLOAD_LINK}${selectedPayment?.proof.file_path}`}
                     className="text-sm text-primary hover:underline"
                     target="_blank"
                   >
                     View receipt
-                  </Link>
+                  </Link> */}
               <div className="flex items-center mb-4">
                
                 

@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
 import DataTable from "react-data-table-component";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownload, faEye, faPlus, faSpinner, faTrash, faFilePdf } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faEye, faPlus, faSpinner, faTrash, faFilePdf, faEdit } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from 'next/navigation';
 
 const CoursesTable = () => {
@@ -12,6 +12,7 @@ const CoursesTable = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
+  const [isCourseEditModalOpen, setIsCourseEditModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModal2Open, setIsModal2Open] = useState(false);
   const [centerList, setCenterList] = useState([]);
@@ -23,6 +24,14 @@ const CoursesTable = () => {
     certification_name: "",
   })
   const [selectedCourse, setSelectedCourse] = useState({
+    course_id: "",
+    course_name: "",
+    cost: "",
+    center_id: "",
+    certification_name: "",
+  });
+
+  const [selectedCourseEdit, setSelectedCourseEdit] = useState({
     course_id: "",
     course_name: "",
     cost: "",
@@ -137,6 +146,9 @@ const CoursesTable = () => {
     setIsCourseModalOpen(false);
   }, []);
   
+  const closeCourseEditModal = useCallback(() => {
+    setIsCourseEditModalOpen(false);
+  }, []);
  
   const handleCourseDelete = useCallback((course) => {
     setSelectedCourseDelete(course);
@@ -150,6 +162,14 @@ const CoursesTable = () => {
     });
   };
   
+
+  const handleChangeEdit = (e) => {
+    const { name, value } = e.target;
+    setSelectedCourseEdit({
+      ...selectedCourseEdit,
+      [name]: value,
+    });
+  };
   
 
   const handleChange2 = (e) => {
@@ -270,7 +290,36 @@ const CoursesTable = () => {
     }
   };
   
+  const openEditCourseModal = (row) => {
+    setSelectedCourseEdit(row);  // Set the selected course for editing
+    setIsCourseEditModalOpen(true);  // Open the modal
+  };
 
+  const handleCourseUpdate = async () => {
+    try {
+      setIsSubmitting(true);
+      const token = localStorage.getItem("token");
+      await axios.patch(
+        `${process.env.NEXT_PUBLIC_API_URL}/update_course/${selectedCourseEdit.course_id}`,
+        selectedCourseEdit,  // Send the updated course data
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      fetchCourses();  // Fetch the updated courses
+      alert("Course details updated!");
+      closeCourseModal();  // Close the modal after update
+    } catch (error) {
+      console.error("Error updating course:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  
   const columns = [
     {
       name: "Course ID",
@@ -320,6 +369,13 @@ const CoursesTable = () => {
       name: "Actions",
       cell: (row) => (
         <div className="flex space-x-2">
+ <button
+        onClick={() => openEditCourseModal(row)}  // New edit button
+        className="px-4 py-2 bg-yellow-500 text-white rounded"
+      >
+        <FontAwesomeIcon icon={faEdit} />
+      </button>
+
           <button
             // onClick={() => alert(`View details for ${row.course_id}`)}
             onClick={() => openCourseModal(row)}
@@ -596,6 +652,83 @@ style={{background: 'red'}}
           </div>
         </div>
       )}
+
+
+
+{isCourseEditModalOpen && selectedCourseEdit && (
+  <div
+    ref={modal2Ref}
+    className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
+  >
+    <div className="modal-box bg-white p-4 rounded shadow-md w-full max-w-lg md:max-w-md">
+      <h3 className="font-bold text-lg">Edit Course</h3>
+      <div >
+      <label className=" text-sm text-black dark:text-white" >Course Name:</label>
+      
+        <input
+          type="text"
+          name="certification_name"
+          value={selectedCourseEdit.certification_name}
+          onChange={handleChangeEdit}
+          placeholder="Certification Name"
+          className="w-full px-4 py-2 border border-gray-300 rounded"
+        />
+
+<label className=" text-sm text-black dark:text-white" >Certification Name:</label>
+<input
+          type="text"
+          name="course_name"
+          value={selectedCourseEdit.course_name}
+          onChange={handleChangeEdit}
+          placeholder="Course Name"
+          className="w-full px-4 py-2 border border-gray-300 rounded"
+        />  
+        <label className=" text-black dark:text-white"  htmlFor="cost">Cost:</label>
+        <input
+          type="text"
+          name="cost"
+          value={selectedCourseEdit.cost}
+          onChange={handleChangeEdit}
+          placeholder="Cost"
+          className="w-full px-4 py-2 border border-gray-300 rounded"
+        />
+
+<label className=" text-black dark:text-white"  htmlFor="center">Center:</label>
+        <select
+          name="center_id"
+          value={selectedCourseEdit.center_id}
+          onChange={handleChangeEdit}
+          className="w-full px-4 py-2 border border-gray-300 rounded"
+        >
+          <option value="">Select Center</option>
+          {centerList.map((center) => (
+            <option key={center.center_id} value={center.center_id}>
+              {center.center_name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="modal-action mt-4 flex justify-end">
+      <button
+          onClick={handleCourseUpdate}  // Submit edit
+          className="px-4 py-2 bg-blue-500 text-white rounded"
+        >
+          {isSubmitting ? <FontAwesomeIcon icon={faSpinner} spin /> : "Update"}
+        </button>
+        &nbsp;
+        <button
+          onClick={closeCourseEditModal}
+          className="px-4 py-2 bg-gray-500 text-white rounded"
+          style={{background: 'red'}}
+        >
+          Cancel
+        </button>
+       
+      </div>
+    </div>
+  </div>
+)}
+
 
     </div>
   );

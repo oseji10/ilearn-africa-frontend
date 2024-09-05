@@ -188,15 +188,17 @@ const deleteClient = async (client) => {
           <button className="hover:text-primary" onClick={() => handleEyeClick(row)}>
             <FontAwesomeIcon icon={faEye} className="fill-current" size="sm" /> View Client
           </button>
-          {/* <button className="hover:text-primary">
-            <FontAwesomeIcon icon={faFilePdf} className="fill-current" size="sm" />
-          </button> */}
-          <button className="hover:text-primary" onClick={() => handleClientDelete(row)}>
-            <FontAwesomeIcon icon={faTrash} className="fill-current" size="sm" /> Delete
-          </button>
+          
+          {/* Conditionally render the delete button if user role is 3 */}
+          {row.user.role_id === 3 && (
+            <button className="hover:text-primary" onClick={() => handleClientDelete(row)}>
+              <FontAwesomeIcon icon={faTrash} className="fill-current" size="sm" /> Delete
+            </button>
+          )}
         </div>
       ),
     },
+    
   ];
 
   return (

@@ -3,7 +3,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import DataTable from "react-data-table-component";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownload, faSpinner, faEye } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faSpinner, faEye, faEnvelope, faEnvelopeOpen } from "@fortawesome/free-solid-svg-icons";
 import { CSVLink } from "react-csv";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
@@ -19,6 +19,7 @@ const ClientCertificates = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isEmailing, setIsEmailing] = useState(false);
   const [activeTransaction, setActiveTransaction] = useState(null);
 
   const handleConfirmReceiptChange = useCallback((e) => {
@@ -154,7 +155,27 @@ const ClientCertificates = () => {
     ) : (
       <span>
         <FontAwesomeIcon icon={faDownload} />&nbsp;
-         Download/Email Certificate
+         Download
+      </span>
+    )}
+            {/* <FontAwesomeIcon icon={faDownload} /> Download Certificate */}
+          </button>
+
+&nbsp;
+
+          <button
+          disabled={isEmailing}
+            className="px-4 py-2 bg-green-500 text-white rounded"
+            onClick={() => emailCertificate(row)}
+          >
+            {isEmailing && activeTransaction === row.admission_number ? (
+      <span>
+        Sending. Please wait... <FontAwesomeIcon icon={faSpinner} spin />
+      </span>
+    ) : (
+      <span>
+        <FontAwesomeIcon icon={faEnvelope} />&nbsp;
+         Email 
       </span>
     )}
             {/* <FontAwesomeIcon icon={faDownload} /> Download Certificate */}
@@ -188,7 +209,7 @@ const ClientCertificates = () => {
   
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/certificates/client-certificate/${admissionNumber}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/certificates/client-certificate/download/${admissionNumber}`,
         {
           method: "POST",
           headers: {
@@ -216,6 +237,51 @@ const ClientCertificates = () => {
     }
     setIsDownloading(false)
   };
+
+
+
+
+
+  const emailCertificate= async (row) => {
+    const admissionNumber = row.admission_number;
+  setIsEmailing(true)
+  setActiveTransaction(admissionNumber);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No auth token found");
+    }
+  
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/certificates/client-certificate/email/${admissionNumber}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          mode: 'cors',
+        }
+      );
+  
+      // if (response.ok) {
+      //   const blob = await response.blob();
+      //   const url = window.URL.createObjectURL(blob);
+      //   const link = document.createElement("a");
+      //   link.href = url;
+      //   link.setAttribute("download", `iLearnCertificate-${admissionNumber}.pdf`);
+      //   document.body.appendChild(link);
+      //   link.click();
+      //   link.parentNode.removeChild(link);
+      // } else {
+      //   console.error("Failed to download the admission letter", response.statusText);
+      // }
+    } catch (error) {
+      console.error("An error occurred while emailing the admission letter", error);
+    }
+    setIsEmailing(false)
+  };
+
 
 
   return (

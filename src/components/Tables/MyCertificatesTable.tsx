@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEnvelope, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faEnvelope, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 
 const MyCertificatesTable = () => {
@@ -14,7 +14,11 @@ const MyCertificatesTable = () => {
   const [error, setError] = useState(null);
   const router = useRouter();
   const [clientId, setClientId] = useState("");
+  const [isDownloading, setIsDownloading] = useState(false);
+  // const [isEmailing, setIsEmailing] = useState(false);
+  const [activeTransaction, setActiveTransaction] = useState(null);
 
+  
   const [formData, setFormData] = useState({
     client_id: "",
     admission_number: ""
@@ -130,6 +134,51 @@ const MyCertificatesTable = () => {
     router.refresh();
   };
 
+
+
+
+
+
+  const downloadCertificate= async (row) => {
+    const admissionNumber = row.admission_number;
+  setIsDownloading(true)
+  setActiveTransaction(admissionNumber);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No auth token found");
+    }
+  
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/certificates/client-certificate/download/${admissionNumber}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          mode: 'cors',
+        }
+      );
+  
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `iLearnCertificate-${admissionNumber}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+      } else {
+        console.error("Failed to download the admission letter", response.statusText);
+      }
+    } catch (error) {
+      console.error("An error occurred while downloading the admission letter", error);
+    }
+    setIsDownloading(false)
+  };
+
   return (
     <div>
       {error && <p className="text-red-500">{error}</p>}
@@ -173,8 +222,8 @@ const MyCertificatesTable = () => {
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <p className="text-black dark:text-white">
-                      {certificate.payments.courses?.course_id} -{" "}
-                      {certificate.payments.courses?.course_name}
+                      {certificate.payments?.courses?.course_id} -{" "}
+                      {certificate.payments?.courses?.course_name}
                     </p>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
@@ -197,17 +246,18 @@ const MyCertificatesTable = () => {
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <div className="flex items-center space-x-3.5">
                     <button
-  disabled={isSubmitting}
+  disabled={isDownloading}
   className="px-4 py-2 bg-green-500 text-white rounded"
-  onClick={(event) => handleApproval(event, certificate)}
+  // onClick={(event) => handleApproval(event, certificate)}
+  onClick={() => downloadCertificate(certificate)}
 >
-  {isSubmitting ? (
+  {isDownloading ? (
     <span>
-      Sending. Please wait... <FontAwesomeIcon icon={faSpinner} spin />
+      Downloading. Please wait... <FontAwesomeIcon icon={faSpinner} spin />
     </span>
   ) : (
     <span>
-      <FontAwesomeIcon icon={faEnvelope} /> Email Certificate
+      <FontAwesomeIcon icon={faDownload} /> Download
     </span>
   )}
 </button>
