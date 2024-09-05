@@ -235,10 +235,10 @@ const deleteClient = async (client) => {
             <br />
             <table width={"100%"}>
               <tbody>
-                <tr>
+                {/* <tr>
                   <td width={"25%"}><strong>Client ID:</strong></td>
                   <td>{selectedClient.client_id}</td>
-                </tr>
+                </tr> */}
 
                 <tr>
                   <td width={"15%"}><strong>Name:</strong></td>

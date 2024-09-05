@@ -11,9 +11,17 @@ const CoursesTable = () => {
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModal2Open, setIsModal2Open] = useState(false);
   const [centerList, setCenterList] = useState([]);
+  const [selectedRow, setSelectedRow] = useState({
+    course_id: "",
+    course_name: "",
+    cost: "",
+    center_id: "",
+    certification_name: "",
+  })
   const [selectedCourse, setSelectedCourse] = useState({
     course_id: "",
     course_name: "",
@@ -32,6 +40,13 @@ const CoursesTable = () => {
     material_name: "",
     document: "",
   });
+
+  const [selectedCourse2, setSelectedCourse2] = useState(null)
+  const [selectedCourseDelete, setSelectedCourseDelete] = useState(null);
+
+  const modalRef = useRef(null);
+  const modalRef2 = useRef(null);
+
 
   // Fetch center names from API
   useEffect(() => {
@@ -97,6 +112,11 @@ const CoursesTable = () => {
     }
   }, [searchTerm, courseLists]);
 
+  const openCourseModal = (row) => {
+    setIsCourseModalOpen(true);
+    setSelectedRow(row);  // Assuming you have a state to store the selected row
+  };
+
   const openModal = () => {
     setIsModalOpen(true);
   };
@@ -113,21 +133,14 @@ const CoursesTable = () => {
     setIsModal2Open(false);
   }, []);
 
-  // const handleChange = (e) => {
-  //   const { name, type, files, value } = e.target;
+  const closeCourseModal = useCallback(() => {
+    setIsCourseModalOpen(false);
+  }, []);
   
-  //   if (type === "file") {
-  //     setFormData({
-  //       ...formData,
-  //       [name]: files[0], // Assign the file object
-  //     });
-  //   } else {
-  //     setFormData({
-  //       ...formData,
-  //       [name]: value,
-  //     });
-  //   }
-  // };
+ 
+  const handleCourseDelete = useCallback((course) => {
+    setSelectedCourseDelete(course);
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -155,6 +168,33 @@ const CoursesTable = () => {
     }
   };
   
+  const deleteCourse = async (course) => {
+    //  console.log("Client object:", client);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No auth token found");
+      }
+  
+      const response = await axios.delete(
+        `${process.env.NEXT_PUBLIC_API_URL}/delete_course/${course.course_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+         // Filter out the deleted client from the list
+    setCourses(courseLists.filter((c) => c.course_id !== course.course_id));
+    setFilteredCourses(filteredCourses.filter((c) => c.course_id !== course.course_id));
+    setSelectedCourseDelete(null); // Close the modal
+  } catch (err) {
+    setError(err.message);
+  }
+};
+
+
 
   const handleCourseUpload = async () => {
     try {
@@ -281,13 +321,17 @@ const CoursesTable = () => {
       cell: (row) => (
         <div className="flex space-x-2">
           <button
-            onClick={() => alert(`View details for ${row.course_id}`)}
+            // onClick={() => alert(`View details for ${row.course_id}`)}
+            onClick={() => openCourseModal(row)}
             className="px-4 py-2 bg-blue-500 text-white rounded"
           >
             <FontAwesomeIcon icon={faEye} />
           </button>
           <button
-            onClick={() => alert(`Delete ${row.course_id}`)}
+          style={{color: 'red'}}
+            // onClick={() => alert(`Delete ${row.course_id}`)}
+            // onClick={() => deleteCourse(selectedCourseDelete)} 
+            onClick={() => handleCourseDelete(row)}
             className="px-4 py-2 bg-red-500 text-white rounded"
           >
             <FontAwesomeIcon icon={faTrash} />
@@ -334,9 +378,48 @@ const CoursesTable = () => {
         highlightOnHover
       />
 
+
+{isCourseModalOpen && selectedRow && (
+  <div
+    ref={modal2Ref}
+    className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
+  >
+    <div className="modal-box bg-white p-4 rounded shadow-md w-full max-w-lg md:max-w-md">
+      <h3 className="font-bold text-lg">Course Details</h3>
+        <p>Course ID: <b>{selectedRow.course_id}</b></p> 
+        <p>Course Name: <b>{selectedRow.certification_name}</b></p>
+        <p>Certification Name: <b>{selectedRow.course_name}</b></p>
+        <p>Partner Name:<b>{selectedRow.centers.center_name}</b> </p>
+      <div className="modal-action mt-4 flex justify-end">
+        </div>
+        <button
+        style={{background: 'red', color:'white'}}
+          className="mt-4 px-4 py-2 text-black rounded"
+          onClick={closeCourseModal}
+          disabled={isSubmitting}
+        >
+          Cancel
+        </button>
+        {/* <button
+          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
+          onClick={handleCourseUpload}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <FontAwesomeIcon icon={faSpinner} spin />
+          ) : (
+            "Submit"
+          )}
+        </button> */}
+      
+    </div>
+  </div>
+)}
+
+
       {isModalOpen && (
         <div
-        ref={modal2Ref}
+        ref={modalRef}
         className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
       >
         <div className="modal-box bg-white p-4 rounded shadow-md w-full max-w-lg md:max-w-md">
@@ -483,6 +566,36 @@ const CoursesTable = () => {
     </div>
   </div>
 )}
+
+
+
+{selectedCourseDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div
+            className="bg-white p-6 rounded shadow-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto"
+            ref={modalRef2}
+          >
+            <h2 className="text-xl font-semibold mb-4">Delete Course?</h2>
+            {/* <h2 className="text-xl font-semibold mb-4">Hh{selectedCourseDelete.course_id}</h2> */}
+            <h3 className="text-xl font-semibold mb-4">Are you sure you want to delete this course?</h3>
+
+<button
+style={{background: 'red'}}
+  className="mt-4 px-4 py-2 bg-red-500 text-white rounded"
+  onClick={() => deleteCourse(selectedCourseDelete)} // Corrected this line
+>
+  Delete
+</button> 
+&nbsp;&nbsp;
+<button
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
+              onClick={closeModal2}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );
