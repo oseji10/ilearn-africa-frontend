@@ -28,6 +28,7 @@ const MyCoursesTable = () => {
             },
           }
         );
+        console.log(response.data)
         setCourses(response.data.my_courses);
         setLoading(false);
       } catch (err) {
@@ -127,12 +128,27 @@ const MyCoursesTable = () => {
 
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <div className="flex items-center space-x-3.5">
-                      <button
+                      {/* <button
                         className="hover:text-primary"
                         onClick={() => handleDownloadMaterialsClick(my_course.course_id)}
                       >
                         Download Course Materials <FontAwesomeIcon icon={faDownload} />
-                      </button>
+                      </button> */}
+
+{(my_course.admissions.status === "ADMITTED" || my_course.admissions.status === "COMPLETED") ? (
+  <button className="hover:text-primary" 
+          onClick={() => handleDownloadMaterialsClick(my_course.course_id)}
+  >
+    Download Course Materials <FontAwesomeIcon icon={faDownload} />
+  </button>
+) : (
+  <p>Course materials will appear here once payment is confirmed and admission is issued.</p>
+)}
+
+
+
+
+
                     </div>
                   </td>
                 </tr>

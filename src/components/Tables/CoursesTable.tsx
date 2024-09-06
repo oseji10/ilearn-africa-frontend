@@ -216,39 +216,92 @@ const CoursesTable = () => {
 
 
 
-  const handleCourseUpload = async () => {
+  // const handleCourseUpload = async () => {
+  //   try {
+  //     setIsSubmitting(true);
+  //     const token = localStorage.getItem("token");
+  //     const response = await axios.post(
+  //       `${process.env.NEXT_PUBLIC_API_URL}/course_list`,
+  //       {
+  //         ...selectedCourse,
+  //       },
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
+  //     if (response.ok) {
+  //       const data = await response.json(); 
+  //     fetchCourses(); // Fetch courses again to update the table after submission
+  //     alert(data.message);
+  //     closeModal();
+  //     setSelectedCourse({
+  //       course_id: "",
+  //       course_name: "",
+  //       cost: "",
+  //       center_id: "",
+  //       certification_name: "",
+  //     });
+  //   }
+  //   else{
+
+  //     const data = await response.json(); 
+  //     alert(data.message);
+  //   }
+  //   } catch (error) {
+  //     console.error("Error uploading course:", error);
+  //   } finally {
+  //     setIsSubmitting(false);
+  //     router.refresh();
+  //   }
+  // };
+
+
+
+  const handleCourseUpload = async (row) => {
     try {
-      setIsSubmitting(true);
       const token = localStorage.getItem("token");
-      await axios.post(
+      if (!token) {
+        throw new Error("No auth token found");
+      }
+      setIsSubmitting(true);
+      
+  
+      const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/course_list`,
+       
         {
-          ...selectedCourse,
-        },
-        {
+          method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+          body: JSON.stringify({ ...selectedCourse }),
         }
+      
       );
-      fetchCourses(); // Fetch courses again to update the table after submission
-      alert("Course details submitted!");
-      closeModal();
-      setSelectedCourse({
-        course_id: "",
-        course_name: "",
-        cost: "",
-        center_id: "",
-        certification_name: "",
-      });
+  
+      if (response.ok) {
+        const data = await response.json(); 
+        // setResponse(data.message);
+        alert(data.message);
+        
+      
+        closeModal();
+      } else {
+        const data = await response.json(); 
+        alert(data.message);
+      }
     } catch (error) {
-      console.error("Error uploading course:", error);
-    } finally {
-      setIsSubmitting(false);
-      router.refresh();
+      console.error("Error:", error);
+      alert("An error occurred");
     }
+    setIsSubmitting(false);
   };
+
+
 
   const handleFileUpload = async () => {
     try {

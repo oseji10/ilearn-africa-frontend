@@ -311,7 +311,12 @@ const uploadFile = async (file) => {
 };
   
 
-  
+useEffect(() => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    router.push('/auth/login');
+  }
+}, []);
 
 
     

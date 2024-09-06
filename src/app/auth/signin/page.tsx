@@ -211,10 +211,14 @@ const SignIn: React.FC = () => {
                 className="w-full flex items-center justify-center rounded-lg bg-primary text-white py-2 hover:bg-primary-dark disabled:opacity-50"
               >
                 {isSubmitting ? (
-                  <FontAwesomeIcon icon={faSpinner} spin />
+                  <>
+                  Please wait... 
+                 <FontAwesomeIcon icon={faSpinner} spin />
+                </>
                 ) : (
                   "Sign In"
-                )}
+                )
+                }
               </button>
             </div>
 
