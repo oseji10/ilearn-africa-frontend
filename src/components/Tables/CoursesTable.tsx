@@ -216,51 +216,7 @@ const CoursesTable = () => {
 
 
 
-  // const handleCourseUpload = async () => {
-  //   try {
-  //     setIsSubmitting(true);
-  //     const token = localStorage.getItem("token");
-  //     const response = await axios.post(
-  //       `${process.env.NEXT_PUBLIC_API_URL}/course_list`,
-  //       {
-  //         ...selectedCourse,
-  //       },
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //           "Content-Type": "application/json",
-  //         },
-  //       }
-  //     );
-  //     if (response.ok) {
-  //       const data = await response.json(); 
-  //     fetchCourses(); // Fetch courses again to update the table after submission
-  //     alert(data.message);
-  //     closeModal();
-  //     setSelectedCourse({
-  //       course_id: "",
-  //       course_name: "",
-  //       cost: "",
-  //       center_id: "",
-  //       certification_name: "",
-  //     });
-  //   }
-  //   else{
-
-  //     const data = await response.json(); 
-  //     alert(data.message);
-  //   }
-  //   } catch (error) {
-  //     console.error("Error uploading course:", error);
-  //   } finally {
-  //     setIsSubmitting(false);
-  //     router.refresh();
-  //   }
-  // };
-
-
-
-  const handleCourseUpload = async (row) => {
+   const handleCourseUpload = async (row) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -496,8 +452,8 @@ const CoursesTable = () => {
     <div className="modal-box bg-white p-4 rounded shadow-md w-full max-w-lg md:max-w-md">
       <h3 className="font-bold text-lg">Course Details</h3>
         <p>Course ID: <b>{selectedRow.course_id}</b></p> 
-        <p>Course Name: <b>{selectedRow.certification_name}</b></p>
-        <p>Certification Name: <b>{selectedRow?.course_name}</b></p>
+        <p>Course Name: <b>{selectedRow.course_name}</b></p>
+        <p>Certification Name: <b>{selectedRow?.certification_name}</b></p>
         {/* <p>Partner Name:<b>{selectedRow?.centers.center_name}</b> </p> */}
       <div className="modal-action mt-4 flex justify-end">
         </div>
@@ -721,7 +677,7 @@ style={{background: 'red'}}
         <input
           type="text"
           name="certification_name"
-          value={selectedCourseEdit.certification_name}
+          value={selectedCourseEdit.course_name}
           onChange={handleChangeEdit}
           placeholder="Certification Name"
           className="w-full px-4 py-2 border border-gray-300 rounded"
@@ -731,7 +687,7 @@ style={{background: 'red'}}
 <input
           type="text"
           name="course_name"
-          value={selectedCourseEdit.course_name}
+          value={selectedCourseEdit.certification_name}
           onChange={handleChangeEdit}
           placeholder="Course Name"
           className="w-full px-4 py-2 border border-gray-300 rounded"

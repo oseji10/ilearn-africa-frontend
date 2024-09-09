@@ -150,7 +150,7 @@ const ClientCertificates = () => {
           >
             {isDownloading && activeTransaction === row.admission_number ? (
       <span>
-        Sending. Please wait... <FontAwesomeIcon icon={faSpinner} spin />
+        Downloading... <FontAwesomeIcon icon={faSpinner} spin />
       </span>
     ) : (
       <span>
@@ -170,7 +170,7 @@ const ClientCertificates = () => {
           >
             {isEmailing && activeTransaction === row.admission_number ? (
       <span>
-        Sending. Please wait... <FontAwesomeIcon icon={faSpinner} spin />
+        Sending... <FontAwesomeIcon icon={faSpinner} spin />
       </span>
     ) : (
       <span>
