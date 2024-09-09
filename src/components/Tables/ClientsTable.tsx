@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownload, faEye, faTrash, faFilePdf } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faEye, faTrash, faFilePdf, faPen, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import DataTable from "react-data-table-component";
 import { TextField } from "@mui/material";
 
@@ -16,15 +16,65 @@ const ClientsTable = () => {
   const [filteredClients, setFilteredClients] = useState([]);
   const modalRef = useRef(null);
   const modalRef2 = useRef(null);
+  const modalRef3 = useRef(null);
+  const [isEditClient, setIsEditClient] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState("");
 
-  useEffect(() => {
+  const [selectedClientDetails, setSelectedClientDetails] = useState({
+    client_id: "",
+    firstname: "",
+    othernames: "",
+    surname: "",
+    lastname: "",
+    email: "",
+    phone_number: "",
+    
+  });
+
+  
+
+  // useEffect(() => {
+  //   const fetchClients = async () => {
+  //     // closeEditModal();
+  //     try {
+  //       const token = localStorage.getItem("token");
+  //       if (!token) {
+  //         throw new Error("No auth token found");
+  //       }
+
+  //       const response = await axios.get(
+  //         `${process.env.NEXT_PUBLIC_API_URL}/clients`,
+  //         {
+  //           headers: {
+  //             Authorization: `Bearer ${token}`,
+  //           },
+  //         }
+  //       );
+  //       // console.log(response.data.clients)
+  //       setClients(response.data.clients);
+  //       setSelectedClientDetails(response.data.clients)
+  //       setFilteredClients(response.data.clients);
+  //       setLoading(false);
+  //     } catch (err) {
+  //       setError(err.message);
+  //       setLoading(false);
+  //     }
+  //   }
+  // });
+    // };
+  // }
+    // fetchClients();
+  // }, []);
+
+
+    // Fetch courses
     const fetchClients = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
           throw new Error("No auth token found");
         }
-
+  
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL}/clients`,
           {
@@ -34,7 +84,7 @@ const ClientsTable = () => {
           }
         );
         setClients(response.data.clients);
-        setFilteredClients(response.data.clients);
+        setFilteredClients(response.data.clients); // Set initial filtered courses
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -42,10 +92,10 @@ const ClientsTable = () => {
       }
     };
 
+
+  useEffect(() => {
     fetchClients();
   }, []);
-
-
 
 
   // Move the deleteClient function outside of useEffect
@@ -76,6 +126,29 @@ const deleteClient = async (client) => {
 };
 
 
+const handleClientUpdate = async () => {
+  try {
+    setIsSubmitting(true);
+    const token = localStorage.getItem("token");
+    await axios.patch(
+      `${process.env.NEXT_PUBLIC_API_URL}/update_client/${selectedClientDetails.client_id}`,
+      selectedClientDetails,  // Send the updated course data
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    fetchClients();  // Fetch the updated courses
+    alert("Client details updated!");
+    closeEditModal();  // Close the modal after update
+  } catch (error) {
+    console.error("Error updating client:", error);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
 
   useEffect(() => {
@@ -96,7 +169,7 @@ const deleteClient = async (client) => {
   }, []);
 
 
-  const handleClientDelete = useCallback((client) => {
+   const handleClientDelete = useCallback((client) => {
     setSelectedClientDelete(client);
   }, []);
 
@@ -108,18 +181,46 @@ const deleteClient = async (client) => {
     setSelectedClientDelete(null);
   }, []);
 
+
+  const openEditModal = (row) => {
+    setSelectedClientDetails(row);  // Set the selected course for editing
+    setIsEditClient(true);
+  };
+
+  const closeEditModal = useCallback(() => {
+    setIsEditClient(false);
+  }, []);
+
   const handleClickOutside = useCallback(
     (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
         closeModal();
         closeModal2();
+        closeEditModal();
       }
     },
-    [closeModal]
+    [closeModal, closeEditModal]
   );
 
+  const handleClickOutside2 = useCallback(
+    (event) => {
+      if (modalRef3.current && !modalRef3.current.contains(event.target)) {
+       closeEditModal();
+      }
+    },
+    [closeEditModal]
+  );
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setSelectedClientDetails({
+      ...selectedClientDetails,
+      [name]: value,
+    });
+  };
+
   useEffect(() => {
-    if (selectedClient || selectedClientDelete) {
+    if (selectedClient || selectedClientDelete ) {
       document.addEventListener("mousedown", handleClickOutside);
     } else {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -128,6 +229,21 @@ const deleteClient = async (client) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [selectedClient, selectedClientDelete, handleClickOutside]);
+
+
+
+  useEffect(() => {
+    if (selectedClientDetails) {
+      document.addEventListener("mousedown", handleClickOutside2);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside2);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside2);
+    };
+  }, [selectedClientDetails, handleClickOutside2]);
+
+
 
   if (loading) {
     return <p>Loading...</p>;
@@ -186,11 +302,15 @@ const deleteClient = async (client) => {
       cell: (row) => (
         <div className="flex items-center space-x-3.5">
           <button className="hover:text-primary" onClick={() => handleEyeClick(row)}>
-            <FontAwesomeIcon icon={faEye} className="fill-current" size="sm" /> View Client
+            <FontAwesomeIcon icon={faEye} className="fill-current" size="sm" /> View 
+          </button>
+
+          <button className="hover:text-primary" onClick={() => openEditModal(row)}>
+            <FontAwesomeIcon icon={faPen} className="fill-current" size="sm" /> Edit
           </button>
           
           {/* Conditionally render the delete button if user role is 3 */}
-          {row.user.role_id === 3 && (
+          {row.user.role_id !== 1 && (
             <button className="hover:text-primary" onClick={() => handleClientDelete(row)}>
               <FontAwesomeIcon icon={faTrash} className="fill-current" size="sm" /> Delete
             </button>
@@ -390,8 +510,92 @@ style={{background: 'red'}}
           </div>
         </div>
       )}
+
+
+
+
+{isEditClient && selectedClientDetails && (
+        <div
+        ref={modalRef3}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
+      >
+        <div className="modal-box bg-white p-4 rounded shadow-md w-full max-w-lg md:max-w-md">
+            <h3 className="font-bold text-lg">Edit Client</h3>
+            <input
+              type="text"
+              name="firstname"
+              placeholder="Firstname"
+              value={selectedClientDetails.firstname}
+              onChange={handleChange}
+              className="mt-2 w-full p-2 border rounded"
+            />
+            <input
+              type="text"
+              name="othernames"
+              placeholder="Othernames"
+              value={selectedClientDetails.othernames}
+              onChange={handleChange}
+              className="mt-2 w-full p-2 border rounded"
+            />
+
+<input
+              type="text"
+              name="surname"
+              placeholder="Surname"
+              value={selectedClientDetails.surname}
+              onChange={handleChange}
+              className="mt-2 w-full p-2 border rounded"
+            />
+
+            <input
+              type="number"
+              name="phone_number"
+              placeholder="Phone"
+              value={selectedClientDetails.user?.phone_number}
+              onChange={handleChange}
+              className="mt-2 w-full p-2 border rounded"
+            />
+         
+         <input
+              type="text"
+              name="email"
+              placeholder="Email"
+              value={selectedClientDetails.user?.email}
+              onChange={handleChange}
+              className="mt-2 w-full p-2 border rounded"
+            />
+
+            <div className="modal-action mt-4 flex justify-end">
+              <button
+                className="mt-4 px-4 py-2 text-black rounded"
+                onClick={closeEditModal}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </button>
+              <button
+                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
+                onClick={handleClientUpdate}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <FontAwesomeIcon icon={faSpinner} spin />
+                ) : (
+                  "Submit"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
     </div>
   );
 };
+
+
+
+
 
 export default ClientsTable;
