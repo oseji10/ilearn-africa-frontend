@@ -8,7 +8,7 @@ import SidebarItem from "@/components/Sidebar/SidebarItem";
 import ClickOutside from "@/components/ClickOutside";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAward, faBookAtlas, faBookOpen, faBuilding, faFileExport, faFileInvoiceDollar, faPen, faTableColumns, faUserGraduate, faUsers } from "@fortawesome/free-solid-svg-icons";
+import { faAward, faBookAtlas, faBookOpen, faBuilding, faDivide, faFileExport, faFileInvoiceDollar, faNetworkWired, faPen, faTableColumns, faUserGraduate, faUsers } from "@fortawesome/free-solid-svg-icons";
 import { faBoxesStacked } from "@fortawesome/free-solid-svg-icons/faBoxesStacked";
 import { faBook } from "@fortawesome/free-solid-svg-icons/faBook";
 import { useRouter } from "next/navigation";
@@ -44,20 +44,6 @@ const adminMenu = [
         ),
         label: "Clients",
         route: "/clients/clients",
-        // children: [
-        //   {
-        //     label: "Register Client",
-        //     route: "/clients/register",
-        //     icon: (
-        //       <FontAwesomeIcon icon={faBoxesStacked} className="fill-current" size="lg" />
-        //     ),
-        //   },
-        //   {
-        //     label: "All Clients",
-        //     route: "/clients/clients",
-        //     // Optionally add an icon here if needed
-        //   },
-        // ],
       },
       
       {
@@ -74,6 +60,14 @@ const adminMenu = [
         ),
         label: "Courses",
         route: "/courses",
+      },
+
+      {
+        icon: (
+          <FontAwesomeIcon icon={faNetworkWired} className="fill-current" size="lg" />
+        ),
+        label: "Cohorts",
+        route: "/cohorts",
       },
 
       {

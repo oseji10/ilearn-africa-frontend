@@ -237,7 +237,7 @@ const ProcessCertificatesTable = () => {
             className="px-4 py-2 bg-green-500 text-white rounded"
             onClick={() => handleEyeClick(row)}
           >
-            <FontAwesomeIcon icon={faEye} /> View
+            <FontAwesomeIcon icon={faEye} /> Process
           </button>
         </div>
       ),

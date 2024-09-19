@@ -295,6 +295,9 @@ const PendingPaymentsTable = () => {
         if (response.ok) {
           setError(null);
           closeModal();
+          // const timer = setTimeout(() => {
+          //   router.push("/admission/process-admission");
+          // }, 5 * 1000);
         } else {
           throw new Error("Payment confirmation failed");
         }

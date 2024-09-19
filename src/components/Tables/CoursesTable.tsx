@@ -22,6 +22,7 @@ const CoursesTable = () => {
     cost: "",
     center_id: "",
     certification_name: "",
+    professional_certification_name: "",
   })
   const [selectedCourse, setSelectedCourse] = useState({
     course_id: "",
@@ -29,6 +30,7 @@ const CoursesTable = () => {
     cost: "",
     center_id: "",
     certification_name: "",
+    professional_certification_name: "",
   });
 
   const [selectedCourseEdit, setSelectedCourseEdit] = useState({
@@ -37,6 +39,7 @@ const CoursesTable = () => {
     cost: "",
     center_id: "",
     certification_name: "",
+    professional_certification_name: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -96,6 +99,7 @@ const CoursesTable = () => {
           },
         }
       );
+      console.log(response.data.courses)
       setCourses(response.data.courses);
       setFilteredCourses(response.data.courses); // Set initial filtered courses
       setLoading(false);
@@ -454,6 +458,8 @@ const CoursesTable = () => {
         <p>Course ID: <b>{selectedRow.course_id}</b></p> 
         <p>Course Name: <b>{selectedRow.course_name}</b></p>
         <p>Certification Name: <b>{selectedRow?.certification_name}</b></p>
+        <p>Professional Certification Name: <b>{selectedRow?.professional_certification_name}</b></p>
+        
         {/* <p>Partner Name:<b>{selectedRow?.centers.center_name}</b> </p> */}
       <div className="modal-action mt-4 flex justify-end">
         </div>
@@ -514,6 +520,17 @@ const CoursesTable = () => {
               onChange={handleChange}
               className="mt-2 w-full p-2 border rounded"
             />
+
+<input
+              type="text"
+              name="professional_certification_name"
+              placeholder="Professional Certification Name (For partner courses only)"
+              value={selectedCourse.professional_certification_name}
+              onChange={handleChange}
+              className="mt-2 w-full p-2 border rounded"
+            />
+
+
 
             <input
               type="number"
@@ -676,22 +693,33 @@ style={{background: 'red'}}
       
         <input
           type="text"
-          name="certification_name"
+          name="course_name"
           value={selectedCourseEdit.course_name}
           onChange={handleChangeEdit}
           placeholder="Certification Name"
           className="w-full px-4 py-2 border border-gray-300 rounded"
         />
 
+<label className=" text-sm text-black dark:text-white" >Professional Certification Name:</label>
+<input
+          type="text"
+          name="professional_certification_name"
+          value={selectedCourseEdit.professional_certification_name}
+          onChange={handleChangeEdit}
+          placeholder="Professional Certification Name (Partner courses ONLY)"
+          className="w-full px-4 py-2 border border-gray-300 rounded"
+        />  
+
 <label className=" text-sm text-black dark:text-white" >Certification Name:</label>
 <input
           type="text"
-          name="course_name"
+          name="certification_name"
           value={selectedCourseEdit.certification_name}
           onChange={handleChangeEdit}
           placeholder="Course Name"
           className="w-full px-4 py-2 border border-gray-300 rounded"
         />  
+
         <label className=" text-black dark:text-white"  htmlFor="cost">Cost:</label>
         <input
           type="text"
