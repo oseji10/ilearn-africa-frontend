@@ -9,7 +9,6 @@ import ClientsTable from "@/components/Tables/ClientsTable";
 import CoursesTable from "@/components/Tables/CoursesTable";
 import { MetaInformation } from "@/components/Meta";
 import MyCoursesTable from "@/components/Tables/MyCoursesTable";
-import MyCohortsTable from "@/components/Tables/MyCohortsTable";
 
 
 
@@ -19,7 +18,6 @@ const TablesPage = () => {
       <Breadcrumb pageName="My Courses" />
 
       <div className="flex flex-col gap-10">
-        {/* <MyCohortsTable/> */}
         <MyCoursesTable/>
       </div>
     </DefaultLayout>

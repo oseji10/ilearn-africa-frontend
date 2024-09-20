@@ -56,13 +56,13 @@ useEffect(() => {
 
   return (
     <DefaultLayout>
-      <Breadcrumb pageName="Course Registration" />
+      <Breadcrumb pageName="Cohorts" />
 
       <div className="flex flex-col gap-10">
         <p>
-        The following courses are available for the cohort you selected. Please select the course you paid for and proceed:</p>
-          {/* <MyCohortsTable /> */}
-          <MyCoursesAfterPayment />
+        Please select a cohort to continue:</p>
+          <MyCohortsTable />
+          {/* <MyCoursesAfterPayment /> */}
        
       </div>
     </DefaultLayout>
