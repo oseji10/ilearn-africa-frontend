@@ -18,7 +18,7 @@ const MyCertificatesTable = () => {
   // const [isEmailing, setIsEmailing] = useState(false);
   const [activeTransaction, setActiveTransaction] = useState(null);
 
-  
+
   const [formData, setFormData] = useState({
     client_id: "",
     admission_number: ""
@@ -139,15 +139,15 @@ const MyCertificatesTable = () => {
 
 
 
-  const downloadCertificate= async (row) => {
+  const downloadCertificate = async (row) => {
     const admissionNumber = row.admission_number;
-  setIsDownloading(true)
-  setActiveTransaction(admissionNumber);
+    setIsDownloading(true)
+    setActiveTransaction(admissionNumber);
     const token = localStorage.getItem("token");
     if (!token) {
       throw new Error("No auth token found");
     }
-  
+
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/certificates/client-certificate/download/${admissionNumber}`,
@@ -160,7 +160,7 @@ const MyCertificatesTable = () => {
           mode: 'cors',
         }
       );
-  
+
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
@@ -228,39 +228,64 @@ const MyCertificatesTable = () => {
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <p
-                      className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
-                        certificate.status === "COMPLETED"
+                      className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${certificate.status === "COMPLETED"
                           ? "bg-success text-success"
                           : certificate.status === "ADMITTED"
-                          ? "bg-danger text-danger"
-                          : ""
-                      }`}
+                            ? "bg-danger text-danger"
+                            : ""
+                        }`}
                     >
                       {certificate.status === "ADMITTED"
                         ? "NOT ISSUED"
                         : certificate.status === "COMPLETED"
-                        ? "ISSUED"
-                        : "N/A"}
+                          ? "ISSUED"
+                          : "N/A"}
                     </p>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <div className="flex items-center space-x-3.5">
-                    <button
-  disabled={isDownloading}
-  className="px-4 py-2 bg-green-500 text-white rounded"
-  // onClick={(event) => handleApproval(event, certificate)}
-  onClick={() => downloadCertificate(certificate)}
->
-  {isDownloading ? (
-    <span>
-      Downloading. Please wait... <FontAwesomeIcon icon={faSpinner} spin />
-    </span>
-  ) : (
-    <span>
-      <FontAwesomeIcon icon={faDownload} /> Download
-    </span>
-  )}
-</button>
+                    {parseFloat(certificate.payments.part_payment) >= parseFloat(certificate.payments.amount) && (
+                      <button
+                        disabled={isDownloading}
+                        className="px-4 py-2 bg-green-500 text-white rounded"
+                        // onClick={(event) => handleApproval(event, certificate)}
+                        onClick={() => downloadCertificate(certificate)}
+                      >
+                        {isDownloading ? (
+                          <span>
+                            Downloading. Please wait... <FontAwesomeIcon icon={faSpinner} spin />
+                          </span>
+                        ) : (
+                          <span>
+                            <FontAwesomeIcon icon={faDownload} /> Download
+                          </span>
+                        )}
+                      </button>
+ )}
+                      {/* {payment.status === 1 && parseFloat(payment.part_payment) >= parseFloat(payment.amount) && (
+      <>
+        <FontAwesomeIcon
+          icon={faDownload}
+          onClick={(event) => downloadReceipt(event, payment.transaction_reference)}
+        />
+        
+        <button
+          disabled={isSubmitting}
+          className="px-4 py-2 bg-green-500 text-white rounded"
+          onClick={(event) => handleApproval(event, payment.transaction_reference)}
+        >
+          {isSubmitting && activeTransaction === payment.transaction_reference ? (
+            <span>
+              Sending. Please wait... <FontAwesomeIcon icon={faSpinner} spin />
+            </span>
+          ) : (
+            <span>
+              <FontAwesomeIcon icon={faEnvelope} /> Email Receipt
+            </span>
+          )}
+        </button>
+      </>
+    )} */}
 
 
 

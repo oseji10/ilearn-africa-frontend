@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload, faEye, faSpinner, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faFilePdf } from "@fortawesome/free-solid-svg-icons/faFilePdf";
 import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 const MyRegisterableCoursesTable = () => {
   const [course_lists, setCourses] = useState([]);
@@ -53,6 +54,8 @@ const MyRegisterableCoursesTable = () => {
     fetchClientId();
   }, []);
 
+  const searchParams = useSearchParams();
+  const cohortId = searchParams.get('cohort_id');
   useEffect(() => {
     const fetchCourses = async () => {
       try {
@@ -62,7 +65,7 @@ const MyRegisterableCoursesTable = () => {
         }
 
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/my-registerable-courses`,
+          `${process.env.NEXT_PUBLIC_API_URL}/my-registerable-courses/${cohortId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -120,9 +123,9 @@ const MyRegisterableCoursesTable = () => {
         `${process.env.NEXT_PUBLIC_PAYSTACK_URL}`, // Ensure this endpoint is correct
         {
           email: formData.email,
-          amount: (selectedCourse.cost)*100, 
+          amount: (selectedCourse.course_list.cost)*100, 
           // amount: (selectedCourse.cost).toString(), 
-          callback_url: `${process.env.NEXT_PUBLIC_VERIFY_FRONETEND}/verify?course_id=${encodeURIComponent(selectedCourse.course_id)}&clientId=${encodeURIComponent(clientId)}`, // The callback URL
+          callback_url: `${process.env.NEXT_PUBLIC_VERIFY_FRONETEND}/client-dashboard/my-payments/verify?course_id=${encodeURIComponent(selectedCourse.course_id)}&clientId=${encodeURIComponent(clientId)}&cohort_id=${encodeURIComponent(cohortId)}`, // The callback URL
         },
         {
           headers: {
@@ -170,17 +173,17 @@ const MyRegisterableCoursesTable = () => {
                 <tr key={key}>
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
                     <h5 className="font-medium text-black dark:text-white">
-                      {course_list.course_id}
+                      {course_list.course_list.course_id}
                     </h5>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <p className="text-black dark:text-white">
-                      {course_list.course_name}
+                      {course_list.course_list.course_name}
                     </p>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <p className="text-black dark:text-white">
-                      NGN{Number(course_list.cost).toLocaleString(undefined, {
+                      NGN{Number(course_list.course_list.cost).toLocaleString(undefined, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}
@@ -189,14 +192,14 @@ const MyRegisterableCoursesTable = () => {
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                   <p
                       className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
-                        course_list.status === "Paid"
+                        course_list.course_list.status === "Paid"
                           ? "bg-warning text-warning"
                           : course_list.status === "Not Paid"
                             ? "bg-success text-success"
                             : ""
                       }`}
                     >
-                      {course_list.status === "Paid"
+                      {course_list.course_list.status === "Paid"
                         ? "Registered Already"
                         : course_list.status === "Not Paid"
                           ? "Available"
@@ -245,11 +248,11 @@ const MyRegisterableCoursesTable = () => {
           >
             <h2 className="text-lg font-semibold mb-4">Course Details</h2>
             <p>
-              <strong>Course Name:</strong> {selectedCourse.course_name}
+              <strong>Course Name:</strong> {selectedCourse.course_list.course_name}
             </p>
             <p>
               <strong>Cost:</strong> NGN{" "}
-              {Number(selectedCourse.cost).toLocaleString(undefined, {
+              {Number(selectedCourse.course_list.cost).toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}

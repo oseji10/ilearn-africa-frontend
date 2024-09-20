@@ -570,7 +570,7 @@ useEffect(() => {
 {isHistoryModalOpen && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
     <div ref={modalRef} className="relative bg-white p-8 rounded-lg">
-      <h2>Payment History</h2>
+      <h2>Installmental Payment History</h2>
       {paymentHistory && paymentHistory.length > 0 ? (
         <ul>
           {paymentHistory.map((history, index) => (
@@ -582,7 +582,7 @@ useEffect(() => {
                   </div>
                 ))
               ) : (
-                <p>No part payments available.</p>
+                <p>No installmental payments available.</p>
               )}
             </li>
           ))}

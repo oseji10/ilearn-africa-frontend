@@ -4,10 +4,14 @@ import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 
+
 const PaymentVerification = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+
+  // const searchParams = useSearchParams();
+  const cohortId = searchParams.get('cohort_id');
   useEffect(() => {
     const verifyPayment = async () => {
       const reference = searchParams.get("reference");
@@ -46,7 +50,7 @@ const PaymentVerification = () => {
                 transaction_reference: reference,
                 status: 1, // Store 1 in the database for a successful payment
                 amount: (data.data.amount / 100),
-
+                cohort_id: cohortId,
                 course_id: courseId,
                 payment_method: "PAYSTACK",
                 payment_gateway: "PAYSTACK",

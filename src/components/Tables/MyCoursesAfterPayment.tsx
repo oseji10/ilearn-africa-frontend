@@ -184,18 +184,18 @@ const MyCoursesAfterPayment = () => {
 
 
 
-  useEffect(() => {
-    // Check if the user navigated from the previous page
-    const fromPreviousPage = localStorage.getItem('fromPreviousPage');
+  // useEffect(() => {
+  //   // Check if the user navigated from the previous page
+  //   const fromPreviousPage = localStorage.getItem('fromPreviousPage');
 
-    if (!fromPreviousPage) {
-      // If not, redirect the user to the previous page or an error page
-      router.push('/client-dashboard/my-registration'); // Replace with your desired redirect
-    } else {
-      // Clear the flag after validation
-      sessionStorage.removeItem('fromPreviousPage');
-    }
-  }, [router]);
+  //   if (!fromPreviousPage) {
+  //     // If not, redirect the user to the previous page or an error page
+  //     router.push('/client-dashboard/my-registration'); // Replace with your desired redirect
+  //   } else {
+  //     // Clear the flag after validation
+  //     sessionStorage.removeItem('fromPreviousPage');
+  //   }
+  // }, [router]);
 
 
 

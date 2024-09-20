@@ -8,6 +8,8 @@ import { useRouter } from 'next/navigation';
 import 'select2/dist/css/select2.min.css';
 import $ from 'jquery';
 import 'select2';
+// import { Switch } from "@mui/material";
+import {Switch} from "@nextui-org/switch";
 
 const CohortsTable = () => {
   const [cohorts, setCohorts] = useState([]);
@@ -433,11 +435,6 @@ const handleCohortCoursesUpload = async (cohort_id, course_ids) => {
 
 
   const columns = [
-    // {
-    //   name: "Cohort ID",
-    //   selector: (row) => row.cohort_id,
-    //   sortable: true,
-    // },
     {
       name: "Cohort Name",
       selector: (row) => row.cohort_name,
@@ -448,24 +445,17 @@ const handleCohortCoursesUpload = async (cohort_id, course_ids) => {
       selector: (row) => row.start_date,
       sortable: true,
     },
-
-    // {
-    //   name: "Capacity",
-    //   selector: (row) => row.capacity_per_class,
-    //   sortable: true,
-    // },
-
     {
       name: "No. of Courses",
       selector: (row) => row.cohort_courses_count,
       sortable: true,
     },
-
     {
       name: "Status",
       selector: (row) => (
-        <p
-          className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${row.status === "active"
+        <button
+          onClick={() => toggleCohortStatus(row)}  // Call the function to toggle status
+          className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium cursor-pointer ${row.status === "active"
               ? "bg-success text-success"
               : row.status === "inactive"
                 ? "bg-warning text-warning"
@@ -477,10 +467,19 @@ const handleCohortCoursesUpload = async (cohort_id, course_ids) => {
             : row.status === "inactive"
               ? "Inactive"
               : "N/A"}
-        </p>
+        </button>
       ),
       sortable: true,
     },
+    
+    // {
+    //   name: "Toggle Status",
+    //   cell: (row) => (
+    //     <Switch 
+    //     // style={{background: 'blue'}} 
+    //     defaultSelected color="secondary">Primary</Switch>
+    //   ),
+    // },
     {
       name: "Actions",
       cell: (row) => (
@@ -491,23 +490,23 @@ const handleCohortCoursesUpload = async (cohort_id, course_ids) => {
           >
             <FontAwesomeIcon icon={faPlus} />
           </button>
-
+  
           <button
             onClick={() => openEditCohortModal(row)}  // New edit button
             className="px-4 py-2 bg-yellow-500 text-white rounded"
           >
             <FontAwesomeIcon icon={faEdit} />
           </button>
-
+  
           <button
-            // onClick={() => alert(`View details for ${row.course_id}`)}
             onClick={() => openCohortModal(row)}
             className="px-4 py-2 bg-blue-500 text-white rounded"
           >
             <FontAwesomeIcon icon={faEye} />
           </button>
+  
           <button
-            style={{ color: 'white' }}
+            style={{ color: "white" }}
             onClick={() => handleCohortDelete(row)}
             className="px-4 py-2 bg-red text-white rounded"
           >
@@ -517,6 +516,51 @@ const handleCohortCoursesUpload = async (cohort_id, course_ids) => {
       ),
     },
   ];
+
+
+  // Function to toggle status
+  const toggleCohortStatus = async (row) => {
+    const token = localStorage.getItem("token");
+  
+    try {
+      const newStatus = row.status === "active" ? "inactive" : "active";
+  
+      // Send request to API to update status
+      const response = await axios.patch(
+        `${process.env.NEXT_PUBLIC_API_URL}/cohorts/change-cohort-status`,
+        {
+          cohort_id: row.cohort_id,
+          status: newStatus,  // Send the toggled status
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      if (response.status === 200) {
+        // Use the status returned from the backend to ensure correctness
+        const updatedStatus = response.data.new_status;
+  
+        // Update the row status with the returned value from backend
+        row.status = updatedStatus;
+  
+        alert(`Cohort ${row.cohort_name} status updated to ${updatedStatus}`);
+      } else {
+        alert("Failed to update status");
+      }
+    } catch (error) {
+      console.error("Error updating cohort status:", error);
+      alert("An error occurred while updating the cohort status.");
+    }
+    finally{
+      router.refresh()
+    }
+  };
+  
+  
 
   if (loading) {
     return <p>Loading...</p>;
@@ -567,7 +611,7 @@ const handleCohortCoursesUpload = async (cohort_id, course_ids) => {
             <p>Cohort ID: <b>{selectedRow.cohort_id}</b></p>
             <p>Cohort Name: <b>{selectedRow.cohort_name}</b></p>
             <p>Start Date: <b>{selectedRow?.start_date}</b></p>
-            <p>Capacity: <b>{selectedRow?.capacity_per_class}</b></p>
+            <p>Class Capacity: <b>{selectedRow?.capacity_per_class}</b></p>
 
             {/* List of Courses */}
             <h4 className="font-bold mt-4">Courses in this Cohort:</h4>

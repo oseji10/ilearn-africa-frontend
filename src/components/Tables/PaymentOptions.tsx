@@ -26,8 +26,12 @@ import { faCheckSquare } from "@fortawesome/free-solid-svg-icons/faCheckSquare";
 import { faCartArrowDown } from "@fortawesome/free-solid-svg-icons/faCartArrowDown";
 import { faCartPlus } from "@fortawesome/free-solid-svg-icons/faCartPlus";
 config.autoAddCss = false;
+import { useSearchParams } from 'next/navigation';
 
 const PaymentOptions = () => {
+  const searchParams = useSearchParams();
+  const cohortId = searchParams.get('cohort_id');
+
   return (
     <div className="grid grid-cols-3 gap-8">
       <div className="col-span-5 xl:col-span-3">
@@ -36,9 +40,16 @@ const PaymentOptions = () => {
           <div className="p-7">
             <p style={{fontSize:'20px', color:'black'}}><br/>
             Kindly choose one of the payment options below:<br/><br/>
-             <a href="/client-dashboard/my-registration/courses-after-payment" style={{color:'blue'}}><FontAwesomeIcon icon={faCheckCircle} /> I Have Already Paid To iLearn Africa </a><br/>OR
+            <a 
+  href={`/client-dashboard/my-registration/courses-after-payment?cohort_id=${cohortId}`} 
+  style={{ color: 'blue' }}
+>
+  <FontAwesomeIcon icon={faCheckCircle} /> I Have Already Paid To iLearn Africa
+</a>
+<br />OR
+
 <br/>
-             <a style={{color:'green'}} href="/client-dashboard/courses"><FontAwesomeIcon icon={faCartPlus} /> Continue To Course Payment</a>
+             <a style={{color:'green'}} href={`/client-dashboard/courses?cohort_id=${cohortId}`}><FontAwesomeIcon icon={faCartPlus} /> Continue To Course Payment</a>
             </p>
             </div>
           </div>
