@@ -372,7 +372,7 @@ const PendingPaymentsTable = () => {
                     {payment.transaction_reference  === null ? payment.other_reference : payment.transaction_reference}
                   </td>
                   <td className="whitespace-nowrap px-4 py-4 text-black dark:text-white">
-                  NGN{Number(payment.amount).toLocaleString(undefined, {
+                  NGN{Number(payment.part_payment).toLocaleString(undefined, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}

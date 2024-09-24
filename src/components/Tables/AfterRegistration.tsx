@@ -36,9 +36,9 @@ const AfterRegistration = () => {
           <div className="p-7">
             <p style={{fontSize:'20px', color:'black'}}><br/>
              You have successfully updated your registration form. Kindly choose one of the next steps below:<br/><br/>
-             <a href="/client-dashboard/my-registration/courses-after-payment" style={{color:'blue'}}><FontAwesomeIcon icon={faCheckCircle} /> I Have Already Paid To iLearn Africa </a><br/>OR
-<br/>
-             <a style={{color:'green'}} href="/client-dashboard/courses"><FontAwesomeIcon icon={faCartPlus} /> Continue To Course Payment</a>
+             <a href="/client-dashboard/my-registration/courses-after-payment" style={{color:'blue'}}><FontAwesomeIcon icon={faCheckCircle} /> I Have Already Paid To iLearn Africa. I want to select course paid for and upload proof of payment </a><br/><br/>OR
+<br/><br/>
+             <a style={{color:'red'}} href="/client-dashboard/my-registration/my-cohort"><FontAwesomeIcon icon={faCartPlus} /> I Have Not Paid Yet. I Want To Register For a Course and Pay Online.</a><br/>  Call iLearn Africa admin 09160913155 if you are still confused
             </p>
             </div>
           </div>

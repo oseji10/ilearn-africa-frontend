@@ -7,6 +7,7 @@ import { faAward, faBook, faBookOpen, faCalendar, faCalendarAlt, faCalendarCheck
 import { faCalendarDays } from "@fortawesome/free-solid-svg-icons/faCalendarDays";
 import { faCalendarPlus } from "@fortawesome/free-solid-svg-icons/faCalendarPlus";
 import { faCalendarWeek } from "@fortawesome/free-solid-svg-icons/faCalendarWeek";
+import { useRouter } from "next/navigation";
 
 // Ensure that these components are needed, if not remove them
 const ECommerce: React.FC = () => {
@@ -23,8 +24,35 @@ const ECommerce: React.FC = () => {
   const [all_payments, setAllPayments] = useState<string>("");
 
   const [role, setRole] = useState<number | null>(null); // Changed to number or null
+  const router = useRouter();
 
+  useEffect(() => {
+    // Fetch items from local storage
+    const role = localStorage.getItem("role");
+    const client = localStorage.getItem("client"); // Assume this is a JSON object as a string
 
+    // Parse client if it exists
+    let clientData = null;
+    if (client) {
+      clientData = JSON.parse(client);
+    }
+
+    // Check if role and client data are available in local storage
+    if (role && clientData) {
+      // Check if the user role is 'client' and the client status is 'profile_created'
+      if (role === "client" && clientData.status === "profile_created") {
+        router.push("/clients/register"); // Redirect to client registration page
+      } else {
+        router.push("/dashboard"); // Redirect to dashboard
+      }
+    } else {
+      // If items are not set, handle accordingly (e.g., redirect to login)
+      // router.push("/");
+    }
+  }, [router]);
+
+  // return null; // This component doesn't render anything visually
+// };
   
   useEffect(() => {
     const fetchStatistics = async () => {

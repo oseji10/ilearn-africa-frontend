@@ -13,7 +13,7 @@ import RegistrationComplete from "@/components/Tables/RegistrationComplete";
 import AfterRegistration from "@/components/Tables/AfterRegistration";
 import CoursesAfterPayment from "@/components/Tables/MyCoursesTableAfterPayment";
 import MyCoursesAfterPayment from "@/components/Tables/MyCoursesAfterPayment";
-import MyCohortsTable from "@/components/Tables/MyCohortsTable";
+import MyCohortsTable2 from "@/components/Tables/MyCohortsTable2";
 
 // export const metadata: Metadata = {
 //   title: "iLearn Africa Registration Page",
@@ -56,13 +56,13 @@ useEffect(() => {
 
   return (
     <DefaultLayout>
-      <Breadcrumb pageName="Course Registration" />
+      <Breadcrumb pageName="Cohorts" />
 
       <div className="flex flex-col gap-10">
         <p>
-        The following courses are available for the cohort you selected. Please select the course you paid for and proceed:</p>
-          {/* <MyCohortsTable /> */}
-          <MyCoursesAfterPayment />
+        Please select a cohort to continue:</p>
+          <MyCohortsTable2 />
+          
        
       </div>
     </DefaultLayout>

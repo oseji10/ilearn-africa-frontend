@@ -8,6 +8,8 @@ import {
   faEnvelope,
   faSpinner,
   faUser,
+  faEye,
+  faEyeSlash,
 } from "@fortawesome/free-solid-svg-icons";
 
 const SignIn: React.FC = () => {
@@ -18,10 +20,10 @@ const SignIn: React.FC = () => {
   const [success, setSuccess] = useState("");
   const [login, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // State for password visibility
 
   const handleSignIn = async (event) => {
     event.preventDefault();
-
     setIsSubmitting(true);
     const formData = new FormData(event.target);
     const data = {
@@ -48,21 +50,19 @@ const SignIn: React.FC = () => {
       console.log("Sign in successful:", result);
 
       localStorage.setItem("token", result.access_token);
-
       if (result.user && result.user.client_id) {
         localStorage.setItem("client_id", result.user.client_id);
+        localStorage.setItem("role", result.role);
+        localStorage.setItem("status", result.client.status);
       }
 
       setSuccess("Login Successful!");
 
       if (result.role === "client" && result.client.status === "profile_created") {
         router.push("/clients/register");
-      } else if (result.role === "admin") {
-        router.push("/dashboard");
       } else {
         router.push("/dashboard");
       }
-
     } catch (error) {
       console.error("Sign in failed:", error);
       setError("Invalid username or password. Please try again.");
@@ -93,6 +93,7 @@ const SignIn: React.FC = () => {
       return () => clearInterval(timer);
     }
   }, [error, success]);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 relative">
       {/* Success Popup */}
@@ -116,18 +117,17 @@ const SignIn: React.FC = () => {
 
       {/* Error Popup */}
       {error && (
-        <div className="fixed top-4 right-4 flex items-start rounded-lg z-50 w-80" style={{background:'red', color:'white'}}>
-          {/* // <div className="fixed top-4 right-4 flex items-start bg-green-500 text-white p-4 rounded-lg shadow-lg z-50 w-80"> */}
+        <div className="fixed top-4 right-4 flex items-start rounded-lg z-50 w-80" style={{ background: 'red', color: 'white' }}>
           <div className="flex-shrink-0">
             <FontAwesomeIcon icon={faUser} size="2x" />
           </div>
           <div className="ml-3">
             <h5 className="text-lg font-semibold">Error</h5>
             <p>{error}</p>
-            <div className="mt-2 w-full  h-1" style={{background:'red'}}>
+            <div className="mt-2 w-full h-1" style={{ background: 'red' }}>
               <div
-                className=" h-1"
-                style={{color:'red', width: `${progress}%`, transition: "width 0.1s linear" }}
+                className="h-1"
+                style={{ color: 'red', width: `${progress}%`, transition: "width 0.1s linear" }}
               ></div>
             </div>
           </div>
@@ -185,7 +185,7 @@ const SignIn: React.FC = () => {
             <div className="relative mb-4">
               <input
                 required
-                type="password"
+                type={showPassword ? "text" : "password"} // Toggle between text and password
                 name="password"
                 placeholder="Password"
                 value={password}
@@ -195,12 +195,15 @@ const SignIn: React.FC = () => {
               <span className="absolute left-3 top-2.5 text-gray-400">
                 <FontAwesomeIcon icon={faUser} />
               </span>
-              {/* <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-300">
-              Don't have an account?{" "} */}
-              <a className="text-primary hover:underline" href="/auth/forgot-password">
-               Forgot password?
+              <span 
+                className="absolute right-3 top-2.5 cursor-pointer text-gray-400" 
+                onClick={() => setShowPassword(!showPassword)} // Toggle password visibility
+              >
+                <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+              </span>
+              <a className="text-primary hover:underline mt-2 block" href="/auth/forgot-password">
+                Forgot password?
               </a>
-            {/* </p> */}
             </div>
 
             {/* Buttons */}
@@ -212,13 +215,12 @@ const SignIn: React.FC = () => {
               >
                 {isSubmitting ? (
                   <>
-                  Please wait... 
-                 <FontAwesomeIcon icon={faSpinner} spin />
-                </>
+                    Please wait...
+                    <FontAwesomeIcon icon={faSpinner} spin />
+                  </>
                 ) : (
                   "Sign In"
-                )
-                }
+                )}
               </button>
             </div>
 
