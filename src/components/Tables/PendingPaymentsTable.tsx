@@ -1,12 +1,12 @@
 "use client";
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import axios from "axios";
+import DataTable from "react-data-table-component";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faPrint, faPlus, faDownload, faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { format } from 'date-fns';
-import styles from "./spinner.module.css";
-import Router from "next/navigation";
+import { faDownload, faEye, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { CSVLink } from "react-csv";
 import { useRouter } from "next/navigation";
+import { format } from 'date-fns';
 import Link from "next/link";
 
 const PendingPaymentsTable = () => {
@@ -22,6 +22,8 @@ const PendingPaymentsTable = () => {
   const [clientDetails, setClientDetails] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const modalRef = useRef(null);
+  
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [paymentMethod, setPaymentMethod] = useState("");
   const [transactionReference, setTransactionReference] = useState("");
@@ -34,39 +36,13 @@ const PendingPaymentsTable = () => {
   const [otherReference, setOtherReference] = useState("");
   const [proof, setProof] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [filteredPayments, setFilteredPayments] = useState([]);
+  const [isProcessingAll, setIsProcessingAll] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [isSelectAllChecked, setIsSelectAllChecked] = useState(false);
+  const [selectedPayments, setSelectedPayments] = useState([]);
 
   const router = useRouter();
-
-  const handlePaymentMethodChange = useCallback((e) => {
-    setPaymentMethod(e.target.value);
-  }, []);
-
-  const handleTransactionReferenceChange = useCallback((e) => {
-    setTransactionReference(e.target.value);
-  }, []);
-
-  const handleLinkChange = useCallback((e) => {
-    setLink(e.target.value);
-  }, []);
-
-  const handleConfirmReceiptChange = useCallback((e) => {
-    setConfirmReceipt(e.target.checked);
-  }, []);
-
-  const handleCourseChange = useCallback(
-    (e) => {
-      const selectedCourseId = e.target.value;
-      setSelectedCourse(selectedCourseId);
-
-      const course = courses.find(
-        (course) => course.course_id === selectedCourseId
-      );
-      if (course) {
-        setAmount(course.cost); // Assuming the amount is stored in course.course_amount
-      }
-    },
-    [courses]
-  );
 
   useEffect(() => {
     const fetchPayments = async () => {
@@ -145,6 +121,22 @@ const PendingPaymentsTable = () => {
   
 
   
+  useEffect(() => {
+    if (searchTerm) {
+      const filtered = payments.filter((payment) => {
+        const clientName = `${payment.clients?.firstname || ''} ${payment.clients?.surname || ''} ${payment.clients?.othernames || ''} ${payment.payments?.courses?.course_id || ''} ${payment.payments?.courses?.course_name || ''}`.toLowerCase();
+        const transactionReference = `${payment.payments?.transaction_reference || ''}`.toLowerCase();
+        return (
+          clientName.includes(searchTerm.toLowerCase()) ||
+          transactionReference.includes(searchTerm.toLowerCase()) ||
+          payment?.client_id?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      });
+      setFilteredPayments(filtered);
+    } else {
+      setFilteredPayments(payments);
+    }
+  }, [searchTerm, payments]);
 
 
 
@@ -181,84 +173,111 @@ const PendingPaymentsTable = () => {
     setIsClientModalOpen(true);
   }, []);
 
-  // const handleClientSubmit = useCallback(
-  //   async (event) => {
-  //     event.preventDefault();
-  //     try {
-  //       const token = localStorage.getItem("token");
-  //       if (!token) {
-  //         throw new Error("No auth token found");
-  //       }
 
-  //       const response = await axios.get(
-  //         `${process.env.NEXT_PUBLIC_API_URL}/clients/${clientId}`,
-  //         {
-  //           headers: {
-  //             Authorization: `Bearer ${token}`,
-  //           },
-  //         }
-  //       );
+  const handleConfirmReceiptChange = useCallback((e) => {
+    setConfirmReceipt(e.target.checked);
+  }, []);
 
-  //       setClientDetails(response.data.client[0]);
-  //       setIsClientModalOpen(false);
-  //       setIsPaymentModalOpen(true);
-  //     } catch (err) {
-  //       console.error("Failed to fetch client details:", err.message);
-  //       setError("Failed to fetch client details. Please try again.");
-  //     }
-  //   },
-  //   [clientId]
-  // );
 
-  // const handlePaymentSubmit = useCallback(
-  //   async (event) => {
-  //     event.preventDefault();
+  const handleSelectAll = () => {
+    if (isSelectAllChecked) {
+      setSelectedPayment([]);
+    } else {
+      const allPaymentIds = filteredPayments.map((payment) => payment.transaction_reference);
+      setSelectedPayment(allPaymentIds);
+    }
+    setIsSelectAllChecked(!isSelectAllChecked);
+  };
 
-  //     const paymentData = {
-  //       client_id: clientDetails.client_id,
-  //       course_id: selectedCourse,
-  //       payment_method: paymentMethod,
-  //       transaction_reference: transactionReference,
-  //       amount: amount,
-        
-  //     };
 
-  //     try {
-  //       const token = localStorage.getItem("token");
-  //       if (!token) {
-  //         throw new Error("No auth token found");
-  //       }
-  //       const response = await fetch(
-  //         `${process.env.NEXT_PUBLIC_API_URL}/manual-payment`,
-  //         {
-  //           method: "POST",
-  //           headers: {
-  //             "Content-Type": "application/json",
-  //             Authorization: `Bearer ${token}`,
-  //           },
-  //           body: JSON.stringify(paymentData),
-  //         }
-  //       );
 
-  //       if (response.ok) {
-  //         setError(null);
-  //         closeModal();
-  //       } else {
-  //         throw new Error("Payment submission failed");
-  //       }
-  //     } catch (error) {
-  //       setError(error.message);
-  //     }
-  //   },
-  //   [
-  //     clientDetails,
-  //     selectedCourse,
-  //     paymentMethod,
-  //     transactionReference,
-  //     amount,
-  //     closeModal,
-  //   ]
-  // );
+  const handleProcessAll = async () => {
+    if (selectedPayments.length === 0) {
+      alert("Please select at least one admission to process.");
+      return;
+    }
+  
+    setIsProcessingAll(true);
+    setProgress(0);
+  
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No auth token found");
+  
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/certificates/batch-process`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ transaction_reference: selectedPayments }), // Send the array of admission numbers
+        }
+      );
+  
+      if (response.ok) {
+        setProgress(100);
+        setAdmissions((prevPayments) =>
+          prevPayments.filter(
+            (payment) => !selectedPayments.includes(payment.transaction_reference)
+          )
+        );
+        alert("All selected admissions have been processed successfully.");
+        setSelectedAdmissions([]);
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to process admissions");
+      }
+    } catch (err) {
+      console.error("Error processing all admissions:", err);
+      alert("An error occurred while processing admissions. Please try again.");
+    }
+  
+    setIsProcessingAll(false);
+  };
+  
+
+  const handleApproval = async (event) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No auth token found");
+
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/certificate/issue`,
+        { transaction_reference: selectedPayment.transaction_reference },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        alert("Certificate issued successfully!");
+        setAdmissions((prevAdmissions) =>
+          prevPayments.map((payment) =>
+            payment.admission_number === selectedPayment.transaction_reference
+              ? { ...payment, status: "COMPLETED" }
+              : payment
+          )
+        );
+        closeModal();
+      } else {
+        throw new Error("Failed to issue certificate.");
+      }
+    } catch (err) {
+      console.error("Error issuing certificate:", err);
+      alert("An error occurred while issuing the certificate. Please try again.");
+    }
+
+    setIsSubmitting(false);
+  };
+
+
 
   const confirmPayment = useCallback(
     async (event) => {
@@ -318,156 +337,208 @@ const PendingPaymentsTable = () => {
     return <p>Error: {error}</p>;
   }
 
+  const columns = [
+    {
+      name: (
+        <input
+          type="checkbox"
+          checked={isSelectAllChecked}
+          onChange={handleSelectAll}
+        />
+      ),
+      cell: (row) => (
+        <input
+          type="checkbox"
+          checked={selectedPayments.includes(row.transaction_reference)}
+          onChange={() => handleCheckboxChange(row.transaction_reference)}
+        />
+      ),
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+    },
+    // {
+    //   name: "Client ID",
+    //   selector: (row) => row.client_id,
+    //   sortable: true,
+    // },
+    {
+      name: "Name",
+      selector: (row) => `${row.clients?.firstname || ''} ${row.clients?.surname || ''} ${row.clients?.othernames || ''}`,
+      sortable: true,
+    },
+    {
+      name: "Trx Reference",
+      // selector: (row) => `${row.payments?.transaction_reference || ''}`,
+      selector: (row) => `${row.transaction_reference  === null ? row.other_reference : row.transaction_reference || ''}`,
+     
+      sortable: true,
+    },
+
+    
+    {
+      name: "Amount",
+      // selector: (row) => `${row.created_at || ''} `,
+      selector: (row) => `${'₦'}${Number(row.part_payment).toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })} `,
+      
+      sortable: true,
+    },
+    {
+      name: "Date of Transaction",
+      selector: (row) => `${format(new Date(row.created_at), 'MMM do, yyyy')} `,
+      // selector: (row) => `${row.created_at || ''} `,
+      
+      sortable: true,
+    },
+    
+    {
+      name: "Status",
+      selector: (row) => (
+        <p
+          className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
+            row.status === 1
+              ? "bg-success text-success"
+              : row.status === 0
+              ? "bg-danger text-danger"
+              : ""
+          }`}
+        >
+          {row.status === 0
+            ? "PENDING"
+            : row.status === 1
+            ? "PAID"
+            : "N/A"}
+        </p>
+      ),
+      sortable: true,
+    },
+    {
+      name: "Actions",
+      cell: (row) => (
+        <div className="flex items-center space-x-3.5">
+          <button
+            className="px-4 py-2 bg-green-500 text-white rounded"
+            onClick={() => handleEyeClick(row)}
+          >
+            <FontAwesomeIcon icon={faEye} /> Confirm Payment
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
+  if (error) {
+    return <p>Error: {error}</p>;
+  }
+
   return (
     <div>
-      <div>
-        {/* <button
-          className="mb-4 px-4 py-2 bg-blue-500 text-white rounded"
-          onClick={handleAddPaymentClick}
-        >
-          <FontAwesomeIcon icon={faPlus} /> Add Payment
-        </button> */}
-      </div>
-      <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
-        <div className="max-w-full overflow-x-auto">
-          <table className="w-full table-auto  min-w-full ">
-            <thead>
-              <tr
-                style={{ textAlign: "left" }}
-                className="bg-gray-2 text-left dark:bg-meta-4"
-              >
-                <th className="min-w-[220px] px-4 py-4 font-medium text-black dark:text-white">
-                  Client ID
-                </th>
-                <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
-                  Client Name
-                </th>
-                <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
-                  Transaction Reference
-                </th>
-                <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
-                  Amount
-                </th>
-                <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
-                  Payment Date
-                </th>
-                <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
-                  Status
-                </th>
-                <th className="min-w-[100px] px-4 py-4 font-medium text-black dark:text-white">
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {payments.map((payment) => (
-                <tr key={payment.transaction_reference}>
-                  <td className="whitespace-nowrap px-4 py-4 font-medium text-black dark:text-white">
-                    {payment.client_id}
-                  </td>
-                  <td className=" px-4 py-4 font-medium text-black dark:text-white">
-                  {payment.clients.title}. {payment.clients.firstname} {payment.clients.othernames} {payment.clients.surname}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-4 text-black dark:text-white">
-                    {payment.transaction_reference  === null ? payment.other_reference : payment.transaction_reference}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-4 text-black dark:text-white">
-                  NGN{Number(payment.part_payment).toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                  </td>
-                  <td className="px-4 py-4 text-black dark:text-white">
-                  {/* {format(new Date(payment.payment_date), 'EEEE, MMMM do, yyyy')} */}
-                  {format(new Date(payment.created_at), 'EEEE, MMMM do, yyyy')}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-4 text-black dark:text-white">
-                    <p className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
-                        payment.status === 1
-                          ? "bg-success text-success"
-                          : payment.status === 0
-                            ? "bg-warning text-warning"
-                            : ""
-                      }`}>{payment.status === 0 ? "PENDING" : payment.status === 1 ? "PAID" : ""}</p>
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-4">
+      <CSVLink data={filteredPayments} filename={"payments.csv"}>
+        <button className="mb-4 px-4 py-2 bg-blue-500 text-white rounded">
+          Download CSV
+        </button>
+      </CSVLink>
 
-                    
-                    <button
-                      className="px-4 py-2 bg-green-500 text-white rounded"
-                      onClick={() => {
-                        setSelectedPayment(payment);
-                        setIsConfirmPaymentModalOpen(true);
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faEye} /> Confirm Payment
-                    </button>
+      &nbsp;
 
-                    
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {/* <button
+        className={`mt-4 px-4 py-2 bg-blue-500 text-white rounded ${
+          isProcessingAll ? "cursor-not-allowed" : ""
+        }`}
+        onClick={handleProcessAll}
+        disabled={isProcessingAll}
+      >
+        {isProcessingAll ? (
+          <>
+            <FontAwesomeIcon icon={faSpinner} spin /> Processing...
+          </>
+        ) : (
+          "Process All Selected"
+        )}
+      </button> */}
 
-      
+      <input
+        type="text"
+        placeholder="Search by name, course, or client ID..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="mb-4 p-2 border border-gray-300 rounded"
+      />
 
-      
+      <DataTable
+        columns={columns}
+        data={filteredPayments}
+        pagination
+        highlightOnHover
+        pointerOnHover
+        striped
+      />
 
-      {isConfirmPaymentModalOpen && selectedPayment && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
-          <div className="bg-white p-6 rounded shadow-lg" ref={modalRef}>
-            <h2 className="text-xl font-semibold mb-4">Confirm Payment</h2>
-            <form onSubmit={confirmPayment}>
-              
-            {/* <Link
-                    href={`${process.env.NEXT_PUBLIC_DOWNLOAD_LINK}${selectedPayment?.proof.file_path}`}
+      {selectedPayment && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg p-8 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Payment Confirmation</h3>
+            {/* <p className="mb-2">Client ID: {selectedAdmission.client_id}</p> */}
+            {/* <p className="mb-2">
+              Name: {`${selectedPayment.clients.firstname} ${selectedPayment.clients.surname} ${selectedPayment.clients.othernames}`}
+            </p>
+            <p className="mb-2">
+              Course Registered:{" "}
+              {`${selectedPayment.payments?.courses?.course_id || ''} - ${selectedPayment.payments?.courses?.certification_name || ''}`}
+            </p>
+            <p className="mb-4">
+              Status:{" "}
+              {selectedPayment.status === "ADMITTED"
+                ? "NOT ISSUED"
+                : selectedPayment.status === "COMPLETED"
+                ? "ISSUED"
+                : "N/A"}
+            </p> */}
+                <Link
+                    href={`${process.env.NEXT_PUBLIC_DOWNLOAD_LINK}${selectedPayment.payments?.proof?.file_path}`}
                     className="text-sm text-primary hover:underline"
                     target="_blank"
                   >
                     View receipt
-                  </Link> */}
-              <div className="flex items-center mb-4">
-               
-                
-                <input
-                  type="checkbox"
-                  checked={confirmReceipt}
-                  onChange={handleConfirmReceiptChange}
-                  className="mr-2"
-                  required
-                />
-                <label className="text-gray-700">I confirm that I have received this payment.</label>
-              </div>
-              {/* <button
-                type="submit"
-                className="bg-blue-500 text-white px-4 py-2 rounded"
-              >
-                Confirm Payment
-              </button> */}
-
-              <button
-              type="submit"
-              disabled={isSubmitting}
+                  </Link>
+<br/><br/>
+            <label className="mb-4">
+              <input
+                type="checkbox"
+                checked={confirmReceipt}
+                onChange={handleConfirmReceiptChange}
+              />
+              
+              &nbsp; I confirm that I have received this payment.
+            </label>
+            <br />
+            <button
               className={`mt-4 px-4 py-2 bg-blue-500 text-white rounded ${
-                isSubmitting ? "cursor-not-allowed opacity-50" : ""
+                isSubmitting || !confirmReceipt ? "cursor-not-allowed" : ""
               }`}
+              onClick={confirmPayment}
+              disabled={isSubmitting || !confirmReceipt}
             >
               {isSubmitting ? (
-                <span>
-                  Please wait... <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
-                </span>
+                <>
+                  <FontAwesomeIcon icon={faSpinner} spin /> Please wait...
+                </>
               ) : (
-                'Confirm Payment'
+                "Confirm Payment"
               )}
             </button>
-            </form>
-            {error && <p className="text-red-500 mt-4">{error}</p>}
+
             <button
+            style={{background: 'red'}}
+              className="mt-4 ml-4 px-4 py-2 bg-gray-500 text-white rounded"
               onClick={closeModal}
-              className="bg-gray-500 text-white px-4 py-2 rounded mt-4"
             >
               Close
             </button>

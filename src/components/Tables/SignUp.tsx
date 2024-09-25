@@ -62,6 +62,7 @@ const SignUp: React.FC = () => {
     } else {
       const data = await response.json();
       setError(data.message);
+      setError(data.errors.phone_number);
     }
     setIsSubmitting(false);
   };

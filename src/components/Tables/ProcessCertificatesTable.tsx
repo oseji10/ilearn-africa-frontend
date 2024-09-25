@@ -56,7 +56,7 @@ const ProcessCertificatesTable = () => {
         return (
           clientName.includes(searchTerm.toLowerCase()) ||
           courseName.includes(searchTerm.toLowerCase()) ||
-          admission.client_id.toLowerCase().includes(searchTerm.toLowerCase())
+          admission?.client_id?.toLowerCase().includes(searchTerm.toLowerCase())
         );
       });
       setFilteredAdmissions(filtered);

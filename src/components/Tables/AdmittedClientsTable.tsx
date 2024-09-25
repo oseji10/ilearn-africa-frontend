@@ -17,7 +17,7 @@ const AdmittedClientsTable = () => {
   const [selectedRows, setSelectedRows] = useState([]);
   const modalRef = useRef(null);
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEmailing, setIsEmailing] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [activeTransaction, setActiveTransaction] = useState(null);
 
@@ -56,11 +56,11 @@ const AdmittedClientsTable = () => {
   useEffect(() => {
     const filteredData = admissions.filter(
       (admission) =>
-        (admission.firstname?.toLowerCase() || "").includes(search.toLowerCase()) ||
-        (admission.surname?.toLowerCase() || "").includes(search.toLowerCase()) ||
-        (admission.othernames?.toLowerCase() || "").includes(search.toLowerCase()) ||
+        (admission.clients?.firstname?.toLowerCase() || "").includes(search.toLowerCase()) ||
+        (admission.clients?.surname?.toLowerCase() || "").includes(search.toLowerCase()) ||
+        (admission.clients?.othernames?.toLowerCase() || "").includes(search.toLowerCase()) ||
         (admission.email?.toLowerCase() || "").includes(search.toLowerCase()) ||
-        (admission.phone?.toLowerCase() || "").includes(search.toLowerCase()),
+        (admission.phone_number?.toLowerCase() || "").includes(search.toLowerCase()),
     );
     setFilteredAdmissions(filteredData);
   }, [search, admissions]);
@@ -103,11 +103,11 @@ const AdmittedClientsTable = () => {
 
   const columns = [
     
-    {
-      name: "Client ID",
-      selector: (row) => <p>{row.client_id || "N/A"}</p>,
-      sortable: true,
-    },
+    // {
+    //   name: "Client ID",
+    //   selector: (row) => <p>{row.client_id || "N/A"}</p>,
+    //   sortable: true,
+    // },
     {
       name: "Name",
       selector: (row) =>
@@ -148,8 +148,9 @@ const AdmittedClientsTable = () => {
     {
       name: "Actions",
       cell: (row) => (
-        <div className="flex items-center space-x-3.5">
-           {/* {row.status === "ADMITTED" || row.status === "COMPLETED" &&  ( */}
+        <>
+        <div className="">
+           {(row.status === "ADMITTED" || row.status === "COMPLETED") &&  (
                       <button
     disabled={isDownloading}
     className="px-4 py-2 bg-green-500 text-white rounded"
@@ -158,23 +159,52 @@ const AdmittedClientsTable = () => {
   >
     {isDownloading && activeTransaction === row.admission_number ? (
       <span>
-        Sending. Please wait... <FontAwesomeIcon icon={faSpinner} spin />
+        Please wait... <FontAwesomeIcon icon={faSpinner} spin />
       </span>
     ) : (
       <span>
         {/* <FontAwesomeIcon icon={faEnvelope} /> */}
-         Download/Email Admission
+         Download
       </span>
     )}
   </button>
-{/* )} */}
+)}
+       
+       
+&nbsp;
+{(row.status === "ADMITTED" || row.status === "COMPLETED") &&  (
+  
+                      <button
+    disabled={isDownloading}
+    className="px-4 py-2 bg-green-500 text-white rounded"
+    // onClick={(event) => downloadLetter(row.admission_number)}
+    onClick={() => emailLetter(row)}
+  >
+    {isEmailing && activeTransaction === row.admission_number ? (
+      <span>
+        Please wait... <FontAwesomeIcon icon={faSpinner} spin />
+      </span>
+    ) : (
+      <span>
+        {/* <FontAwesomeIcon icon={faEnvelope} /> */}
+         Email
+      </span>
+    )}
+  </button>
+)}
         </div>
+</>
+
       ),
     },
   ];
 
   const downloadLetter = async (row) => {
     const admissionNumber = row.admission_number;
+  
+    // Set the active transaction to the current row's admission number
+    setActiveTransaction(admissionNumber);
+    setIsDownloading(true);
   
     const token = localStorage.getItem("token");
     if (!token) {
@@ -183,7 +213,7 @@ const AdmittedClientsTable = () => {
   
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admissions/admission_letter?admission_number=${admissionNumber}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/admissions/admission_letter/download?admission_number=${admissionNumber}`,
         {
           method: "POST",
           headers: {
@@ -207,12 +237,53 @@ const AdmittedClientsTable = () => {
       }
     } catch (error) {
       console.error("An error occurred while downloading the admission letter", error);
+    } finally {
+      setIsDownloading(false);
+      setActiveTransaction(null); // Reset the active transaction after download
     }
   };
+  
+  const emailLetter = async (row) => {
+    const admissionNumber = row.admission_number;
+  
+    // Set the active transaction to the current row's admission number
+    setActiveTransaction(admissionNumber);
+    setIsEmailing(true);
+  
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No auth token found");
+    }
+  
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/admissions/admission_letter/email?admission_number=${admissionNumber}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.ok) {
+        alert("Admission letter successfully emailed!");
+      } else {
+        console.error("Failed to email the admission letter", response.statusText);
+      }
+    } catch (error) {
+      console.error("An error occurred while emailing the admission letter", error);
+    } finally {
+      setIsDownloading(false);
+      setActiveTransaction(null); // Reset the active transaction after emailing
+    }
+  };
+  
 
   return (
     <div>
-      {/* <div className="mb-4 flex items-center">
+      <div className="mb-4 flex items-center">
         <TextField
           label="Search"
           variant="outlined"
@@ -220,14 +291,14 @@ const AdmittedClientsTable = () => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        &nbsp; &nbsp;
+        {/* &nbsp; &nbsp;
         <button
           className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
           onClick={handleBulkAction}
         >
           Admit Selected
-        </button>
-      </div> */}
+        </button> */}
+      </div>
 
       <DataTable
         columns={columns}

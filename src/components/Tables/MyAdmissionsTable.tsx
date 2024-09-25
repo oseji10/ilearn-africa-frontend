@@ -94,7 +94,7 @@ const MyAdmissionsTable = () => {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admissions/admission_letter?admission_number=${admissionNumber}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/admissions/admission_letter/download?admission_number=${admissionNumber}`,
         {
           method: "POST",
           headers: {
@@ -186,9 +186,9 @@ const MyAdmissionsTable = () => {
                     </p>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    <div className="flex items-center space-x-3.5">
+<div className="flex items-center space-x-3.5">
                       
-                    {admission.status === "COMPLETED" && (
+                    {(admission.status === "ADMITTED" || admission.status === "COMPLETED") && (
                       <button
     disabled={isDownloading}
     className="px-4 py-2 bg-green-500 text-white rounded"
@@ -196,18 +196,21 @@ const MyAdmissionsTable = () => {
   >
     {isDownloading && activeTransaction === admission.admission_number ? (
       <span>
-        Sending. Please wait... <FontAwesomeIcon icon={faSpinner} spin />
+        Downloading. Please wait... <FontAwesomeIcon icon={faSpinner} spin />
       </span>
     ) : (
       <span>
         {/* <FontAwesomeIcon icon={faEnvelope} /> */}
-         Download/Email Admission
+         Download
       </span>
     )}
   </button>
 )}
+
+{/* &nbsp; */}
                       
-                    </div>
+
+</div>
                   </td>
                 </tr>
               ))}
