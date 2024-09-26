@@ -90,9 +90,9 @@ const MyCohortsTable = () => {
 
   const handleEyeClick = (cohort) => {
     localStorage.setItem('fromPreviousPage', 'true');
-    // console.log(cohort.cohort_id); // Check if cohort_id is available
-    // router.push(`/client-dashboard/my-registration/courses-after-payment?cohort_id=${cohort.cohort_id}`);
-    router.push(`/client-dashboard/my-registration/payment-options?cohort_id=${cohort.cohort_id}`);
+    // router.push(`/client-dashboard/my-registration/payment-options?cohort_id=${cohort.cohort_id}`);
+    router.push(`/client-dashboard/courses?cohort_id=${cohort.cohort_id}`);
+    
   };
   
   

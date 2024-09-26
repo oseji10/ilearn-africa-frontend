@@ -502,7 +502,7 @@ const PendingPaymentsTable = () => {
                 : "N/A"}
             </p> */}
                 <Link
-                    href={`${process.env.NEXT_PUBLIC_DOWNLOAD_LINK}${selectedPayment.payments?.proof?.file_path}`}
+                    href={`${process.env.NEXT_PUBLIC_DOWNLOAD_LINK}${selectedPayment?.proof?.file_path}`}
                     className="text-sm text-primary hover:underline"
                     target="_blank"
                   >
