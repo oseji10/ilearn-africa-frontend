@@ -22,6 +22,7 @@ const CohortsTable = () => {
   const [isCohortEditModalOpen, setIsCohortEditModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCoursesModalOpen, setIsCoursesModalOpen] = useState(false);
+  const [isCohortCourseModalOpen, setIsCohortCourseModalOpen] = useState(false);
   const [centerList, setCenterList] = useState([]);
   const [selectedRow, setSelectedRow] = useState({
     cohort_id: "",
@@ -132,7 +133,7 @@ const CohortsTable = () => {
       }
 
       const data = await response.json();
-      console.log(data.courses);
+      console.log("hi", data.courses);
       setCohortCourses(data.courses); // Assuming the API response has a `courses` field
     } catch (error) {
       console.error('Error fetching cohort courses:', error);
@@ -356,6 +357,40 @@ const handleCohortCoursesUpload = async (cohort_id, course_ids) => {
 
 
 
+  const deleteCohortCourse = async (cohortId, courseId) => {
+    //  console.log("Client object:", client);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No auth token found");
+      }
+
+      const response = await axios.post(
+              `${process.env.NEXT_PUBLIC_API_URL}/cohorts/delete-cohort-course?cohort_id=${cohortId}&course_id=${courseId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          // body: JSON.stringify({
+          //           cohort_id: cohortId,
+          //           course_id: courseId , // Use the selected course IDs
+          //         }),
+        }
+      );
+
+      // // Filter out the deleted client from the list
+      // setCohorts(cohorts.filter((c) => c.cohort_id !== cohort.cohort_id));
+      // setFilteredCohorts(filteredCohorts.filter((c) => c.cohort_id !== cohort.cohort_id));
+      alert("Course Deleted");
+      setIsCohortModalOpen(false)
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+
+  
+
   const handleCohortUpload = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -398,9 +433,6 @@ const handleCohortCoursesUpload = async (cohort_id, course_ids) => {
     }
     setIsSubmitting(false);
   };
-  
-
-
 
 
 
@@ -616,14 +648,29 @@ const handleCohortCoursesUpload = async (cohort_id, course_ids) => {
             {/* List of Courses */}
             <h4 className="font-bold mt-4">Courses in this Cohort:</h4>
             {cohortCourses.length > 0 ? (
-              <ul className="list-disc pl-5">
-                {cohortCourses.map((course, index) => (
-                  <li key={index}>{course.course_list.course_id} - {course.course_list.course_name}</li>
-                ))}
-              </ul>
-            ) : (
-              <p>No courses found for this cohort.</p>
-            )}
+  <ul className="list-disc pl-5">
+  {cohortCourses.map((course, index) => (
+  <li key={index}>
+    {course.course_list.course_id} - {course.course_list.course_name} |{" "}
+    <a
+      onClick={() => {
+        const courseId = course.course_list.course_id;
+        const cohortId = course.cohort_id;// Define courseId here
+        // console.log("Attempting to delete course ID:", courseId); // Log the ID for debugging
+        deleteCohortCourse(courseId, cohortId); // Pass the courseId to the function
+      }}
+      style={{ color: "red" }}
+    >
+      Delete
+    </a>
+  </li>
+))}
+
+  </ul>
+) : (
+  <p>No courses found for this cohort.</p>
+)}
+
 
             <div className="modal-action mt-4 flex justify-end">
               <button
