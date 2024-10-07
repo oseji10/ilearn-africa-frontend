@@ -145,16 +145,16 @@ const PaymentsTable = () => {
       selector: (row) => (
         <p
           className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
-            row.status === 1
+            row.status === "1"
               ? "bg-success text-success"
-              : row.status === 0
+              : row.status === "0"
               ? "bg-warning text-warning"
               : ""
           }`}
         >
-          {row.status === 1
+          {row.status === "1"
             ? "PAID"
-            : row.status === 0
+            : row.status === "0"
             ? "UNPAID"
             : "N/A"}
         </p>
@@ -164,7 +164,7 @@ const PaymentsTable = () => {
     {
       name: "Actions",
       cell: (row) => (
-        row.status === 1 && (
+        row.status === "1" && (
           <button
             disabled={isDownloading}
             className="px-4 py-2 bg-green-500 text-white rounded"
@@ -172,7 +172,7 @@ const PaymentsTable = () => {
           >
             {isDownloading && activeTransaction === row.transaction_reference ? (
               <span>
-                Sending. Please wait... <FontAwesomeIcon icon={faSpinner} spin />
+                Downloading. Please wait... <FontAwesomeIcon icon={faSpinner} spin />
               </span>
             ) : (
               <span>Receipt <FontAwesomeIcon icon={faDownload} /></span>
