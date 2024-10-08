@@ -152,9 +152,9 @@ const PaymentsTable = () => {
               : ""
           }`}
         >
-          {row.status === "1"
+          {row.status === "1" || 1
             ? "PAID"
-            : row.status === "0"
+            : row.status === "0" || 0
             ? "UNPAID"
             : "N/A"}
         </p>
@@ -164,7 +164,7 @@ const PaymentsTable = () => {
     {
       name: "Actions",
       cell: (row) => (
-        row.status === "1" && (
+        row.status === "1" || 1 && (
           <button
             disabled={isDownloading}
             className="px-4 py-2 bg-green-500 text-white rounded"
