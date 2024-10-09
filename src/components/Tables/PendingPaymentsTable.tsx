@@ -410,6 +410,8 @@ const PendingPaymentsTable = () => {
             ? "PENDING"
             : row.status === 1
             ? "PAID"
+            : row.status === 2
+            ? "REJECTED"
             : "N/A"}
         </p>
       ),
@@ -481,70 +483,86 @@ const PendingPaymentsTable = () => {
         striped
       />
 
-      {selectedPayment && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white rounded-lg p-8 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Payment Confirmation</h3>
-            {/* <p className="mb-2">Client ID: {selectedAdmission.client_id}</p> */}
-            {/* <p className="mb-2">
-              Name: {`${selectedPayment.clients.firstname} ${selectedPayment.clients.surname} ${selectedPayment.clients.othernames}`}
-            </p>
-            <p className="mb-2">
-              Course Registered:{" "}
-              {`${selectedPayment.payments?.courses?.course_id || ''} - ${selectedPayment.payments?.courses?.certification_name || ''}`}
-            </p>
-            <p className="mb-4">
-              Status:{" "}
-              {selectedPayment.status === "ADMITTED"
-                ? "NOT ISSUED"
-                : selectedPayment.status === "COMPLETED"
-                ? "ISSUED"
-                : "N/A"}
-            </p> */}
-                <Link
-                    href={`${process.env.NEXT_PUBLIC_DOWNLOAD_LINK}${selectedPayment?.proof?.file_path}`}
-                    className="text-sm text-primary hover:underline"
-                    target="_blank"
-                  >
-                    View receipt
-                  </Link>
-<br/><br/>
-            <label className="mb-4">
-              <input
-                type="checkbox"
-                checked={confirmReceipt}
-                onChange={handleConfirmReceiptChange}
-              />
-              
-              &nbsp; I confirm that I have received this payment.
-            </label>
-            <br />
-            <button
-              className={`mt-4 px-4 py-2 bg-blue-500 text-white rounded ${
-                isSubmitting || !confirmReceipt ? "cursor-not-allowed" : ""
-              }`}
-              onClick={confirmPayment}
-              disabled={isSubmitting || !confirmReceipt}
-            >
-              {isSubmitting ? (
-                <>
-                  <FontAwesomeIcon icon={faSpinner} spin /> Please wait...
-                </>
-              ) : (
-                "Confirm Payment"
-              )}
-            </button>
+{selectedPayment && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div className="bg-white rounded-lg p-8 w-full max-w-md relative">
+      <button
+        className="absolute top-0 right-0 m-4 text-gray-600 hover:text-gray-900"
+        onClick={closeModal}
+      >
+        Close
+      </button>
+      <h3 className="text-lg font-semibold mb-4">Payment Confirmation</h3>
+      <p className="mb-2">Client ID: {selectedPayment.client_id}</p>
+      {/* <p className="mb-2">Client ID: {selectedPayment.transaction_reference}</p> */}
+      <p className="mb-2">
+        Name: {`${selectedPayment?.clients?.firstname || ''} ${selectedPayment?.clients?.surname || ''} ${selectedPayment?.clients?.othernames || ''}`}
+      </p>
+      <Link
+        href={`${process.env.NEXT_PUBLIC_DOWNLOAD_LINK}${selectedPayment?.proof?.file_path}`}
+        className="text-sm text-primary hover:underline"
+        target="_blank"
+      >
+        View receipt
+      </Link>
+      <br /><br />
+      <label className="mb-4">
+        <input
+          type="checkbox"
+          checked={confirmReceipt}
+          onChange={handleConfirmReceiptChange}
+        />
+        &nbsp; I confirm that I have received this payment.
+      </label>
+      <br />
+      <button
+        className={`mt-4 px-4 py-2 bg-blue-500 text-white rounded ${
+          isSubmitting || !confirmReceipt ? "cursor-not-allowed" : ""
+        }`}
+        onClick={confirmPayment}
+        disabled={isSubmitting || !confirmReceipt}
+      >
+        {isSubmitting ? (
+          <>
+            <FontAwesomeIcon icon={faSpinner} spin /> Please wait...
+          </>
+        ) : (
+          "Confirm Payment"
+        )}
+      </button>
 
-            <button
-            style={{background: 'red'}}
-              className="mt-4 ml-4 px-4 py-2 bg-gray-500 text-white rounded"
-              onClick={closeModal}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+      <button
+        className="mt-4 ml-4 px-4 py-2 bg-red-500 text-white rounded"
+        style={{color: "red"}}
+        onClick={async () => {
+          try {
+            const response = await axios.put(
+              `${process.env.NEXT_PUBLIC_API_URL}/reject-payment`,
+              { transaction_reference: selectedPayment.transaction_reference },
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+              }
+            );
+
+            if (response.status === 200) {
+              alert("Payment has been rejected successfully.");
+              // Optionally, close the modal or refresh the payment list
+              closeModal();
+            }
+          } catch (error) {
+            console.error("Error rejecting payment:", error);
+            alert("Failed to reject payment.");
+          }
+        }}
+      >
+        Reject
+      </button>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };

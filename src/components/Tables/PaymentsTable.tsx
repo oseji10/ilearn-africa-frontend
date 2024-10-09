@@ -16,6 +16,43 @@ const PaymentsTable = () => {
   const [activeTransaction, setActiveTransaction] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [paymentHistory, setPaymentHistory] = useState([]);
+  const [selectedPayment, setSelectedPayment] = useState(null);
+
+  const openHistoryModal = async (payment) => {
+    setSelectedPayment(payment);
+    setIsHistoryModalOpen(true); // Open the modal first
+    // Fetch the payment history based on the selected payment
+    await fetchPaymentHistory(payment.transaction_reference);
+  };
+
+  const closeHistoryModal = () => {
+    setIsHistoryModalOpen(false);
+    setPaymentHistory([]); // Clear history when modal closes
+  };
+
+  const fetchPaymentHistory = async (transactionReference) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No auth token found");
+      }
+
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/payment-history/${transactionReference}`, // Adjust endpoint as necessary
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setPaymentHistory(response.data.history); // Assuming the response has a 'history' field
+    } catch (err) {
+      console.error("Failed to fetch payment history", err);
+    }
+  };
+
   useEffect(() => {
     const fetchPayments = async () => {
       try {
@@ -106,6 +143,48 @@ const PaymentsTable = () => {
     }
   };
 
+
+
+  useEffect(() => {
+    if (isHistoryModalOpen && selectedPayment) {
+      const fetchPaymentHistory = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.error("No auth token found");
+          return; // Early exit if no token is found
+        }
+  
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/my-part-payment-history/${selectedPayment.id}`, 
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+  
+          if (response.ok) {
+            const data = await response.json();
+            console.log(data.part_payments);
+            setPaymentHistory(data.part_payments); // Set fetched part payments to paymentHistory
+          } else {
+            console.error("Failed to fetch payment history");
+          }
+        } catch (error) {
+          console.error("Error fetching payment history:", error);
+        }
+      };
+  
+      fetchPaymentHistory();
+    }
+  }, [isHistoryModalOpen, selectedPayment]);
+
+
+
+  
+
   const columns = [
     {
       name: "Client ID",
@@ -165,6 +244,7 @@ const PaymentsTable = () => {
       name: "Actions",
       cell: (row) => (
         row.status === "1" || 1 && (
+          <>
           <button
             disabled={isDownloading}
             className="px-4 py-2 bg-green-500 text-white rounded"
@@ -178,6 +258,18 @@ const PaymentsTable = () => {
               <span>Receipt <FontAwesomeIcon icon={faDownload} /></span>
             )}
           </button>
+
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault(); // Prevent default anchor behavior
+              openHistoryModal(row); // Open the modal
+            }}
+            className="text-blue-600 underline ml-4"
+          >
+            Payment History
+          </a>
+          </>
         )
       ),
     },
@@ -221,6 +313,39 @@ const PaymentsTable = () => {
         }
         subHeaderAlign="right"
       />
+
+      {isHistoryModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="relative bg-white p-8 rounded-lg">
+            <h2>Installmental Payment History</h2>
+            {paymentHistory && paymentHistory.length > 0 ? (
+              <ul>
+                {paymentHistory.map((history, index) => (
+                  <li key={index}>
+                    {history.part_payments && history.part_payments.length > 0 ? (
+                      history.part_payments.map((partPayment, idx) => (
+                        <div key={idx}>
+                          <b>Payment of ₦{partPayment.amount} made on {format(new Date(partPayment.created_at), "EEEE, MMMM do, yyyy")}</b>
+                        </div>
+                      ))
+                    ) : (
+                      <p>No installmental payments available.</p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No payment history available.</p>
+            )}
+            <button
+              className="absolute top-0 right-0 m-4 text-gray-600 hover:text-gray-900"
+              onClick={closeHistoryModal}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
