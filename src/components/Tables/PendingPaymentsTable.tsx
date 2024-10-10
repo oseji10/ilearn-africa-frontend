@@ -538,7 +538,10 @@ const PendingPaymentsTable = () => {
           try {
             const response = await axios.put(
               `${process.env.NEXT_PUBLIC_API_URL}/reject-payment`,
-              { transaction_reference: selectedPayment.transaction_reference },
+              { 
+                transaction_reference: selectedPayment.transaction_reference,
+                other_reference: selectedPayment.other_reference,
+               },
               {
                 headers: {
                   Authorization: `Bearer ${localStorage.getItem("token")}`,
