@@ -203,12 +203,23 @@ const PaymentsTable = () => {
     },
     {
       name: "Amount",
-      selector: (row) => `NGN${Number(row.amount).toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}`,
+      selector: (row) => {
+        // Check if part_payments exists and has items; if so, sum their amounts
+        const amount = row.part_payments?.length > 0
+          ? row.part_payments.reduce((total, payment) => total + Number(payment.amount), 0)
+          : row.amount;
+    
+        // Format the amount as a number with currency
+        return `NGN${Number(amount).toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`;
+      },
       sortable: true,
-    },
+    }
+    
+    ,
+    
     {
       name: "Payment Date",
       selector: (row) => format(new Date(row.created_at), "EEEE, MMMM do, yyyy"),
