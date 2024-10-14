@@ -112,7 +112,10 @@ const adminMenu = [
           {
             label: "Pending Payments",
             route: "/payments/pending",
-            // Optionally add an icon here if needed
+          },
+          {
+            label: "Rejected Payments",
+            route: "/payments/rejected",
           },
         ],
       },
