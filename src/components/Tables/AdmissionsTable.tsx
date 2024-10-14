@@ -192,19 +192,19 @@ const AdmissionsTable = () => {
       sortable: true,
       wrap: true,
     },
-    {
-      name: "Payment Date",
-      selector: (row) => (
+    // {
+    //   name: "Payment Date",
+    //   selector: (row) => (
        
-        <p style={{ width: "100%" }}>
-          {/* {format(new Date(row.payments?.created_at), 'EEEE, MMMM do, yyyy') || "N/A"} */}
-          {/* {format(new Date(row.payments?.created_at), 'EEEE, MMMM do, yyyy') || "N/A"} */}
-          </p>
+    //     <p style={{ width: "50%" }}>
+    //       {/* {format(new Date(row.payments?.created_at), 'EEEE, MMMM do, yyyy') || "N/A"} */}
+    //       {/* {format(new Date(row.payments?.created_at), 'EEEE, MMMM do, yyyy') || "N/A"} */}
+    //       </p>
         
-      ),
-      sortable: true,
-      wrap: true,
-    },
+    //   ),
+    //   sortable: true,
+    //   wrap: true,
+    // },
     {
       name: "Status",
       selector: (row) => (
@@ -229,9 +229,9 @@ const AdmissionsTable = () => {
     {
       name: "Actions",
       cell: (row) => (
-        <div className="flex items-center space-x-3.5">
-          <button
-            className="inline-flex items-center justify-center bg-primary px-10 py-4 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-10"
+        <div className=" items-center space-x-4.5">
+         <p> <button
+           className="px-4 py-2 bg-green-500 text-white rounded"
             onClick={() => handleApproval(row)}
             disabled={isSubmitting}
           >
@@ -244,7 +244,19 @@ const AdmissionsTable = () => {
                   ) : (
                     "ADMIT"
                   )}
-          </button>
+          </button></p>
+          {/* <p><a style={{color: 'blue'}} target="_blank" href={`${process.env.NEXT_PUBLIC_DOWNLOAD_LINK}${row?.payments?.clients?.documents?.file_path}`}><button className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">View Uploaded Document</button></a></p> */}
+        </div>
+        
+      ),
+    },
+
+    {
+      // name: "Actions",
+      cell: (row) => (
+        <div className=" items-center space-x-4.5">
+      
+          <p><a style={{color: 'blue'}} target="_blank" href={`${process.env.NEXT_PUBLIC_DOWNLOAD_LINK}${row?.payments?.clients?.documents?.file_path}`}><button className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">View Uploaded Document</button></a></p>
         </div>
         
       ),
