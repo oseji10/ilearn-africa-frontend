@@ -256,7 +256,7 @@ const AdmissionsTable = () => {
       cell: (row) => (
         <div className=" items-center space-x-4.5">
       
-          <p><a style={{color: 'blue'}} target="_blank" href={`${process.env.NEXT_PUBLIC_DOWNLOAD_LINK}${row?.payments?.clients?.documents?.file_path}`}><button className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">View Uploaded Document</button></a></p>
+          <p><a style={{color: 'blue'}} target="_blank" href={`${process.env.NEXT_PUBLIC_DOWNLOAD_LINK}${row?.clients?.documents?.file_path}`}><button className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">View Uploaded Document</button></a></p>
         </div>
         
       ),

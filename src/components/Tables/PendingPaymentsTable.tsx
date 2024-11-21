@@ -44,6 +44,130 @@ const PendingPaymentsTable = () => {
 
   const router = useRouter();
 
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+const [selectedRow, setSelectedRow] = useState(null);
+const [newAmount, setNewAmount] = useState("");
+
+
+const handleEditClick = (row) => {
+  setSelectedRow(row); // Set the row being edited
+  setIsModalOpen(true); // Open the modal
+};
+
+const handleModalClose = () => {
+  setIsModalOpen(false); // Close the modal
+  setNewAmount(""); // Reset the input
+};
+
+// const handleSubmit = async () => {
+//   try {
+//     const token = localStorage.getItem("token");
+//     const response = await post(`${process.env.NEXT_PUBLIC_API_URL}/edit_payment`, {
+//       // `${process.env.NEXT_PUBLIC_API_URL}/certificates/batch-process`,
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${token}`,
+//       },
+//       body: JSON.stringify({
+//         id: selectedRow.id, 
+//         edited_payment: newAmount,
+//         client_id: selectedRow.client_id,
+//         transaction_reference: selectedRow.transaction_reference
+//       }),
+//     });
+
+//     if (!response.ok) {
+//       throw new Error("Failed to update payment.");
+//     }
+
+//     alert("Payment updated successfully!");
+//     handleModalClose(); 
+//   } catch (error) {
+//     alert(error.message);
+//   }
+// };
+
+
+
+// useEffect(() => {
+//   const handleSubmit = async () => {
+//     try {
+//       const token = localStorage.getItem("token");
+//       if (!token) {
+//         throw new Error("No auth token found");
+//       }
+
+//       const response = await axios.post(
+//         `${process.env.NEXT_PUBLIC_API_URL}/edit_payment`,
+//         {
+//           headers: {
+//             Authorization: `Bearer ${token}`,
+//           },
+//           body: JSON.stringify({
+//                     id: selectedRow.id, 
+//                     edited_payment: newAmount,
+//                     client_id: selectedRow.client_id,
+//                     transaction_reference: selectedRow.transaction_reference
+//                   }),
+//         }
+//       )
+//       if (!response) {
+//         throw new Error("Failed to update payment.");
+//       }
+  
+//       alert("Payment updated successfully!");
+//       handleModalClose(); 
+//     } catch (err) {
+//       setError(err.message);
+//       setLoading(false);
+//       // router.refresh() <-- Remove this line
+//     }
+// }});
+
+
+const handleSubmit = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No auth token found");
+    }
+
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/edit_payment`,
+      {
+        id: selectedRow.id,
+        edited_payment: newAmount,
+        client_id: selectedRow.client_id,
+        transaction_reference: selectedRow.transaction_reference,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (response.status !== 200) {
+      throw new Error("Failed to update payment.");
+    }
+
+    alert("Payment updated successfully!");
+    handleModalClose(); // Close modal on success
+    window.location.reload();
+  } catch (err) {
+    setError(err.message);
+    setLoading(false);
+  }
+};
+
+// Example usage (not within useEffect):
+useEffect(() => {
+  // Trigger handleSubmit based on certain dependencies, if needed.
+}, []);
+
+
   useEffect(() => {
     const fetchPayments = async () => {
       try {
@@ -417,10 +541,28 @@ const PendingPaymentsTable = () => {
       ),
       sortable: true,
     },
+    
+      {
+        name: "Actions",
+        cell: (row) => (
+          <div className="flex items-center space-x-3.5">
+            <a
+              onClick={() => handleEditClick(row)}
+              className="cursor-pointer text-blue-600 hover:underline"
+            >
+              Edit Amount
+            </a>
+          </div>
+        ),
+      },
+    
+    
+
     {
-      name: "Actions",
+      name: "",
       cell: (row) => (
         <div className="flex items-center space-x-3.5">
+        
           <button
             className="px-4 py-2 bg-green-500 text-white rounded"
             onClick={() => handleEyeClick(row)}
@@ -428,6 +570,8 @@ const PendingPaymentsTable = () => {
             <FontAwesomeIcon icon={faEye} /> Confirm Payment
           </button>
         </div>
+
+        
       ),
     },
   ];
@@ -565,6 +709,43 @@ const PendingPaymentsTable = () => {
     </div>
   </div>
 )}
+
+
+
+{isModalOpen && (
+  <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
+    <div className="bg-white p-6 rounded shadow-md w-96">
+      <h2 className="text-lg font-semibold mb-4">Edit Payment</h2>
+      <label className="block text-sm font-medium mb-2">
+        Enter New Amount:
+      </label>
+      <input
+        type="number"
+        value={newAmount}
+        onChange={(e) => setNewAmount(e.target.value)}
+        className="border p-2 rounded w-full"
+        placeholder="Enter amount"
+      />
+      {/* <input type="text" value={selectedRow.client_id} /> */}
+
+      <div className="flex items-center justify-end space-x-4 mt-4">
+        <button
+          onClick={handleModalClose}
+          className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSubmit}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          Submit
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 
     </div>
   );

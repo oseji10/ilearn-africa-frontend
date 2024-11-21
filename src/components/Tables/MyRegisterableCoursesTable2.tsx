@@ -201,6 +201,19 @@ const MyRegisterableCoursesTable2 = () => {
   );
 
 
+  const partPayments = [
+    { "id": "10000", "amount": "10000" },
+    { "id": "15000", "amount": "15000" },
+    { "id": "20000", "amount": "20000" },
+    { "id": "30000", "amount": "30000" },
+    { "id": "20000", "amount": "20000" },
+    { "id": "30000", "amount": "30000" },
+    { "id": "50000", "amount": "50000" },
+    { "id": "60000", "amount": "60000" },
+    { "id": "100000", "amount": "100000" },
+    { "id": "150000", "amount": "150000" },
+    { "id": "200000", "amount": "200000" },
+   ];
 
   if (loading) {
     return <p>Loading...</p>;
@@ -332,9 +345,29 @@ const MyRegisterableCoursesTable2 = () => {
                     Enter Amount Paid
                   </label>
 
-
-
-                    <input
+                  <select
+  name="part_payment"
+  value={partPayment} 
+  className="w-full rounded border border-stroke bg-gray px-4.5 py-3 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+  // Maintain the selected course
+  // onChange={(e) =>
+  //   setSelectedCourse((prev) => ({
+  //     ...prev,
+  //     partPayment: e.target.value,
+  //   }))
+  // } // Update the state on change
+  onChange={(e) => setPartPayment(parseFloat(e.target.value) || 0)}
+>
+  <option value="" disabled>
+    Select a course
+  </option>
+  {partPayments.map((partPayment) => (
+    <option key={partPayment.id} value={partPayment.id}>
+      {partPayment.amount} {/* Replace with appropriate label */}
+    </option>
+  ))}
+</select>
+                    {/* <input
                       type="number"
                       id="part_payment"
                       name="part_payment"
@@ -343,7 +376,7 @@ const MyRegisterableCoursesTable2 = () => {
                       className="w-full rounded border border-stroke bg-gray px-4.5 py-3 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
                       value={partPayment} // Set the value to the state variable
                       onChange={(e) => setPartPayment(parseFloat(e.target.value) || 0)}
-                    />
+                    /> */}
 
 
 
