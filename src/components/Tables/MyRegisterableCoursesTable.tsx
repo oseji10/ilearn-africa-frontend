@@ -119,30 +119,53 @@ const MyRegisterableCoursesTable = () => {
   const handlePayment = async () => {
     try {
       setIsSubmitting(true);
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_PAYSTACK_URL}`, // Ensure this endpoint is correct
-        {
-          email: formData.email,
-          amount: (selectedCourse.course_list.cost)*100, 
-          // amount: (selectedCourse.cost).toString(), 
-          callback_url: `${process.env.NEXT_PUBLIC_VERIFY_FRONETEND}/client-dashboard/my-payments/verify?course_id=${encodeURIComponent(selectedCourse.course_id)}&clientId=${encodeURIComponent(clientId)}&cohort_id=${encodeURIComponent(cohortId)}`, // The callback URL
+  
+      // Generate a unique transaction reference
+      const txRef = `tx_${Date.now()}`;
+  
+      // Backend API payload
+      const payload = {
+        tx_ref: txRef,
+        amount: selectedCourse.course_list.cost, // Ensure cost is a number
+        email: formData.email,
+        redirect_url: `${process.env.NEXT_PUBLIC_VERIFY_BACKEND}/client-dashboard/my-payments/verify?course_id=${encodeURIComponent(
+          selectedCourse.course_id
+        )}&clientId=${encodeURIComponent(clientId)}&cohort_id=${encodeURIComponent(cohortId)}`,
+      };
+  
+      // Call the backend API
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/initialize-payment`, payload, {
+        headers: {
+          "Content-Type": "application/json",
         },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (response.data.status) {
-        window.location.href = response.data.data.authorization_url;
+      });
+  
+      console.log("Payment initialization response:", response);
+      // console.log("KK",response.data.data.link);
+      // Redirect user to the payment gateway
+      if (response.data.data.link) {
+        window.location.href = response.data.data.link;
+       
+      } else {
+        console.error("Error: Payment URL not returned in response", response.data);
+        throw new Error("Payment URL not returned");
       }
-      setIsSubmitting(false);
     } catch (error) {
-      console.error('Payment initiation failed:', error);
+      if (error.response) {
+        console.error("Server responded with an error:", error.response);
+        alert(`Error from server: ${error.response.data.message || "Unknown error"}`);
+      } else if (error.request) {
+        console.error("No response received from server:", error.request);
+        alert("No response received from the server. Please check your network.");
+      } else {
+        console.error("Unexpected error:", error.message);
+        alert("An unexpected error occurred.");
+      }
+    } finally {
+      setIsSubmitting(false);
     }
-
   };
+  
 
   return (
     <div>

@@ -334,6 +334,7 @@ useEffect(() => {
     { "id": "30000", "amount": "30000" },
     { "id": "20000", "amount": "20000" },
     { "id": "30000", "amount": "30000" },
+    { "id": "45000", "amount": "45000" },
     { "id": "50000", "amount": "50000" },
     { "id": "60000", "amount": "60000" },
     { "id": "100000", "amount": "100000" },
@@ -540,19 +541,14 @@ useEffect(() => {
 <select
   name="part_payment"
   value={partPayment} // Maintain the selected course
-  onChange={(e) =>
-    setSelectedCourse((prev) => ({
-      ...prev,
-      partPayment: e.target.value,
-    }))
-  } // Update the state on change
+  onChange={(e) => setPartPayment(parseFloat(e.target.value) || 0)} // Update the state on change
 >
   <option value="" disabled>
-    Select a course
+    Select aamount paid
   </option>
   {partPayments.map((partPayment) => (
     <option key={partPayment.id} value={partPayment.id}>
-      {partPayment.amount} {/* Replace with appropriate label */}
+      {partPayment.amount} 
     </option>
   ))}
 </select>

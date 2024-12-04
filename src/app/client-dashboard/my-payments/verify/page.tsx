@@ -16,15 +16,15 @@ const PaymentVerification = () => {
     const verifyPayment = async () => {
       const reference = searchParams.get("reference");
       const courseId = searchParams.get("course_id");
-
-      if (reference) {
+      const tx_ref = searchParams.get("tx_ref");
+      if (tx_ref) {
         try {
           const response = await fetch(
-            `https://api.paystack.co/transaction/verify/${reference}`,
+            `${process.env.NEXT_PUBLIC_FLUTTERWAVE_VERIFY}/${tx_ref}`,
             {
-              method: "GET",
+              method: "POST",
               headers: {
-                Authorization: `Bearer ${process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY}`,
+                Authorization: `Bearer ${process.env.NEXT_PUBLIC_FLUTTERWAVE_SECRET_KEY}`,
                 "Content-Type": "application/json",
               },
             }
