@@ -202,18 +202,48 @@ const MyRegisterableCoursesTable2 = () => {
 
 
   const partPayments = [
-    { "id": "10000", "amount": "10000" },
-    { "id": "15000", "amount": "15000" },
-    { "id": "20000", "amount": "20000" },
-    { "id": "30000", "amount": "30000" },
-    { "id": "20000", "amount": "20000" },
-    { "id": "30000", "amount": "30000" },
-    { "id": "50000", "amount": "50000" },
-    { "id": "60000", "amount": "60000" },
-    { "id": "100000", "amount": "100000" },
-    { "id": "150000", "amount": "150000" },
-    { "id": "200000", "amount": "200000" },
+    { "id": "5000", "amount": "5,000" },
+    { "id": "10000", "amount": "10,000" },
+    { "id": "15000", "amount": "15,000" },
+    { "id": "20000", "amount": "20,000" },
+    { "id": "25000", "amount": "25,000" },
+    { "id": "30000", "amount": "30,000" },
+    { "id": "35000", "amount": "35,000" },
+    { "id": "40000", "amount": "40,000" },
+    { "id": "45000", "amount": "45,000" },
+    { "id": "50000", "amount": "50,000" },
+    { "id": "55000", "amount": "55,000" },
+    { "id": "60000", "amount": "60,000" },
+    { "id": "65000", "amount": "65,000" },
+    { "id": "70000", "amount": "70,000" },
+    { "id": "75000", "amount": "75,000" },
+    { "id": "80000", "amount": "80,000" },
+    { "id": "85000", "amount": "85,000" },
+    { "id": "90000", "amount": "90,000" },
+    { "id": "95000", "amount": "95,000" },
+    { "id": "100000", "amount": "100,000" },
+    { "id": "105000", "amount": "105,000" },
+    { "id": "110000", "amount": "110,000" },
+    { "id": "115000", "amount": "115,000" },
+    { "id": "120000", "amount": "120,000" },
+    { "id": "125000", "amount": "125,000" },
+    { "id": "130000", "amount": "130,000" },
+    { "id": "135000", "amount": "135,000" },
+    { "id": "140000", "amount": "140,000" },
+    { "id": "145000", "amount": "145,000" },
+    { "id": "150000", "amount": "150,000" },
+    { "id": "155000", "amount": "155,000" },
+    { "id": "160000", "amount": "160,000" },
+    { "id": "165000", "amount": "165,000" },
+    { "id": "170000", "amount": "170,000" },
+    { "id": "175000", "amount": "175,000" },
+    { "id": "180000", "amount": "180,000" },
+    { "id": "185000", "amount": "185,000" },
+    { "id": "190000", "amount": "190,000" },
+    { "id": "195000", "amount": "195,000" },
+    { "id": "200000", "amount": "200,000" },
    ];
+ 
 
   if (loading) {
     return <p>Loading...</p>;
@@ -359,7 +389,7 @@ const MyRegisterableCoursesTable2 = () => {
   onChange={(e) => setPartPayment(parseFloat(e.target.value) || 0)}
 >
   <option value="" disabled>
-    Select a course
+    Select paid amount
   </option>
   {partPayments.map((partPayment) => (
     <option key={partPayment.id} value={partPayment.id}>

@@ -8,7 +8,7 @@ import SidebarItem from "@/components/Sidebar/SidebarItem";
 import ClickOutside from "@/components/ClickOutside";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAward, faBookAtlas, faBookOpen, faBuilding, faDivide, faFileExport, faFileInvoiceDollar, faNetworkWired, faPen, faTableColumns, faUserGraduate, faUsers } from "@fortawesome/free-solid-svg-icons";
+import { faAward, faBookAtlas, faBookOpen, faBuilding, faComputer, faDivide, faFileExport, faFileInvoiceDollar, faNetworkWired, faPen, faTableColumns, faUserGraduate, faUsers } from "@fortawesome/free-solid-svg-icons";
 import { faBoxesStacked } from "@fortawesome/free-solid-svg-icons/faBoxesStacked";
 import { faBook } from "@fortawesome/free-solid-svg-icons/faBook";
 import { useRouter } from "next/navigation";
@@ -142,6 +142,27 @@ const adminMenu = [
           // },
         ],
       },
+
+
+      {
+        icon: (
+          <FontAwesomeIcon icon={faComputer} className="fill-current" size="lg" />
+        ),
+        label: "Assessments",
+        route: "/assessments",
+        // children: [
+        //   {
+        //     label: "All Certificates",
+        //     route: "/certificates/certificates",
+        //   },
+        //   {
+        //     label: "Process Certificates",
+        //     route: "/certificates/process-certificates",
+        //   },
+      
+        // ],
+      },
+
 
 
       {

@@ -185,18 +185,47 @@ const MyCoursesAfterPayment = () => {
 
 
   const partPayments = [
-   { "id": "10000", "amount": "10000" },
-   { "id": "15000", "amount": "15000" },
-   { "id": "20000", "amount": "20000" },
-   { "id": "30000", "amount": "30000" },
-   { "id": "20000", "amount": "20000" },
-   { "id": "30000", "amount": "30000" },
-   { "id": "50000", "amount": "50000" },
-   { "id": "60000", "amount": "60000" },
-   { "id": "100000", "amount": "100000" },
-   { "id": "150000", "amount": "150000" },
-   { "id": "200000", "amount": "200000" },
-  ]
+    { "id": "5000", "amount": "5000" },
+    { "id": "10000", "amount": "10000" },
+    { "id": "15000", "amount": "15000" },
+    { "id": "20000", "amount": "20000" },
+    { "id": "25000", "amount": "25000" },
+    { "id": "30000", "amount": "30000" },
+    { "id": "35000", "amount": "35000" },
+    { "id": "40000", "amount": "40000" },
+    { "id": "45000", "amount": "45000" },
+    { "id": "50000", "amount": "50000" },
+    { "id": "55000", "amount": "55000" },
+    { "id": "60000", "amount": "60000" },
+    { "id": "65000", "amount": "65000" },
+    { "id": "70000", "amount": "70000" },
+    { "id": "75000", "amount": "75000" },
+    { "id": "80000", "amount": "80000" },
+    { "id": "85000", "amount": "85000" },
+    { "id": "90000", "amount": "90000" },
+    { "id": "95000", "amount": "95000" },
+    { "id": "100000", "amount": "100000" },
+    { "id": "105000", "amount": "105000" },
+    { "id": "110000", "amount": "110000" },
+    { "id": "115000", "amount": "115000" },
+    { "id": "120000", "amount": "120000" },
+    { "id": "125000", "amount": "125000" },
+    { "id": "130000", "amount": "130000" },
+    { "id": "135000", "amount": "135000" },
+    { "id": "140000", "amount": "140000" },
+    { "id": "145000", "amount": "145000" },
+    { "id": "150000", "amount": "150000" },
+    { "id": "155000", "amount": "155000" },
+    { "id": "160000", "amount": "160000" },
+    { "id": "165000", "amount": "165000" },
+    { "id": "170000", "amount": "170000" },
+    { "id": "175000", "amount": "175000" },
+    { "id": "180000", "amount": "180000" },
+    { "id": "185000", "amount": "185000" },
+    { "id": "190000", "amount": "190000" },
+    { "id": "195000", "amount": "195000" },
+    { "id": "200000", "amount": "200000" },
+   ];
  
   // useEffect(() => {
   //   // Check if the user navigated from the previous page
@@ -366,7 +395,7 @@ const MyCoursesAfterPayment = () => {
   } // Update the state on change
 >
   <option value="" disabled>
-    Select a course
+    Select a payment
   </option>
   {partPayments.map((partPayment) => (
     <option key={partPayment.id} value={partPayment.id}>
