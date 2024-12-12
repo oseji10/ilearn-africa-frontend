@@ -19,7 +19,6 @@ const TablesPage = () => {
 
       <div className="flex flex-col gap-10">
         <AssessmentsTable/>
-        {/* <AssessmentDashboard/> */}
       </div>
     </DefaultLayout>
   );

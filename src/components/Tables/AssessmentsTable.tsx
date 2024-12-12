@@ -34,7 +34,8 @@ const AssessmentsTable = () => {
     status: "",
     courseId: "",
     cohortId: "",
-    examName: ""
+    examName: "",
+    timeAllowed: ""
   });
   const [courses, setCourses] = useState([]);
   const [cohorts, setCohorts] = useState([]);
@@ -101,7 +102,7 @@ const AssessmentsTable = () => {
       );
       console.log("Exam created successfully:", response.data);
       closeModal(); 
-      router.refresh();
+      window.location.reload();
       Swal.fire({
         title: "Success!",
         text: "The exam was created successfully.",
@@ -219,6 +220,7 @@ const AssessmentsTable = () => {
         status: cbtExams.status,
         courseId: cbtExams.courseId,
         cohortId: cbtExams.cohortId,
+        timeAllowed: cbtExams.timeAllowed,
       };
   
       // Send the PUT request using axios
@@ -276,6 +278,7 @@ const AssessmentsTable = () => {
     { name: "Course ID", selector: (row) => row?.courseId, sortable: true },
     { name: "Course Name", selector: (row) => row?.course?.course_name, sortable: true },
     { name: "Exam Date", selector: (row) => row?.examDate, sortable: true },
+    { name: "Time Allowed", selector: (row) => row?.timeAllowed, sortable: true },
     {
       name: "Status",
       selector: (row) => row.status,
@@ -360,6 +363,16 @@ const AssessmentsTable = () => {
                 onChange={handleInputChange}
                 className="border border-gray-300 rounded w-full px-4 py-2"
               />
+
+<input
+                type="number"
+                name="timeAllowed"
+                value={formData.timeAllowed}
+                onChange={handleInputChange}
+                placeholder="Time Allowed in Minutes e.g. (60 mins is 1hr)"
+                className="border border-gray-300 rounded w-full px-4 py-2"
+              />
+
               <div className="flex items-center space-x-2">
                 <label>
                   <input

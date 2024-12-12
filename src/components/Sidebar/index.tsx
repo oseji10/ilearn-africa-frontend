@@ -274,19 +274,19 @@ const clientMenu = [
           <FontAwesomeIcon icon={faPen} className="fill-current" size="lg" />
         ),
         label: "Assessments",
-        route: "",
-        children: [
+        route: "/client-dashboard/my-assessments",
+        // children: [
      
-          {
-            label: "My Assessments",
-            route: "",
-          },
-          {
-            label: "Take Assessment",
-            route: "",
-            // Optionally add an icon here if needed
-          },
-        ],
+        //   {
+        //     label: "My Assessments",
+        //     route: "/my-assessments",
+        //   },
+        //   {
+        //     label: "Take Assessment",
+        //     route: "",
+        //     // Optionally add an icon here if needed
+        //   },
+        // ],
       },
 
       {
