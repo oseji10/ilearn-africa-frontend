@@ -133,8 +133,17 @@ const QuestionsTable = () => {
         icon: "success",
         confirmButtonText: "OK",
       });
-      // closeModal();
-      // window.location.reload();
+      setQuestionData({
+        question: "",
+        options: ["", "", "", ""],
+        correctOptionIndex: null,
+        examId: examId,
+        score: "",
+        isCorrect: "",
+        questionId: ""
+      });
+      closeModal();
+      window.location.reload();
     } catch (err) {
       console.error("Error saving question:", err);
       Swal.fire({
@@ -198,7 +207,55 @@ const QuestionsTable = () => {
   };
 
 
-
+  
+  
+  const handleDelete = async (row) => {
+    try {
+      // Show confirmation dialog
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: 'Do you really want to delete this question? This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!',
+      });
+  
+      // If user confirmed
+      if (result.isConfirmed) {
+        // Send DELETE request
+        const response = await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/cbt-exams/question/${row.questionId}`);
+        
+        if (response.status === 200) {
+          // Show success message
+          Swal.fire(
+            'Deleted!',
+            'The question has been deleted.',
+            'success'
+          );
+          window.location.reload();
+        } else {
+          // Show error message if deletion fails
+          Swal.fire(
+            'Error!',
+            'There was an issue deleting the question.',
+            'error'
+          );
+        }
+      }
+    } catch (error) {
+      Swal.fire(
+        'Error!',
+        'There was an issue deleting the question.',
+        'error'
+      );
+      console.error(error);
+    }
+  };
+  
+ 
+  
 
 
   const handleInputChange2 = (e) => {
@@ -384,7 +441,7 @@ const QuestionsTable = () => {
                 </button>
                 <button
                   className="text-red hover:text-green-700"
-                  onClick={() => handleEdit(row)}
+                  onClick={() => handleDelete(row)}
                 >
                   <FontAwesomeIcon icon={faTrash} />
                 </button>
