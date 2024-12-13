@@ -2,7 +2,7 @@
 import React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-const ExamInstructions = () => {
+const ExamCompleted = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const examId = searchParams.get('examId');
@@ -12,7 +12,7 @@ const ExamInstructions = () => {
 
   const handleStartExam = () => {
     // Navigate to the exam page or start the exam logic
-    router.push(`/client-dashboard/my-assessments/exam?examId=${examId}`); // Replace with actual exam page route
+    router.push(`/client-dashboard/my-assessments/exam?examId=${examId}&timeAllowed=${timeAllowed}`); // Replace with actual exam page route
   };
 
   return (
@@ -24,18 +24,15 @@ const ExamInstructions = () => {
             alt="School Logo"
             className="mx-auto mb-4"
           /> */}
-          <h1 className="text-2xl font-bold">Exam Instructions</h1>
+          <h1 className="text-2xl font-bold">Congratulation!</h1>
         </div>
         <div className="space-y-4">
+         
+          <p>You have successfully submitted this exam</p>
+          <p>See details below:</p>
           <p><b>Title: {examName}</b></p>
-          <p><b>Details: {details}</b></p>
-          <p><b>Time Allowed: {timeAllowed} minutes</b></p>
-          <p>1. Read all questions carefully before answering.</p>
-          <p>2. Ensure you have a stable internet connection.</p>
-          <p>3. You cannot retake the exam unless allowed.</p>
-          <p>4. The timer will start as soon as you begin.</p>
-          <p>5. Any form of examinaton malpractice is highly frowned at. Please note that your exam is being monitored.</p>
-          <p>6. Click "Start Exam" below when ready.</p>
+          <p><b>Score: {details}</b></p>
+          <p><b>Time Spent: {timeAllowed} minutes</b></p>
         </div>
         <div className="mt-6 text-center">
           <button
@@ -50,4 +47,4 @@ const ExamInstructions = () => {
   );
 };
 
-export default ExamInstructions;
+export default ExamCompleted;

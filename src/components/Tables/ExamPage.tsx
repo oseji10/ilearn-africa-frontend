@@ -1,47 +1,74 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import axios from "axios";
+import Swal from "sweetalert2";
 
 const ExamPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const examName = searchParams.get("examName");
-  const timeAllowed = parseInt(searchParams.get("timeAllowed")) || 30; // Default to 30 minutes if not provided
   const examId = searchParams.get("examId");
 
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
-  const [timer, setTimer] = useState(timeAllowed * 60); // Convert minutes to seconds
+  const [timer, setTimer] = useState(null); // Initialize as null until timeAllowed is fetched
 
-  // Fetch questions from API (replace with your endpoint)
+  // Fetch questions and timeAllowed from API
   useEffect(() => {
-    const fetchQuestions = async () => {
+    const fetchExamData = async () => {
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/questions/${examId}`);
         const data = await response.json();
+        
         setQuestions(data);
+
+        // Set the timer based on the timeAllowed from the first question's exam data
+        if (data.length > 0 && data[0]?.exams?.timeAllowed) {
+          const timeAllowed = parseInt(data[0].exams.timeAllowed, 10);
+          setTimer(timeAllowed * 60); // Convert minutes to seconds
+        }
       } catch (error) {
-        console.error("Error fetching questions:", error);
+        console.error("Error fetching exam data:", error);
       }
     };
 
-    fetchQuestions();
+    fetchExamData();
   }, [examId]);
 
-  // Timer logic
-  useEffect(() => {
-    if (timer === 0) {
-      handleSubmitExam(); // Auto-submit when timer reaches zero
-      return;
-    }
+ // Initialize timer only after timeAllowed is set
+useEffect(() => {
+  if (!questions.length) return; // Ensure questions are loaded before proceeding
 
-    const interval = setInterval(() => {
-      setTimer((prevTimer) => prevTimer - 1);
-    }, 1000);
+  const savedTimer = localStorage.getItem(`exam-timer-${examId}`);
+  if (savedTimer) {
+    setTimer(parseInt(savedTimer, 10)); // Restore saved timer from local storage
+  } else if (questions[0]?.exams?.timeAllowed) {
+    const timeAllowed = parseInt(questions[0].exams.timeAllowed, 10) * 60; // Convert to seconds
+    setTimer(timeAllowed);
+  }
+}, [examId, questions]);
 
-    return () => clearInterval(interval); // Cleanup interval
-  }, [timer]);
+
+useEffect(() => {
+  if (timer === 0) {
+    handleSubmitExam(); // Auto-submit when timer ends
+    localStorage.removeItem(`exam-timer-${examId}`);
+    return;
+  }
+
+  const interval = setInterval(() => {
+    setTimer((prev) => {
+      const updated = prev - 1;
+      localStorage.setItem(`exam-timer-${examId}`, updated.toString());
+      return updated;
+    });
+  }, 1000);
+
+  return () => clearInterval(interval);
+}, [timer, examId]);
+
 
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
@@ -72,32 +99,60 @@ const ExamPage = () => {
     setCurrentQuestionIndex(index);
   };
 
-  const handleSubmitExam = () => {
-    // Submit the answers to the API (replace with your endpoint)
-    fetch("/api/exam/submit", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        examName,
-        answers: selectedAnswers,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        alert("Exam submitted successfully!");
-        router.push("/exam/completion"); // Redirect to a completion page
-      })
-      .catch((error) => {
-        console.error("Error submitting exam:", error);
-      });
-  };
+ 
 
-  if (questions.length === 0) return <p>Loading questions...</p>;
+  const handleSubmitExam = async () => {
+    const clientId = localStorage.getItem('client_id');
+    const answers = Object.entries(selectedAnswers).map(([questionId, optionSelected]) => ({
+      questionId,
+      optionSelected,
+    }));
+  
+    const payload = {
+      clientId: clientId,
+      examId: examId,
+      answers,
+    };
+  
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/exam-result`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      Swal.fire({
+        title: "Success!",
+        text: "Exam submitted successfully.",
+        icon: "success",
+        confirmButtonText: "OK",
+      }).then(() => {
+        router.push("/client-dashboard/my-assessments/exam-completed"); // Navigate to a success page or reload
+      });
+    } catch (err) {
+      console.error("Error submitting exam:", err);
+      Swal.fire({
+        title: "Error!",
+        text: "Failed to submit exam. Please try again.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    }
+  };
+  
+
+  if (questions.length === 0 || timer === null) return <p>Loading...</p>;
 
   const currentQuestion = questions[currentQuestionIndex];
-
+  const allQuestionsAnswered = questions.every(
+    (question) => selectedAnswers[question.questions[0]?.questionId]
+  );
+  
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <div className="max-w-4xl mx-auto bg-white shadow-md rounded p-6">
@@ -165,31 +220,40 @@ const ExamPage = () => {
             Next
           </button>
         </div>
-
-        {/* Numbered navigation buttons */}
         <div className="mt-6 flex justify-center space-x-2">
-          {questions.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => handleGoToQuestion(index)}
-              className={`px-4 py-2 rounded ${
-                currentQuestionIndex === index
-                  ? "bg-green-500 text-white"
-                  : "bg-gray-300 text-black"
-              }`}
-            >
-              {index + 1}
-            </button>
-          ))}
-        </div>
+  {questions.map((_, index) => {
+    let buttonClass = "bg-gray-300 text-black"; // Default: unanswered question
+    if (selectedAnswers[questions[index]?.questions[0]?.questionId]) {
+      buttonClass = "bg-green-300 text-black"; // Answered question
+    }
+    if (currentQuestionIndex === index) {
+      buttonClass = "bg-green-500 text-white"; // Current question
+    }
+
+    return (
+      <button
+        key={index}
+        onClick={() => handleGoToQuestion(index)}
+        className={`px-4 py-2 rounded ${buttonClass}`}
+      >
+        {index + 1}
+      </button>
+    );
+  })}
+</div>
+
 
         <div className="mt-6 text-center">
-          <button
-            onClick={handleSubmitExam}
-            className="px-6 py-2 bg-green-500 text-white rounded shadow"
-          >
-            Submit Exam
-          </button>
+        <button
+  onClick={handleSubmitExam}
+  disabled={!allQuestionsAnswered}
+  className={`px-6 py-2 ${
+    allQuestionsAnswered ? "bg-green-500 text-white " : "bg-gray cursor-not-allowed text-black rounded shadow"
+  } `}
+>
+  Submit Exam
+</button>
+
         </div>
       </div>
     </div>
