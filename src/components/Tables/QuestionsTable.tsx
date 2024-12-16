@@ -11,6 +11,7 @@ import {
   faTrash,
   faFilePdf,
   faEdit,
+  faArrowAltCircleLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -394,7 +395,16 @@ const QuestionsTable = () => {
         >
           <FontAwesomeIcon icon={faPlus} /> Add New Question
         </button>
+
+        <a href="/assessments/all-assessments"><button
+          className="px-4 py-2 bg-blue-500 text-white rounded shadow"
+          
+        >
+          <FontAwesomeIcon icon={faArrowAltCircleLeft} /> Back To Assessments
+        </button></a>
       </div>
+
+     
 
       <DataTable
         columns={[
