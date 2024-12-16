@@ -99,6 +99,9 @@ const MyCoursesTable = () => {
                   Course Name
                 </th>
                 <th className="min-w-[100px] px-4 py-4 font-medium text-black dark:text-white">
+                  Cohort
+                </th>
+                <th className="min-w-[100px] px-4 py-4 font-medium text-black dark:text-white">
                   Awarding Institution
                 </th>
                 <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
@@ -117,6 +120,13 @@ const MyCoursesTable = () => {
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <p className="text-black dark:text-white">
                       {my_course.courses.course_name}
+                    </p>
+                  </td>
+
+
+                  <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
+                    <p className="text-black dark:text-white">
+                      {my_course.cohorts.cohort_name}
                     </p>
                   </td>
 

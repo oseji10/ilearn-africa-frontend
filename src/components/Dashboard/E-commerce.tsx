@@ -260,6 +260,15 @@ rate="">
             size="lg"
           />
         </CardDataStats></a>
+
+
+        <a href="/client-dashboard/my-assessments"><CardDataStats title="My Assessments" total="" rate="">
+          <FontAwesomeIcon
+            icon={faAward}
+            className="fill-primary dark:fill-white"
+            size="lg"
+          />
+        </CardDataStats></a>
       </div>
       )}
 
