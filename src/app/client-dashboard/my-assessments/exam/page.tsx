@@ -15,7 +15,7 @@ import ExamPage from "@/components/Tables/ExamPage";
 const TablesPage = () => {
   return (
     <DefaultLayout>
-      <Breadcrumb pageName="Now Taking Assessment" />
+      <Breadcrumb pageName="Now Taking Exam" />
 
       <div className="flex flex-col gap-10">
         

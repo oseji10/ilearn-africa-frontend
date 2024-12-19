@@ -15,7 +15,7 @@ import AssessmentDashboard from "@/components/Tables/AssessmentDashboard";
 const TablesPage = () => {
   return (
     <DefaultLayout>
-      <Breadcrumb pageName="Assessment Dashboard" />
+      <Breadcrumb pageName="Exam Dashboard" />
 
       <div className="flex flex-col gap-10">
         {/* <AssessmentsTable/> */}

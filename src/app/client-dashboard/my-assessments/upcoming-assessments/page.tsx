@@ -14,7 +14,7 @@ import MyAssessmentsTable from "@/components/Tables/MyAssessmentsTable";
 const TablesPage = () => {
   return (
     <DefaultLayout>
-      <Breadcrumb pageName="Upcoming Assessments" />
+      <Breadcrumb pageName="Upcoming Exams" />
 
       <div className="flex flex-col gap-10">
         <MyAssessmentsTable/>

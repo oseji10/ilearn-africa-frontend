@@ -262,7 +262,7 @@ rate="">
         </CardDataStats></a>
 
 
-        <a href="/client-dashboard/my-assessments"><CardDataStats title="My Assessments" total="" rate="">
+        <a href="/client-dashboard/my-assessments"><CardDataStats title="My Exams" total="" rate="">
           <FontAwesomeIcon
             icon={faAward}
             className="fill-primary dark:fill-white"

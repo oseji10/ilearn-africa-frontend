@@ -148,7 +148,7 @@ const adminMenu = [
         icon: (
           <FontAwesomeIcon icon={faComputer} className="fill-current" size="lg" />
         ),
-        label: "Assessments",
+        label: "Exams",
         route: "/assessments",
         // children: [
         //   {
@@ -273,7 +273,7 @@ const clientMenu = [
         icon: (
           <FontAwesomeIcon icon={faPen} className="fill-current" size="lg" />
         ),
-        label: "Assessments",
+        label: "My Exams",
         route: "/client-dashboard/my-assessments",
         // children: [
      

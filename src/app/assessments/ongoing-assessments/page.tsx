@@ -16,7 +16,7 @@ import OngoingExams from "@/components/Tables/OngoingExams";
 const TablesPage = () => {
   return (
     <DefaultLayout>
-      <Breadcrumb pageName="Ongoing Assessment" />
+      <Breadcrumb pageName="Ongoing Exams" />
 
       <div className="flex flex-col gap-10">
         <OngoingExams/>

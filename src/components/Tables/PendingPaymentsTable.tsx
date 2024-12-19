@@ -149,7 +149,7 @@ const handleSubmit = async () => {
       }
     );
 
-    if (response.status !== 200) {
+    if (response !== 201) {
       throw new Error("Failed to update payment.");
     }
 
@@ -438,6 +438,7 @@ useEffect(() => {
         if (response.ok) {
           setError(null);
           closeModal();
+          window.location.reload();
           // const timer = setTimeout(() => {
           //   router.push("/admission/process-admission");
           // }, 5 * 1000);

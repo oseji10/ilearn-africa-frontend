@@ -228,7 +228,7 @@ const AssessmentDashboard: React.FC = () => {
 
           <a href="/assessments/all-assessments">
           <CardDataStats 
-          title="All Assessments" 
+          title="All Exams" 
           // total={registered_clients} 
           rate="">
             <FontAwesomeIcon
@@ -254,7 +254,7 @@ const AssessmentDashboard: React.FC = () => {
 
          <a href="/assessments/assessment-results"> 
          <CardDataStats 
-         title="Results" 
+         title="Exam Results" 
         //  total={pending_admissions} 
          rate=""
          >

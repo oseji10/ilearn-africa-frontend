@@ -400,7 +400,7 @@ const QuestionsTable = () => {
           className="px-4 py-2 bg-blue-500 text-white rounded shadow"
           
         >
-          <FontAwesomeIcon icon={faArrowAltCircleLeft} /> Back To Assessments
+          <FontAwesomeIcon icon={faArrowAltCircleLeft} /> Back To Exams
         </button></a>
       </div>
 
