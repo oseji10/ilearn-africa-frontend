@@ -15,7 +15,7 @@ import ExamCompleted from "@/components/Tables/ExamCompleted";
 const TablesPage = () => {
   return (
     <DefaultLayout>
-      <Breadcrumb pageName="Instructions" />
+      <Breadcrumb pageName="Success Page" />
 
       <div className="flex flex-col gap-10">
         

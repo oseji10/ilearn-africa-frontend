@@ -14,7 +14,8 @@ const ExamPage = () => {
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
-  const [timer, setTimer] = useState(null); // Initialize as null until timeAllowed is fetched
+  const [timer, setTimer] = useState(null); // Initialize timer
+  const [isExamActive, setIsExamActive] = useState(true); // Track if the exam is still active
 
   // Fetch questions and timeAllowed from API
   useEffect(() => {
@@ -25,10 +26,14 @@ const ExamPage = () => {
         
         setQuestions(data);
 
-        // Set the timer based on the timeAllowed from the first question's exam data
+        // Set the timer based on the timeAllowed from the exam data
         if (data.length > 0 && data[0]?.exams?.timeAllowed) {
           const timeAllowed = parseInt(data[0].exams.timeAllowed, 10);
-          setTimer(timeAllowed * 60); // Convert minutes to seconds
+          const storedTime = localStorage.getItem("timer");
+
+          // Use stored time if available, else use the timeAllowed
+          const initialTime = storedTime ? parseInt(storedTime, 10) : timeAllowed * 60;
+          setTimer(initialTime); // Convert minutes to seconds
         }
       } catch (error) {
         console.error("Error fetching exam data:", error);
@@ -38,40 +43,28 @@ const ExamPage = () => {
     fetchExamData();
   }, [examId]);
 
- // Initialize timer only after timeAllowed is set
-useEffect(() => {
-  if (!questions.length) return; // Ensure questions are loaded before proceeding
+  // Countdown timer logic
+  useEffect(() => {
+    if (timer === null || !isExamActive) return;
 
-  const savedTimer = localStorage.getItem(`exam-timer-${examId}`);
-  if (savedTimer) {
-    setTimer(parseInt(savedTimer, 10)); // Restore saved timer from local storage
-  } else if (questions[0]?.exams?.timeAllowed) {
-    const timeAllowed = parseInt(questions[0].exams.timeAllowed, 10) * 60; // Convert to seconds
-    setTimer(timeAllowed);
-  }
-}, [examId, questions]);
+    const interval = setInterval(() => {
+      setTimer((prevTimer) => {
+        if (prevTimer <= 1) {
+          clearInterval(interval);
+          setIsExamActive(false); // End exam when timer reaches zero
+          return 0;
+        }
+        const newTimer = prevTimer - 1;
+        localStorage.setItem("timer", newTimer); // Save the new timer value
+        return newTimer;
+      });
+    }, 1000);
 
+    // Cleanup on component unmount or when timer is reset
+    return () => clearInterval(interval);
+  }, [timer, isExamActive]);
 
-useEffect(() => {
-  if (timer === 0) {
-    handleSubmitExam(); // Auto-submit when timer ends
-    localStorage.removeItem(`exam-timer-${examId}`);
-    return;
-  }
-
-  const interval = setInterval(() => {
-    setTimer((prev) => {
-      const updated = prev - 1;
-      localStorage.setItem(`exam-timer-${examId}`, updated.toString());
-      localStorage.setItem('examId', `${examId}`);
-      return updated;
-    });
-  }, 1000);
-
-  return () => clearInterval(interval);
-}, [timer, examId]);
-
-
+  // Format time as minutes:seconds
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -101,10 +94,11 @@ useEffect(() => {
     setCurrentQuestionIndex(index);
   };
 
- 
- 
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   const handleSubmitExam = async () => {
+    if (hasSubmitted) return; // Prevent multiple submissions
+  
     Swal.fire({
       title: "Are you sure?",
       text: "Do you want to submit the exam? Once submitted, you cannot make changes.",
@@ -118,6 +112,8 @@ useEffect(() => {
       },
     }).then(async (result) => {
       if (result.isConfirmed) {
+        setHasSubmitted(true); // Prevent further submissions after confirmation
+  
         const clientId = localStorage.getItem("client_id");
         const answers = Object.entries(selectedAnswers).map(([questionId, optionSelected]) => ({
           questionId,
@@ -182,15 +178,14 @@ useEffect(() => {
       }
     });
   };
-  
 
-  if (questions.length === 0 || timer === null) return <p>Loading...</p>;
+  if (questions.length === 0 || timer === null) return <p>No questions in this exam. Please contact admin</p>;
 
   const currentQuestion = questions[currentQuestionIndex];
   const allQuestionsAnswered = questions.every(
     (question) => selectedAnswers[question.questions[0]?.questionId]
   );
-  
+
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <div className="max-w-4xl mx-auto bg-white shadow-md rounded p-6">
@@ -258,41 +253,31 @@ useEffect(() => {
             Next
           </button>
         </div>
-        <div className="mt-6 flex justify-center space-x-2">
-  {questions.map((_, index) => {
-    let buttonClass = "bg-gray-300 text-black"; // Default: unanswered question
-    if (selectedAnswers[questions[index]?.questions[0]?.questionId]) {
-      buttonClass = "bg-green-300 text-black"; // Answered question
-    }
-    if (currentQuestionIndex === index) {
-      buttonClass = "bg-green-500 text-white"; // Current question
-    }
 
-    return (
-      <button
-        key={index}
-        onClick={() => handleGoToQuestion(index)}
-        className={`px-4 py-2 rounded ${buttonClass}`}
-        // style={{backgroundColor: 'red'}}
-      >
-        {index + 1}
-      </button>
-    );
-  })}
+        {/* Question Navigation Buttons */}
+        <div className="mt-4 flex justify-center space-x-2">
+  {questions.map((_, index) => (
+    <button
+      key={index}
+      onClick={() => handleGoToQuestion(index)}
+      className={`px-4 py-2 rounded ${index === currentQuestionIndex ? 'bg-blue-500 text-white' : 'bg-gray-300 text-black'}`}
+    >
+      {index + 1}
+    </button>
+  ))}
 </div>
 
 
         <div className="mt-6 text-center">
-        <button
-  onClick={handleSubmitExam}
-  disabled={!allQuestionsAnswered}
-  className={`px-6 py-2 ${
-    allQuestionsAnswered ? "bg-green-500 text-white " : "bg-gray cursor-not-allowed text-black rounded shadow"
-  } `}
->
-  Submit Exam
-</button>
-
+          <button
+            onClick={handleSubmitExam}
+            disabled={!allQuestionsAnswered}
+            className={`px-6 py-2 ${
+              allQuestionsAnswered ? "bg-green-500 text-white " : "bg-gray cursor-not-allowed text-black rounded shadow"
+            } `}
+          >
+            Submit Exam
+          </button>
         </div>
       </div>
     </div>
