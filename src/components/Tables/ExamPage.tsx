@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import Swal from "sweetalert2";
+import styles from '../../css/ExamComponent.module.css'
 
 const ExamPage = () => {
   const router = useRouter();
@@ -62,6 +63,7 @@ useEffect(() => {
     setTimer((prev) => {
       const updated = prev - 1;
       localStorage.setItem(`exam-timer-${examId}`, updated.toString());
+      localStorage.setItem('examId', `${examId}`);
       return updated;
     });
   }, 1000);
@@ -100,49 +102,85 @@ useEffect(() => {
   };
 
  
+ 
 
   const handleSubmitExam = async () => {
-    const clientId = localStorage.getItem('client_id');
-    const answers = Object.entries(selectedAnswers).map(([questionId, optionSelected]) => ({
-      questionId,
-      optionSelected,
-    }));
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Do you want to submit the exam? Once submitted, you cannot make changes.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, submit",
+      cancelButtonText: "No, return to exam",
+      customClass: {
+        confirmButton: styles['confirm-btn'],
+        cancelButton: styles['cancel-btn'],
+      },
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const clientId = localStorage.getItem("client_id");
+        const answers = Object.entries(selectedAnswers).map(([questionId, optionSelected]) => ({
+          questionId,
+          optionSelected,
+        }));
   
-    const payload = {
-      clientId: clientId,
-      examId: examId,
-      answers,
-    };
+        const payload = {
+          clientId: clientId,
+          examId: examId,
+          answers,
+        };
   
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/exam-result`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+        try {
+          const token = localStorage.getItem("token");
+          const response = await axios.post(
+            `${process.env.NEXT_PUBLIC_API_URL}/exam-result`,
+            payload,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          Swal.fire({
+            title: "Success!",
+            text: "Exam submitted successfully.",
+            icon: "success",
+            confirmButtonText: "OK",
+            customClass: {
+              confirmButton: styles['confirm-btn'],
+              cancelButton: styles['cancel-btn'],
+            },
+          }).then(() => {
+            router.push("/client-dashboard/my-assessments/exam-completed"); // Navigate to a success page or reload
+          });
+        } catch (err) {
+          console.error("Error submitting exam:", err);
+          Swal.fire({
+            title: "Error!",
+            text: "Failed to submit exam. Please try again.",
+            icon: "error",
+            confirmButtonText: "OK",
+            customClass: {
+              confirmButton: styles['confirm-btn'],
+              cancelButton: styles['cancel-btn'],
+            },
+          });
         }
-      );
-      Swal.fire({
-        title: "Success!",
-        text: "Exam submitted successfully.",
-        icon: "success",
-        confirmButtonText: "OK",
-      }).then(() => {
-        router.push("/client-dashboard/my-assessments/exam-completed"); // Navigate to a success page or reload
-      });
-    } catch (err) {
-      console.error("Error submitting exam:", err);
-      Swal.fire({
-        title: "Error!",
-        text: "Failed to submit exam. Please try again.",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
-    }
+      } else {
+        // If the candidate clicks "No," do nothing and return to the exam
+        Swal.fire({
+          title: "Continue Exam",
+          text: "You can continue with your exam.",
+          icon: "info",
+          confirmButtonText: "OK",
+          customClass: {
+            confirmButton: styles['confirm-btn'],
+            cancelButton: styles['cancel-btn'],
+          },
+        });
+      }
+    });
   };
   
 
@@ -235,6 +273,7 @@ useEffect(() => {
         key={index}
         onClick={() => handleGoToQuestion(index)}
         className={`px-4 py-2 rounded ${buttonClass}`}
+        // style={{backgroundColor: 'red'}}
       >
         {index + 1}
       </button>

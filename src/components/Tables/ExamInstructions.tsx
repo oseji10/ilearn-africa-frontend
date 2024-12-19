@@ -44,6 +44,11 @@ const ExamInstructions = () => {
           >
             Start Exam
           </button>
+&nbsp;
+          <a href="/client-dashboard/my-assessments/upcoming-assessments"><button
+            className="px-6 py-2 bg-red text-white rounded shadow">
+           Cancel
+          </button></a>
         </div>
       </div>
     </div>
