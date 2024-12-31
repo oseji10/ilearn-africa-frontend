@@ -115,22 +115,17 @@ const MyRegisterableCoursesTable = () => {
   if (error) {
     return <p>Error: {error}</p>;
   }
-
   const handlePayment = async () => {
     try {
       setIsSubmitting(true);
   
-      // Generate a unique transaction reference
       const txRef = `tx_${Date.now()}`;
   
-      // Backend API payload
       const payload = {
         tx_ref: txRef,
         amount: selectedCourse.course_list.cost, // Ensure cost is a number
         email: formData.email,
-        redirect_url: `${process.env.NEXT_PUBLIC_VERIFY_BACKEND}/client-dashboard/my-payments/verify?course_id=${encodeURIComponent(
-          selectedCourse.course_id
-        )}&clientId=${encodeURIComponent(clientId)}&cohort_id=${encodeURIComponent(cohortId)}`,
+        redirect_url: `${process.env.NEXT_PUBLIC_API_URL}/verify-payment?course_id=${encodeURIComponent(selectedCourse.course_id)}&clientId=${encodeURIComponent(clientId)}&cohort_id=${encodeURIComponent(cohortId)}`
       };
   
       // Call the backend API
@@ -141,11 +136,9 @@ const MyRegisterableCoursesTable = () => {
       });
   
       console.log("Payment initialization response:", response);
-      // console.log("KK",response.data.data.link);
-      // Redirect user to the payment gateway
+  
       if (response.data.data.link) {
         window.location.href = response.data.data.link;
-       
       } else {
         console.error("Error: Payment URL not returned in response", response.data);
         throw new Error("Payment URL not returned");
@@ -163,6 +156,31 @@ const MyRegisterableCoursesTable = () => {
       }
     } finally {
       setIsSubmitting(false);
+    }
+  };
+  
+  // Verify payment and redirect on success
+  const verifyPayment = async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const courseId = urlParams.get('course_id');
+    const clientId = urlParams.get('clientId');
+    const cohortId = urlParams.get('cohort_id');
+    
+    try {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/verify-payment`, {
+        params: {
+          course_id: courseId,
+          clientId: clientId,
+          cohort_id: cohortId,
+        },
+      });
+  
+      if (response.status === 200 && response.data.redirect_url) {
+        window.location.href = response.data.redirect_url;
+      }
+    } catch (error) {
+      console.error("Error verifying payment:", error);
+      alert("Payment verification failed");
     }
   };
   

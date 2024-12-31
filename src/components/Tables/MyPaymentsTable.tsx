@@ -292,7 +292,7 @@ useEffect(() => {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/generate-receipt`,
+        `${process.env.NEXT_PUBLIC_API_URL}/download_receipt`,
         {
           method: "POST",
           headers: {

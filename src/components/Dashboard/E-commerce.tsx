@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import React, { useEffect, useState } from "react";
 import CardDataStats from "../CardDataStats";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faAward, faBook, faBookOpen, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarDay, faCalendarTimes, faCalendarXmark, faCartShopping, faCheck, faFileInvoice, faGraduationCap, faIdBadge, faMoneyBill, faMouse, faRibbon, faScroll, faStamp, faUserGraduate, faUsers } from "@fortawesome/free-solid-svg-icons";
+import { faAward, faBook, faBookOpen, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarDay, faCalendarTimes, faCalendarXmark, faCartShopping, faCheck, faFileInvoice, faGraduationCap, faIdBadge, faMoneyBill, faMouse, faPen, faRibbon, faScroll, faStamp, faUserGraduate, faUsers } from "@fortawesome/free-solid-svg-icons";
 import { faCalendarDays } from "@fortawesome/free-solid-svg-icons/faCalendarDays";
 import { faCalendarPlus } from "@fortawesome/free-solid-svg-icons/faCalendarPlus";
 import { faCalendarWeek } from "@fortawesome/free-solid-svg-icons/faCalendarWeek";
@@ -253,6 +253,15 @@ rate="">
           />
         </CardDataStats></a>
 
+        <a href="/client-dashboard/my-assessments"><CardDataStats title="My Exams" total="" rate="">
+          <FontAwesomeIcon
+            icon={faPen}
+            className="fill-primary dark:fill-white"
+            size="lg"
+          />
+        </CardDataStats></a>
+
+
         <a href="/client-dashboard/my-certificates"><CardDataStats title="My Certificates" total="" rate="">
           <FontAwesomeIcon
             icon={faAward}
@@ -262,13 +271,7 @@ rate="">
         </CardDataStats></a>
 
 
-        <a href="/client-dashboard/my-assessments"><CardDataStats title="My Exams" total="" rate="">
-          <FontAwesomeIcon
-            icon={faAward}
-            className="fill-primary dark:fill-white"
-            size="lg"
-          />
-        </CardDataStats></a>
+       
       </div>
       )}
 

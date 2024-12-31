@@ -45,15 +45,15 @@ const PaymentVerification = () => {
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
                 "Content-Type": "application/json",
               },
-              mode: 'cors',
+              mode: 'no-cors',
               body: JSON.stringify({
                 transaction_reference: reference,
-                status: 1, // Store 1 in the database for a successful payment
+                status: 1, 
                 amount: (data.data.amount / 100),
                 cohort_id: cohortId,
                 course_id: courseId,
-                payment_method: "PAYSTACK",
-                payment_gateway: "PAYSTACK",
+                payment_method: "FLUTTERWAVE",
+                payment_gateway: "FLUTTERWAVE",
               }),
             });
 
