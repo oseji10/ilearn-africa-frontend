@@ -8,7 +8,7 @@ import { faCalendarDays } from "@fortawesome/free-solid-svg-icons/faCalendarDays
 import { faCalendarPlus } from "@fortawesome/free-solid-svg-icons/faCalendarPlus";
 import { faCalendarWeek } from "@fortawesome/free-solid-svg-icons/faCalendarWeek";
 import { useRouter } from "next/navigation";
-
+import { getCookie, setCookie } from '../../app/utils/api';
 // Ensure that these components are needed, if not remove them
 const ECommerce: React.FC = () => {
   const [clients, setClients] = useState<string>("");
@@ -120,9 +120,14 @@ const ECommerce: React.FC = () => {
 
     fetchClientId();
   }, []);
-
+  const authToken = getCookie('token');
+  if (!Cookies.get('authToken')) {
+    router.push('/login');
+    // return null;
+  }
   return (
     <>
+  
       {role === 1 && (
           <>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-5 2xl:gap-7.5">
