@@ -120,11 +120,11 @@ const ECommerce: React.FC = () => {
 
     fetchClientId();
   }, []);
-  const authToken = getCookie('token');
-  if (!Cookies.get('authToken')) {
-    router.push('/login');
-    // return null;
-  }
+  // const authToken = getCookie('token');
+  // if (!Cookies.get('authToken')) {
+  //   router.push('/login');
+  //   // return null;
+  // }
   return (
     <>
   

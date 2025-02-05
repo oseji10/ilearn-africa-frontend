@@ -52,7 +52,7 @@ const SignIn: React.FC = () => {
       console.log("Sign in successful:", result);
 
       localStorage.setItem("token", result.access_token);
-      setCookie('token', result.access_token, { expires: 1 });
+      // setCookie('token', result.access_token, { expires: 1 });
       if (result.user && result.user.client_id) {
         localStorage.setItem("client_id", result.user.client_id);
         localStorage.setItem("role", result.role);
