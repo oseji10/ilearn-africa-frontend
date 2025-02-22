@@ -29,8 +29,11 @@ const AssessmentDashboard: React.FC = () => {
   const router = useRouter();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loading, setLoading] = useState<boolean>(true); 
-  
+  const [loading, setLoading] = useState<boolean>(true);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [cohortCourses, setCohortCourses] = useState([]);
+
   const [formData, setFormData] = useState({
     details: "",
     examDate: "",
@@ -101,8 +104,8 @@ const AssessmentDashboard: React.FC = () => {
   }, [router]);
 
   // return null; // This component doesn't render anything visually
-// };
-  
+  // };
+
   useEffect(() => {
     const fetchStatistics = async () => {
       const token = localStorage.getItem("token");
@@ -133,7 +136,7 @@ const AssessmentDashboard: React.FC = () => {
           setAllPayments(data.all_payments);
           setLoading(false);
 
-          
+
         } catch (error) {
           setLoading(false);
           console.error("Error fetching statistics:", error);
@@ -181,9 +184,10 @@ const AssessmentDashboard: React.FC = () => {
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
-  
+
 
   const handleSave = async () => {
+    setIsSubmitting(true);
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
@@ -197,7 +201,8 @@ const AssessmentDashboard: React.FC = () => {
         }
       );
       console.log("Exam created successfully:", response.data);
-      closeModal(); 
+      setIsSubmitting(false);
+      closeModal();
       router.push(`/assessments/all-assessments`);
       Swal.fire({
         title: "Success!",
@@ -207,74 +212,98 @@ const AssessmentDashboard: React.FC = () => {
       });
     } catch (err) {
       console.error("Error creating exam:", err);
+      setIsSubmitting(false);
       alert("Failed to create exam. Please try again.");
+    }
+  };
+
+
+  // Function to fetch courses based on selected cohort
+  const fetchCoursesForCohort = async (cohortId) => {
+    if (!cohortId) return;
+
+    const token = localStorage.getItem("token");
+
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/cohorts/${cohortId}/courses`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      // Axios automatically parses JSON, so use response.data directly
+      setCohortCourses(response.data.courses);
+      console.log(response.data.courses);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
     }
   };
 
   return (
     <>
-    {loading ? (
+      {loading ? (
         // Show the spinner while loading
         <div className="flex items-center justify-center h-screen">
           <div className="w-16 h-16 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
         </div>
       ) : (
         <>
-      {role === 1 && (
-          <>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
-        <a onClick={openModal} href="#"><CardDataStats
-            title="New Exam"
-            // total={incomplete_applications}
-            rate=""
-          >
-            <FontAwesomeIcon
-              className="fill-primary dark:fill-white"
-              icon={faMouse}
-            />
-          </CardDataStats></a>
+          {role === 1 && (
+            <>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
+                <a onClick={openModal} href="#"><CardDataStats
+                  title="New Exam"
+                  // total={incomplete_applications}
+                  rate=""
+                >
+                  <FontAwesomeIcon
+                    className="fill-primary dark:fill-white"
+                    icon={faMouse}
+                  />
+                </CardDataStats></a>
 
-          <a href="/assessments/all-assessments">
-          <CardDataStats 
-          title="All Exams" 
-          // total={registered_clients} 
-          rate="">
-            <FontAwesomeIcon
-              icon={faUsers}
-              className="fill-primary dark:fill-white"
-              size="lg"
-            />
-          </CardDataStats>
-          </a>
-        
-          <a href="/assessments/ongoing-assessments">
-          <CardDataStats 
-          title="Ongoing Exams" 
-          // total={currently_admitted_clients} 
-          rate="">
-            <FontAwesomeIcon
-              icon={faUserGraduate}
-              className="fill-primary dark:fill-white"
-            />
-          </CardDataStats>
-          </a>
+                <a href="/assessments/all-assessments">
+                  <CardDataStats
+                    title="All Exams"
+                    // total={registered_clients} 
+                    rate="">
+                    <FontAwesomeIcon
+                      icon={faUsers}
+                      className="fill-primary dark:fill-white"
+                      size="lg"
+                    />
+                  </CardDataStats>
+                </a>
+
+                <a href="/assessments/ongoing-assessments">
+                  <CardDataStats
+                    title="Ongoing Exams"
+                    // total={currently_admitted_clients} 
+                    rate="">
+                    <FontAwesomeIcon
+                      icon={faUserGraduate}
+                      className="fill-primary dark:fill-white"
+                    />
+                  </CardDataStats>
+                </a>
 
 
-         <a href="/assessments/assessment-results"> 
-         <CardDataStats 
-         title="Exam Results" 
-        //  total={pending_admissions} 
-         rate=""
-         >
-            <FontAwesomeIcon
-              icon={faGraduationCap}
-              className="fill-primary dark:fill-white"
-            />
-          </CardDataStats></a>
+                <a href="/assessments/assessment-results">
+                  <CardDataStats
+                    title="Exam Results"
+                    //  total={pending_admissions} 
+                    rate=""
+                  >
+                    <FontAwesomeIcon
+                      icon={faGraduationCap}
+                      className="fill-primary dark:fill-white"
+                    />
+                  </CardDataStats></a>
 
-        
 
-          {/* <a href="/reports/graduated">
+
+                {/* <a href="/reports/graduated">
           <CardDataStats 
           title="Graduated Clients" 
           // total={all_graduated_clients} 
@@ -291,7 +320,7 @@ const AssessmentDashboard: React.FC = () => {
           <div className="bg-white rounded shadow p-6 w-11/12 md:w-1/2 max-h-[75%] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">Add New Exam</h2>
             <div className="space-y-4">
-            <input
+              <input
                 type="text"
                 name="examName"
                 placeholder="Exam Name"
@@ -322,7 +351,7 @@ const AssessmentDashboard: React.FC = () => {
                 className="border border-gray-300 rounded w-full px-4 py-2"
               />
 
-<input
+              <input
                 type="number"
                 name="timeAllowed"
                 value={formData.timeAllowed}
@@ -383,23 +412,14 @@ const AssessmentDashboard: React.FC = () => {
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
               </select>
-              <select
-                name="courseId"
-                value={formData.courseId}
-                onChange={handleInputChange}
-                className="border border-gray-300 rounded w-full px-4 py-2"
-              >
-                <option value="">Select Course</option>
-                {courses.map((course) => (
-                  <option key={course.course_id} value={course.course_id}>
-                    {course.course_name}
-                  </option>
-                ))}
-              </select>
+
               <select
                 name="cohortId"
                 value={formData.cohortId}
-                onChange={handleInputChange}
+                onChange={(e) => {
+                  handleInputChange(e);
+                  fetchCoursesForCohort(e.target.value);
+                }}
                 className="border border-gray-300 rounded w-full px-4 py-2"
               >
                 <option value="">Select Cohort</option>
@@ -409,18 +429,49 @@ const AssessmentDashboard: React.FC = () => {
                   </option>
                 ))}
               </select>
+
+              <select
+                name="courseId"
+                value={formData.courseId}
+                onChange={handleInputChange}
+                className="border border-gray-300 rounded w-full px-4 py-2"
+                disabled={!formData.cohortId} // Disable if no cohort selected
+              >
+                <option value="">Select Course</option>
+                {cohortCourses.map((course) => (
+                  <option key={course.course_list.id} value={course.course_list.course_id}>
+                    {course.course_list.course_name}
+                  </option>
+                ))}
+              </select>
+
+
             </div>
             <div className="mt-4 flex justify-end space-x-4">
-              <button
+              {/* <button
                 onClick={handleSave}
                 className="px-4 py-2 bg-blue-500 text-white rounded"
               >
                 Create
+              </button> */}
+              <button
+                onClick={handleSave}
+                className="px-4 py-2 bg-blue-500 text-white rounded flex items-center"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center">
+                    Creating...
+                    <span className="animate-spin border-2 border-white border-t-transparent rounded-full h-4 w-4 ml-2"></span>
+                  </span>
+                ) : (
+                  "Create"
+                )}
               </button>
               <button
                 onClick={closeModal}
                 className="px-4 py-2 bg-red-500 text-white rounded"
-                style={{color: 'red'}}
+                style={{ color: 'red' }}
               >
                 Cancel
               </button>
@@ -428,11 +479,12 @@ const AssessmentDashboard: React.FC = () => {
           </div>
         </div>
       )}
-        </div>
-</>
+
+              </div>
+            </>
+          )}
+        </>
       )}
-    </>
-     )}
     </>
   );
 };
