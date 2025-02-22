@@ -7,17 +7,19 @@ import { Metadata } from "next";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 
 import { MetaInformation } from "@/components/Meta";
-import MyAssessmentsTable from "@/components/Tables/MyAssessmentsTable";
+
+import MyExamResults from "@/components/Tables/MyExamResults";
 
 
 
 const TablesPage = () => {
   return (
     <DefaultLayout>
-      <Breadcrumb pageName="Scheduled Exams" />
+      <Breadcrumb pageName="Exam Results" />
 
       <div className="flex flex-col gap-10">
-        <MyAssessmentsTable/>
+        
+        <MyExamResults/>
       </div>
     </DefaultLayout>
   );

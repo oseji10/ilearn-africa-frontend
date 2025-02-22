@@ -9,6 +9,10 @@ import { faCalendarPlus } from "@fortawesome/free-solid-svg-icons/faCalendarPlus
 import { faCalendarWeek } from "@fortawesome/free-solid-svg-icons/faCalendarWeek";
 import { useRouter } from "next/navigation";
 import { getCookie, setCookie } from '../../app/utils/api';
+
+import { NumericFormat } from "react-number-format";
+
+
 // Ensure that these components are needed, if not remove them
 const ECommerce: React.FC = () => {
   const [clients, setClients] = useState<string>("");
@@ -23,8 +27,10 @@ const ECommerce: React.FC = () => {
   const [payments_this_month, setPaymentsThisMonth] = useState<string>("");
   const [all_payments, setAllPayments] = useState<string>("");
 
-  const [role, setRole] = useState<number | null>(null); // Changed to number or null
+  const [role, setRole] = useState<number | null>(null); 
   const router = useRouter();
+  const [loading, setLoading] = useState<boolean>(true); 
+
 
   useEffect(() => {
     // Fetch items from local storage
@@ -52,8 +58,8 @@ const ECommerce: React.FC = () => {
   }, [router]);
 
   // return null; // This component doesn't render anything visually
-// };
-  
+  // };
+
   useEffect(() => {
     const fetchStatistics = async () => {
       const token = localStorage.getItem("token");
@@ -83,10 +89,13 @@ const ECommerce: React.FC = () => {
           setPaymentsThisMonth(data.payments_this_month);
           setAllPayments(data.all_payments);
 
+          setLoading(false); // Stop loading once data is fetched
 
-          
+
         } catch (error) {
           console.error("Error fetching statistics:", error);
+          setLoading(false); // Stop loading once data is fetched
+
         }
       }
     };
@@ -127,166 +136,207 @@ const ECommerce: React.FC = () => {
   // }
   return (
     <>
-  
-      {role === 1 && (
-          <>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-5 2xl:gap-7.5">
-        <a href="/reports/incomplete-applications"><CardDataStats
-            title="Incomplete Profiles"
-            total={incomplete_applications}
-            rate=""
-          >
-            <FontAwesomeIcon
-              className="fill-primary dark:fill-white"
-              icon={faMouse}
-            />
-          </CardDataStats></a>
-
-          <a href="/reports/registered-clients"><CardDataStats 
-          title="Total Registered Clients" 
-          total={registered_clients} 
-          rate="">
-            <FontAwesomeIcon
-              icon={faUsers}
-              className="fill-primary dark:fill-white"
-              size="lg"
-            />
-          </CardDataStats></a>
-        
-          
-         <a href="/admission/process-admission"> <CardDataStats title="Pending Admissions" total={pending_admissions} rate="">
-            <FontAwesomeIcon
-              icon={faGraduationCap}
-              className="fill-primary dark:fill-white"
-            />
-          </CardDataStats></a>
-
-          <a href="/reports/currently-admitted"><CardDataStats title="Currently Admitted Clients" total={currently_admitted_clients} rate="">
-            <FontAwesomeIcon
-              icon={faUserGraduate}
-              className="fill-primary dark:fill-white"
-            />
-          </CardDataStats></a>
-
-          <a href="/reports/graduated"><CardDataStats title="Graduated Clients" total={all_graduated_clients} rate="">
-            <FontAwesomeIcon
-              icon={faAward}
-              className="fill-primary dark:fill-white"
-            />
-          </CardDataStats></a>
+      {loading ? (
+        // Show the spinner while loading
+        <div className="flex items-center justify-center h-screen">
+          <div className="w-16 h-16 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
         </div>
+      ) : (
+        <>
 
-        
-<br/>
+          {role === 1 && (
+            <>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-5 2xl:gap-7.5">
+                <a href="/reports/incomplete-applications"><CardDataStats
+                  title="Incomplete Profiles"
+                  total={incomplete_applications}
+                  rate=""
+                >
+                  <FontAwesomeIcon
+                    className="fill-primary dark:fill-white"
+                    icon={faMouse}
+                  />
+                </CardDataStats></a>
 
-<div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
-<a href="/reports/payments-today"><CardDataStats 
-title="Verified Payments Today" 
-total={payments_today} 
-rate="">
-  <FontAwesomeIcon
-    icon={faCalendarCheck}
-    className="fill-primary dark:fill-white"
-    size="lg"
-  />
-</CardDataStats></a>
-
-<a href="/reports/payments-this-week"><CardDataStats
-  title="Verified Payments This Week"
-  total={payments_this_week}
-  rate=""
->
-  <FontAwesomeIcon
-    className="fill-primary dark:fill-white"
-    icon={faCalendarWeek}
-  />
-</CardDataStats></a>
-
-<a href="/reports/payments-this-month"><CardDataStats title="Revenue this Month" total={payments_this_month} rate="">
-  <FontAwesomeIcon
-    icon={faCalendarTimes}
-    className="fill-primary dark:fill-white"
-  />
-</CardDataStats></a>
-<a href="/reports/all-payments"><CardDataStats title="Total Revenue" total={all_payments} rate="">
-  <FontAwesomeIcon
-    icon={faCalendarAlt}
-    className="fill-primary dark:fill-white"
-  />
-</CardDataStats></a>
+                <a href="/reports/registered-clients"><CardDataStats
+                  title="Total Registered Clients"
+                  total={registered_clients}
+                  rate="">
+                  <FontAwesomeIcon
+                    icon={faUsers}
+                    className="fill-primary dark:fill-white"
+                    size="lg"
+                  />
+                </CardDataStats></a>
 
 
-</div>
-</>
-      )}
+                <a href="/admission/process-admission"> <CardDataStats title="Pending Admissions" total={pending_admissions} rate="">
+                  <FontAwesomeIcon
+                    icon={faGraduationCap}
+                    className="fill-primary dark:fill-white"
+                  />
+                </CardDataStats></a>
 
-      {role === 2 && (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
-          <CardDataStats title="Total Clients" total={clients} rate="">
-            <FontAwesomeIcon
-              icon={faUsers}
-              className="fill-primary dark:fill-white"
-              size="lg"
-            />
-          </CardDataStats>
-        </div>
-      )}
+                <a href="/reports/currently-admitted"><CardDataStats title="Currently Admitted Clients" total={currently_admitted_clients} rate="">
+                  <FontAwesomeIcon
+                    icon={faUserGraduate}
+                    className="fill-primary dark:fill-white"
+                  />
+                </CardDataStats></a>
 
-      {role === 3 && (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-6 2xl:gap-7.5">
-        <a href="/client-dashboard/my-courses"><CardDataStats title="My Courses" total="" rate="">
-          <FontAwesomeIcon
-            icon={faBookOpen}
-            className="fill-primary dark:fill-white"
-            size="lg"
-          />
-        </CardDataStats></a>
-
-        <a href="/client-dashboard/my-payments"><CardDataStats title="My Payments" total="" rate="">
-          <FontAwesomeIcon
-            icon={faFileInvoice}
-            className="fill-primary dark:fill-white"
-            size="lg"
-          />
-        </CardDataStats></a>
-
-        <a href="/client-dashboard/my-admissions"><CardDataStats title="My Admissions" total="" rate="">
-          <FontAwesomeIcon
-            icon={faUserGraduate}
-            className="fill-primary dark:fill-white"
-            size="lg"
-          />
-        </CardDataStats></a>
-
-        <a href="/client-dashboard/my-assessments"><CardDataStats title="My Exams" total="" rate="">
-          <FontAwesomeIcon
-            icon={faPen}
-            className="fill-primary dark:fill-white"
-            size="lg"
-          />
-        </CardDataStats></a>
+                <a href="/reports/graduated"><CardDataStats title="Graduated Clients" total={all_graduated_clients} rate="">
+                  <FontAwesomeIcon
+                    icon={faAward}
+                    className="fill-primary dark:fill-white"
+                  />
+                </CardDataStats></a>
+              </div>
 
 
-        <a href="/client-dashboard/my-certificates"><CardDataStats title="My Certificates" total="" rate="">
-          <FontAwesomeIcon
-            icon={faAward}
-            className="fill-primary dark:fill-white"
-            size="lg"
-          />
-        </CardDataStats></a>
+              <br />
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
+                <a href="/reports/payments-today"><CardDataStats
+                  title="Verified Payments Today"
+                  total={payments_today}
+                  rate="">
+                  <FontAwesomeIcon
+                    icon={faCalendarCheck}
+                    className="fill-primary dark:fill-white"
+                    size="lg"
+                  />
+                </CardDataStats></a>
+
+                <a href="/reports/payments-this-week"><CardDataStats
+                  title="Verified Payments This Week"
+
+                  total={
+                    <NumericFormat
+                      value={payments_this_week}
+                      displayType={"text"}
+                      thousandSeparator={true}
+                      prefix={"₦"} // Change this if you want another currency symbol
+                    />
+                  }
+                  rate=""
+                >
+                  <FontAwesomeIcon
+                    className="fill-primary dark:fill-white"
+                    icon={faCalendarWeek}
+                  />
+                </CardDataStats></a>
+
+                <a href="/reports/payments-this-month">
+                  <CardDataStats
+                    title="Revenue this Month"
+                    total={
+                      <NumericFormat
+                        value={payments_this_month}
+                        displayType={"text"}
+                        thousandSeparator={true}
+                        prefix={"₦"} // Change this if you want another currency symbol
+                      />
+                    }
+                    rate=""
+                  >
+                    <FontAwesomeIcon
+                      icon={faCalendarTimes}
+                      className="fill-primary dark:fill-white"
+                    />
+                  </CardDataStats>
+                </a>
+                <a href="/reports/all-payments"><CardDataStats title="Total Revenue"
+
+                  total={
+                    <NumericFormat
+                      value={all_payments}
+                      displayType={"text"}
+                      thousandSeparator={true}
+                      prefix={"₦"} // Change this if you want another currency symbol
+                    />
+                  }
+                  rate="">
+                  <FontAwesomeIcon
+                    icon={faCalendarAlt}
+                    className="fill-primary dark:fill-white"
+                  />
+                </CardDataStats></a>
 
 
-       
-      </div>
-      )}
+              </div>
+            </>
+          )}
 
-      {(role !== 1 && role !== 2 && role !== 3) && (
-        <div className="text-center text-gray-500">
-          <p>Details are not available for your role.</p>
-        </div>
+          {role === 2 && (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
+              <CardDataStats title="Total Clients" total={clients} rate="">
+                <FontAwesomeIcon
+                  icon={faUsers}
+                  className="fill-primary dark:fill-white"
+                  size="lg"
+                />
+              </CardDataStats>
+            </div>
+          )}
+
+          {role === 3 && (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-6 2xl:gap-7.5">
+              <a href="/client-dashboard/my-courses"><CardDataStats title="My Courses" total="" rate="">
+                <FontAwesomeIcon
+                  icon={faBookOpen}
+                  className="fill-primary dark:fill-white"
+                  size="lg"
+                />
+              </CardDataStats></a>
+
+              <a href="/client-dashboard/my-payments"><CardDataStats title="My Payments" total="" rate="">
+                <FontAwesomeIcon
+                  icon={faFileInvoice}
+                  className="fill-primary dark:fill-white"
+                  size="lg"
+                />
+              </CardDataStats></a>
+
+              <a href="/client-dashboard/my-admissions"><CardDataStats title="My Admissions" total="" rate="">
+                <FontAwesomeIcon
+                  icon={faUserGraduate}
+                  className="fill-primary dark:fill-white"
+                  size="lg"
+                />
+              </CardDataStats></a>
+
+              <a href="/client-dashboard/my-assessments"><CardDataStats title="My Exams" total="" rate="">
+                <FontAwesomeIcon
+                  icon={faPen}
+                  className="fill-primary dark:fill-white"
+                  size="lg"
+                />
+              </CardDataStats></a>
+
+
+              <a href="/client-dashboard/my-certificates"><CardDataStats title="My Certificates" total="" rate="">
+                <FontAwesomeIcon
+                  icon={faAward}
+                  className="fill-primary dark:fill-white"
+                  size="lg"
+                />
+              </CardDataStats></a>
+
+
+
+            </div>
+          )}
+
+          {(role !== 1 && role !== 2 && role !== 3) && (
+            <div className="text-center text-gray-500">
+              <p>Details are not available for your role.</p>
+            </div>
+          )}
+        </>
       )}
     </>
   );
 };
 
 export default ECommerce;
+

@@ -58,7 +58,7 @@ const SignUp: React.FC = () => {
     setOtherNames('');
     const timer = setTimeout(() => {
       router.push("/auth/signin");
-    }, 10 * 1000);
+    }, 10 * 3000);
     } else {
       const data = await response.json();
       setError(data.message);
@@ -142,9 +142,9 @@ const SignUp: React.FC = () => {
         </div>
       )}
 
-{successMessage && (
+{/* {successMessage && (
   <p className="bg-green-100 text-black p-4 rounded-md sm:text-sm md:text-base lg:text-lg">{successMessage}</p>
-)}
+)} */}
 
       <div className="w-full max-w-4xl bg-white rounded-lg shadow-lg p-6 flex flex-col md:flex-row">
         {/* Left Side - Logo and Description */}

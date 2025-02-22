@@ -30,6 +30,7 @@ const MyRegistrationForm = () => {
     othernames: "",
     gender: "",
     marital_status: "",
+    date_of_birth: "",
     // qualification_id: "",
     // grade: "",
     // date_acquired: "",
@@ -190,6 +191,7 @@ const [success, setSuccess] = useState("");
             surname: data.surname,
             othernames: data.othernames,
             title: data.title,
+            date_of_birth: data.date_of_birth,
           }));
           setStatus(data.status);
         } catch (error) {
@@ -521,7 +523,8 @@ useEffect(() => {
                     </div>
                   </div>
 
-                  <div className="mb-5.5">
+                  <div className="mb-5.5 flex flex-col gap-5.5 sm:flex-row">
+                    <div className="w-full sm:w-1/2">
                     <label
                       className="mb-3 block text-sm font-medium text-black dark:text-white"
                       htmlFor="gender"
@@ -551,8 +554,9 @@ useEffect(() => {
                     </div>
                   </div>
 
-                  <div className="mb-5.5">
-                    <label
+                  <div className="w-full sm:w-1/2">
+
+                    {/* <label
                       className="mb-3 block text-sm font-medium text-black dark:text-white"
                       htmlFor="marital_status"
                     >
@@ -580,9 +584,28 @@ useEffect(() => {
                         <option value="Divorced">Divorced</option>
                         <option value="Widowed">Widowed</option>
                       </select>
-                    </div>
-                  </div>
+                    </div> */}
 
+<label
+                              className="mb-3 block text-sm font-medium text-black dark:text-white"
+                              // htmlFor={`date_acquired-${index}`}
+                            >
+                              Date Of Birth
+                            </label>
+                            <input
+                            required
+                              className="w-full rounded border border-stroke bg-gray px-4.5 py-3 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+                              type="date"
+                              name="date_of_birth"
+                              // id={`date_acquired-${index}`}
+                              value={formData.date_of_birth}
+                              // onChange={(e) =>
+                                onChange={handleChange}
+
+                              // }
+                            />
+                  </div>
+</div>
                   <div className="border-b border-stroke px-7 py-4 dark:border-strokedark">
                     <h2 className="font-medium text-black dark:text-white">
                       EDUCATIONAL DETAILS
@@ -711,7 +734,7 @@ useEffect(() => {
                   <br />
                   <div className="border-b border-stroke px-7 py-4 dark:border-strokedark">
                     <h2 className="font-medium text-black dark:text-white">
-                      WORK DETAILS
+                      CURRENT JOB 
                     </h2>
                   </div>
                   <br />
@@ -738,7 +761,7 @@ useEffect(() => {
                             />
                           </td>
                           &nbsp;
-                          <td>
+                          {/* <td>
                             <label
                               className="mb-3 block text-sm font-medium text-black dark:text-white"
                               htmlFor={`endDate-${index}`}
@@ -755,7 +778,7 @@ useEffect(() => {
                               onChange={(e) => handleWorkChange(index, e)}
                             />
                           </td>
-                          &nbsp;
+                          &nbsp; */}
                           <td>
                             <label
                               className="mb-3 block text-sm font-medium text-black dark:text-white"

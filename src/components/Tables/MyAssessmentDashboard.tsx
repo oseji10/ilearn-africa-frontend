@@ -127,7 +127,7 @@ const MyAssessmentDashboard: React.FC = () => {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-2 2xl:gap-7.5">
         <a href="/client-dashboard/my-assessments/upcoming-assessments">
           <CardDataStats 
-          title="My Upcoming Exams" 
+          title="Scheduled Examination" 
           rate="">
             <FontAwesomeIcon
               icon={faUserGraduate}

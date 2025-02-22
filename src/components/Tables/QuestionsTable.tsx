@@ -279,9 +279,11 @@ const QuestionsTable = () => {
     const fetchCbtExams = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/cbt-exams/questions`, {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/cbt-exams/questions/${examId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        console.log("Fetched Questions:", response.data); // Debugging log
+
         setCbtExams(response.data); // Update based on the actual response structure
         setFilteredCourses(response.data); // To handle filtering later
         setLoading(false);

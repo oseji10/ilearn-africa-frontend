@@ -23,7 +23,10 @@ const AssessmentsTable = () => {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCBTModalOpen, setCBTModalOpen] = useState(false);
-  
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [cohortCourses, setCohortCourses] = useState([]);
+
   const [formData, setFormData] = useState({
     details: "",
     examDate: "",
@@ -82,13 +85,14 @@ const AssessmentsTable = () => {
       [name]: type === 'checkbox' ? checked : value,
     }));
   };
-  
+
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
   const closeCBTModal = () => setCBTModalOpen(false);
 
   const handleSave = async () => {
+    setIsSubmitting(true);
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
@@ -102,7 +106,8 @@ const AssessmentsTable = () => {
         }
       );
       console.log("Exam created successfully:", response.data);
-      closeModal(); 
+      setIsSubmitting(false);
+      closeModal();
       window.location.reload();
       Swal.fire({
         title: "Success!",
@@ -112,6 +117,7 @@ const AssessmentsTable = () => {
       });
     } catch (err) {
       console.error("Error creating exam:", err);
+      setIsSubmitting(false);
       alert("Failed to create exam. Please try again.");
     }
   };
@@ -144,36 +150,36 @@ const AssessmentsTable = () => {
     }
     const date = new Date(dateString);
     const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-    
+
     const day = date.getDate();
     const ordinal =
       day % 10 === 1 && day !== 11
         ? 'st'
         : day % 10 === 2 && day !== 12
-        ? 'nd'
-        : day % 10 === 3 && day !== 13
-        ? 'rd'
-        : 'th';
-  
+          ? 'nd'
+          : day % 10 === 3 && day !== 13
+            ? 'rd'
+            : 'th';
+
     return date.toLocaleDateString('en-US', options).replace(/\d{1,2}/, `${day}${ordinal}`);
   };
-  
+
   const formatTime = (timeString) => {
     if (!timeString) {
       return "Not Available"; // Handle null or undefined time
     }
-  
+
     const [hours, minutes] = timeString.split(':');
     const hour = parseInt(hours, 10);
     const period = hour >= 12 ? 'PM' : 'AM';
     const formattedHour = hour % 12 || 12; // Convert to 12-hour format
-  
+
     return `${formattedHour}:${minutes}${period}`;
   };
-  
-  
+
+
   // Usage
- 
+
 
   const handleView = (row) => {
     const date = formatDate(row?.examDate); // Convert to "Sunday, 19th January, 2024"
@@ -192,7 +198,7 @@ const AssessmentsTable = () => {
       confirmButtonText: "Close",
     });
   };
-  
+
   // const handleEdit = (row) => {
   //   console.log("Edit details for:", row);
   //   // Example: Populate the form with row data and open the modal for editing
@@ -207,6 +213,7 @@ const AssessmentsTable = () => {
 
 
   const handleSubmitEdit = async () => {
+    setIsSubmitting(true);
     try {
       // Prepare the payload
       const payload = {
@@ -223,17 +230,17 @@ const AssessmentsTable = () => {
         cohortId: cbtExams.cohortId,
         timeAllowed: cbtExams.timeAllowed,
       };
-  
+
       // Send the PUT request using axios
       const response = await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL}/cbt-exams/${cbtExams.examId}`,
         payload
       );
-  
+
       // Check response status to determine success
       if (response.status === 200 || response.status === 204) {
         // Refresh the router and show success message
-       
+        setIsSubmitting(false);
         Swal.fire({
           title: "Success!",
           text: "The exam was updated successfully.",
@@ -247,6 +254,7 @@ const AssessmentsTable = () => {
       }
     } catch (error) {
       console.error("Error updating exam:", error);
+      setIsSubmitting(false);
       Swal.fire({
         title: "Error",
         text: "Failed to update exam. Please try again.",
@@ -255,9 +263,32 @@ const AssessmentsTable = () => {
       });
     }
   };
-  
-  
-  
+
+
+
+  // Function to fetch courses based on selected cohort
+  const fetchCoursesForCohort = async (cohortId) => {
+    if (!cohortId) return;
+
+    const token = localStorage.getItem("token");
+
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/cohorts/${cohortId}/courses`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      // Axios automatically parses JSON, so use response.data directly
+      setCohortCourses(response.data.courses);
+      console.log(response.data.courses);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    }
+  };
+
+
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
@@ -275,66 +306,71 @@ const AssessmentsTable = () => {
 
         <a href="/assessments"><button
           className="px-4 py-2 bg-blue-500 text-white rounded shadow"
-          
+
         >
           <FontAwesomeIcon icon={faArrowAltCircleLeft} /> Back To Dashboard
         </button></a>
       </div>
 
       <DataTable
-  columns={[
-    { name: "Exam Name", selector: (row) => row?.examName, sortable: true },
-    { name: "Course ID", selector: (row) => row?.courseId, sortable: true },
-    { name: "Course Name", selector: (row) => row?.course?.course_name, sortable: true },
-    { name: "Exam Date", selector: (row) => row?.examDate, sortable: true },
-    { name: "Time Allowed", selector: (row) => row?.timeAllowed, sortable: true },
-    {
-      name: "Status",
-      selector: (row) => row.status,
-      sortable: true,
-      cell: (row) => (
-        <span
-          className={`px-2 py-1 rounded text-white ${
-            row.status === "active" ? "bg-green-500" : "bg-red-500"
-          }`}
-        >
-          {row.status}
-        </span>
-      ),
-    },
-    {
-      name: "Actions",
-      cell: (row) => (
-        <div className="flex space-x-2">
-          <button
-            className="text-blue-500 hover:text-blue-700"
-            onClick={() => handleView(row)}
-          >
-            <FontAwesomeIcon icon={faEye} />
-          </button>
-          <button
-            className="text-green-500 hover:text-green-700"
-            onClick={() => handleEdit(row)}
-          >
-            <FontAwesomeIcon icon={faEdit} />
-          </button>
-          <a
-            href={`/assessments/questions?examName=${encodeURIComponent(row.examName)}&examId=${encodeURIComponent(row.examId)}&cohortName=${encodeURIComponent(row.cohort.cohort_name)}`}
-            className="text-blue-500 hover:text-green-700"
-          >
-            <FontAwesomeIcon icon={faPlus} />
-          </a>
-        </div>
-      ),
-      ignoreRowClick: true,
-      allowOverflow: true,
-      button: true,
-    },
-  ]}
-  data={filteredCourses}
-  pagination
-  highlightOnHover
-/>
+        columns={[
+          { name: "Exam Name", selector: (row) => row?.examName, sortable: true },
+          { name: "Course ID", selector: (row) => row?.courseId, sortable: true },
+          { name: "Course Name", selector: (row) => row?.course?.course_name, sortable: true },
+          { name: "Exam Date", selector: (row) => row?.examDate, sortable: true },
+          { name: "Time Allowed", selector: (row) => row?.timeAllowed, sortable: true },
+          {
+            name: "Status",
+            selector: (row) => row.status,
+            sortable: true,
+            cell: (row) => (
+              <span
+  style={{
+    backgroundColor: row.status.trim().toLowerCase() === "active" ? "green" : "red",
+    color: "white",
+    padding: "4px 8px",
+    borderRadius: "4px",
+    display: "inline-block",
+  }}
+>
+  {row.status}
+</span>
+
+            ),
+          },
+          {
+            name: "Actions",
+            cell: (row) => (
+              <div className="flex space-x-2">
+                <button
+                  className="text-blue-500 hover:text-blue-700"
+                  onClick={() => handleView(row)}
+                >
+                  <FontAwesomeIcon icon={faEye} />
+                </button>
+                <button
+                  className="text-green-500 hover:text-green-700"
+                  onClick={() => handleEdit(row)}
+                >
+                  <FontAwesomeIcon icon={faEdit} />
+                </button>
+                <a
+                  href={`/assessments/questions?examName=${encodeURIComponent(row.examName)}&examId=${encodeURIComponent(row.examId)}&cohortName=${encodeURIComponent(row.cohort?.cohort_name)}`}
+                  className="text-blue-500 hover:text-green-700"
+                >
+                  <FontAwesomeIcon icon={faPlus} />
+                </a>
+              </div>
+            ),
+            ignoreRowClick: true,
+            allowOverflow: true,
+            button: true,
+          },
+        ]}
+        data={filteredCourses}
+        pagination
+        highlightOnHover
+      />
 
 
       {isModalOpen && (
@@ -342,7 +378,7 @@ const AssessmentsTable = () => {
           <div className="bg-white rounded shadow p-6 w-11/12 md:w-1/2 max-h-[75%] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">Add New Exam</h2>
             <div className="space-y-4">
-            <input
+              <input
                 type="text"
                 name="examName"
                 placeholder="Exam Name"
@@ -373,7 +409,7 @@ const AssessmentsTable = () => {
                 className="border border-gray-300 rounded w-full px-4 py-2"
               />
 
-<input
+              <input
                 type="number"
                 name="timeAllowed"
                 value={formData.timeAllowed}
@@ -434,23 +470,14 @@ const AssessmentsTable = () => {
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
               </select>
-              <select
-                name="courseId"
-                value={formData.courseId}
-                onChange={handleInputChange}
-                className="border border-gray-300 rounded w-full px-4 py-2"
-              >
-                <option value="">Select Course</option>
-                {courses.map((course) => (
-                  <option key={course.course_id} value={course.course_id}>
-                    {course.course_name}
-                  </option>
-                ))}
-              </select>
+
               <select
                 name="cohortId"
                 value={formData.cohortId}
-                onChange={handleInputChange}
+                onChange={(e) => {
+                  handleInputChange(e);
+                  fetchCoursesForCohort(e.target.value);
+                }}
                 className="border border-gray-300 rounded w-full px-4 py-2"
               >
                 <option value="">Select Cohort</option>
@@ -460,18 +487,49 @@ const AssessmentsTable = () => {
                   </option>
                 ))}
               </select>
+
+              <select
+                name="courseId"
+                value={formData.courseId}
+                onChange={handleInputChange}
+                className="border border-gray-300 rounded w-full px-4 py-2"
+                disabled={!formData.cohortId} // Disable if no cohort selected
+              >
+                <option value="">Select Course</option>
+                {cohortCourses.map((course) => (
+                  <option key={course.course_list.id} value={course.course_list.course_id}>
+                    {course.course_list.course_name}
+                  </option>
+                ))}
+              </select>
+
+
             </div>
             <div className="mt-4 flex justify-end space-x-4">
-              <button
+              {/* <button
                 onClick={handleSave}
                 className="px-4 py-2 bg-blue-500 text-white rounded"
               >
                 Create
+              </button> */}
+              <button
+                onClick={handleSave}
+                className="px-4 py-2 bg-blue-500 text-white rounded flex items-center"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center">
+                    Creating...
+                    <span className="animate-spin border-2 border-white border-t-transparent rounded-full h-4 w-4 ml-2"></span>
+                  </span>
+                ) : (
+                  "Create"
+                )}
               </button>
               <button
                 onClick={closeModal}
                 className="px-4 py-2 bg-red-500 text-white rounded"
-                style={{color: 'red'}}
+                style={{ color: 'red' }}
               >
                 Cancel
               </button>
@@ -481,7 +539,7 @@ const AssessmentsTable = () => {
       )}
 
 
-{isCBTModalOpen && cbtExams && (
+      {isCBTModalOpen && cbtExams && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white rounded shadow p-6 w-11/12 md:w-1/2 max-h-[75%] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">Add/Edit Exam</h2>
@@ -539,7 +597,7 @@ const AssessmentsTable = () => {
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
               </select>
-              <select
+              {/* <select
                 name="courseId"
                 value={cbtExams.courseId}
                 onChange={handleInputChange2}
@@ -564,14 +622,56 @@ const AssessmentsTable = () => {
                     {cohort.cohort_name}
                   </option>
                 ))}
+              </select> */}
+
+<select
+                name="cohortId"
+                value={cbtExams.cohortId}
+                onChange={(e) => {
+                  handleInputChange2(e);
+                  fetchCoursesForCohort(e.target.value);
+                }}
+                className="border border-gray-300 rounded w-full px-4 py-2"
+              >
+                <option value="">Select Cohort</option>
+                {cohorts.map((cohort) => (
+                  <option key={cohort.cohort_id} value={cohort.cohort_id}>
+                    {cohort.cohort_name}
+                  </option>
+                ))}
               </select>
+
+              <select
+                name="courseId"
+                value={cbtExams.courseId}
+                onChange={handleInputChange}
+                className="border border-gray-300 rounded w-full px-4 py-2"
+                disabled={!cbtExams.cohortId} // Disable if no cohort selected
+              >
+                <option value="">Select Course</option>
+                {cohortCourses.map((course) => (
+                  <option key={course.course_list.id} value={course.course_list.course_id}>
+                    {course.course_list.course_name}
+                  </option>
+                ))}
+              </select>
+
             </div>
             <div className="mt-4 flex justify-end space-x-4">
+             
               <button
                 onClick={handleSubmitEdit}
-                className="px-4 py-2 bg-blue-500 text-white rounded"
+                className="px-4 py-2 bg-blue-500 text-white rounded flex items-center"
+                disabled={isSubmitting}
               >
-                Save
+                {isSubmitting ? (
+                  <span className="flex items-center">
+                    Saving...
+                    <span className="animate-spin border-2 border-white border-t-transparent rounded-full h-4 w-4 ml-2"></span>
+                  </span>
+                ) : (
+                  "Save"
+                )}
               </button>
               <button
                 onClick={closeCBTModal}

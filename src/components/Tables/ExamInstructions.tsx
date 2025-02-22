@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 const ExamInstructions = () => {
@@ -9,11 +9,15 @@ const ExamInstructions = () => {
   const examName = searchParams.get('examName');
   const details = searchParams.get('details');
   const timeAllowed = searchParams.get('timeAllowed');
+const [isStarting, setIsStarting] = useState(false);
+const handleStartExam = () => {
+  setIsStarting(true);
+  
+  setTimeout(() => {
+    router.push(`/client-dashboard/my-assessments/exam?examId=${examId}&examName=${examName}`); 
+  }, 2000); 
+};
 
-  const handleStartExam = () => {
-    // Navigate to the exam page or start the exam logic
-    router.push(`/client-dashboard/my-assessments/exam?examId=${examId}`); // Replace with actual exam page route
-  };
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -38,12 +42,27 @@ const ExamInstructions = () => {
           <p>6. Click "Start Exam" below when ready.</p>
         </div>
         <div className="mt-6 text-center">
-          <button
+          {/* <button
             className="px-6 py-2 bg-green-500 text-white rounded shadow"
             onClick={handleStartExam}
           >
             Start Exam
-          </button>
+          </button> */}
+
+<button
+                onClick={handleStartExam}
+                className="px-6 py-2 bg-green-500 text-white rounded shadow"
+                disabled={isStarting}
+              >
+                {isStarting ? (
+                  <span className="flex items-center">
+                    Loading Questions...
+                    <span className="animate-spin border-2 border-white border-t-transparent rounded-full h-4 w-4 ml-2"></span>
+                  </span>
+                ) : (
+                  "Start Exam"
+                )}
+              </button>
 &nbsp;
           <a href="/client-dashboard/my-assessments/upcoming-assessments"><button
             className="px-6 py-2 bg-red text-white rounded shadow">

@@ -29,7 +29,7 @@ const AssessmentDashboard: React.FC = () => {
   const router = useRouter();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+  const [loading, setLoading] = useState<boolean>(true); 
   
   const [formData, setFormData] = useState({
     details: "",
@@ -131,10 +131,11 @@ const AssessmentDashboard: React.FC = () => {
           setPaymentsThisWeek(data.payments_this_week);
           setPaymentsThisMonth(data.payments_this_month);
           setAllPayments(data.all_payments);
-
+          setLoading(false);
 
           
         } catch (error) {
+          setLoading(false);
           console.error("Error fetching statistics:", error);
         }
       }
@@ -212,6 +213,13 @@ const AssessmentDashboard: React.FC = () => {
 
   return (
     <>
+    {loading ? (
+        // Show the spinner while loading
+        <div className="flex items-center justify-center h-screen">
+          <div className="w-16 h-16 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
+        </div>
+      ) : (
+        <>
       {role === 1 && (
           <>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
@@ -423,6 +431,8 @@ const AssessmentDashboard: React.FC = () => {
         </div>
 </>
       )}
+    </>
+     )}
     </>
   );
 };

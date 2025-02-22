@@ -16,7 +16,7 @@ import {
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 
-const OngoingExams = () => {
+const MyExamResults = () => {
   // const [courseLists, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -88,49 +88,22 @@ const OngoingExams = () => {
   const closeModal = () => setIsModalOpen(false);
   const closeCBTModal = () => setCBTModalOpen(false);
 
-  const handleSave = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/cbt-exams`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      console.log("Exam created successfully:", response.data);
-      closeModal(); 
-      window.location.reload();
-      Swal.fire({
-        title: "Success!",
-        text: "The exam was created successfully.",
-        icon: "success",
-        confirmButtonText: "OK",
-      });
-    } catch (err) {
-      console.error("Error creating exam:", err);
-      alert("Failed to create exam. Please try again.");
-    }
-  };
-
-
+  
   // Fetch data from /api/cbt-exams
   const [cbtExams, setCbtExams] = useState([]);
   useEffect(() => {
     const fetchCbtExams = async () => {
+      const client_id = localStorage.getItem("client_id");
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/cbt-exams`, {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/my-cbt-exam-results/${client_id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setCbtExams(response.data); // Update based on the actual response structure
         setFilteredCourses(response.data); // To handle filtering later
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching CBT exams:", error);
+        console.error("Error fetching CBT exam results:", error);
         setLoading(false);
       }
     };
@@ -175,87 +148,7 @@ const OngoingExams = () => {
   // Usage
  
 
-  const handleView = (row) => {
-    const date = formatDate(row?.examDate); // Convert to "Sunday, 19th January, 2024"
-    const time = formatTime(row?.examTime);
-    Swal.fire({
-      title: "Exam Details",
-      html: `
-        <p><strong>Exam Name:</strong> ${row?.examName}</p>
-        <p><strong>Details:</strong> ${row?.details}</p>
-        <p><strong>Course:</strong> ${row?.course?.course_name}</p>
-        <p><strong>Cohort:</strong> ${row?.cohort?.cohort_name}</p>
-        <p><strong>Date:</strong> ${date}</p>
-        <p><strong>Time:</strong> ${time}</p>
-        <p><strong>Number of questions:</strong> N/A</p>
-      `,
-      confirmButtonText: "Close",
-    });
-  };
-  
-  // const handleEdit = (row) => {
-  //   console.log("Edit details for:", row);
-  //   // Example: Populate the form with row data and open the modal for editing
-  //   // setFormData(row);
-  //   // setIsModalOpen(true);
-  // };
 
-  const handleEdit = (row) => {
-    setCbtExams(row);
-    setCBTModalOpen(true);
-  };
-
-
-  const handleSubmitEdit = async () => {
-    try {
-      // Prepare the payload
-      const payload = {
-        examName: cbtExams.examName,
-        details: cbtExams.details,
-        examDate: cbtExams.examDate,
-        examTime: cbtExams.examTime,
-        isShuffle: cbtExams.isShuffle,
-        isRandom: cbtExams.isRandom,
-        canRetake: cbtExams.canRetake,
-        canSeeResult: cbtExams.canSeeResult,
-        status: cbtExams.status,
-        courseId: cbtExams.courseId,
-        cohortId: cbtExams.cohortId,
-        timeAllowed: cbtExams.timeAllowed,
-      };
-  
-      // Send the PUT request using axios
-      const response = await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL}/cbt-exams/${cbtExams.examId}`,
-        payload
-      );
-  
-      // Check response status to determine success
-      if (response.status === 200 || response.status === 204) {
-        // Refresh the router and show success message
-       
-        Swal.fire({
-          title: "Success!",
-          text: "The exam was updated successfully.",
-          icon: "success",
-          confirmButtonText: "OK",
-        });
-        setCBTModalOpen(false);
-        window.location.reload()
-      } else {
-        throw new Error(`Unexpected response status: ${response.status}`);
-      }
-    } catch (error) {
-      console.error("Error updating exam:", error);
-      Swal.fire({
-        title: "Error",
-        text: "Failed to update exam. Please try again.",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
-    }
-  };
-  
   
   
 
@@ -265,7 +158,7 @@ const OngoingExams = () => {
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
-        {/* <button
+               {/* <button
           className="px-4 py-2 bg-green-500 text-white rounded shadow"
           onClick={openModal}
         >
@@ -273,7 +166,8 @@ const OngoingExams = () => {
         </button> */}
 <span></span>
 
-        <a href="/assessments"><button
+
+        <a href="/client-dashboard/my-assessments"><button
           className="px-4 py-2 bg-blue-500 text-white rounded shadow"
           
         >
@@ -283,30 +177,30 @@ const OngoingExams = () => {
 
       <DataTable
   columns={[
-    { name: "Exam Name", selector: (row) => row?.examName, sortable: true },
-    { name: "Course ID", selector: (row) => row?.courseId, sortable: true },
-    { name: "Course Name", selector: (row) => row?.course?.course_name, sortable: true },
-    { name: "Exam Date", selector: (row) => row?.examDate, sortable: true },
-    { name: "Time Allowed", selector: (row) => row?.timeAllowed, sortable: true },
-    {
-      name: "Status",
-      selector: (row) => row.status,
-      sortable: true,
-      cell: (row) => (
-        <span
-          className={`px-2 py-1 rounded text-white ${
-            row.status === "active" ? "bg-green-500" : "bg-red-500"
-          }`}
-        >
-          {row.status}
-        </span>
-      ),
-    },
+    { name: "Exam Name", selector: (row) => row?.exam?.examName, sortable: true },
+    // { name: "Course Id", selector: (row) => row?.courseId, sortable: true },
+    // { name: "Course Name", selector: (row) => row?.course?.course_name, sortable: true },
+    { name: "Exam Date", selector: (row) => row?.exam?.examDate, sortable: true },
+    { name: "Score", selector: (row) => row?.total_score, sortable: true },
+    // {
+    //   name: "Status",
+    //   selector: (row) => row.status,
+    //   sortable: true,
+    //   cell: (row) => (
+    //     <span
+    //       className={`px-2 py-1 rounded text-white ${
+    //         row.status === "active" ? "bg-green-500" : "bg-red-500"
+    //       }`}
+    //     >
+    //       {row.status}
+    //     </span>
+    //   ),
+    // },
     {
       name: "Actions",
       cell: (row) => (
         <div className="flex space-x-2">
-          <button
+          {/* <button
             className="text-blue-500 hover:text-blue-700"
             onClick={() => handleView(row)}
           >
@@ -317,12 +211,12 @@ const OngoingExams = () => {
             onClick={() => handleEdit(row)}
           >
             <FontAwesomeIcon icon={faEdit} />
-          </button>
+          </button> */}
           <a
-            href={`/assessments/questions?examName=${encodeURIComponent(row.examName)}&examId=${encodeURIComponent(row.examId)}&cohortName=${encodeURIComponent(row.cohort?.cohort_name)}`}
+            href={`/assessments/assessment-results/details`}
             className="text-blue-500 hover:text-green-700"
           >
-            <FontAwesomeIcon icon={faPlus} />
+            <FontAwesomeIcon icon={faEye} />
           </a>
         </div>
       ),
@@ -480,111 +374,8 @@ const OngoingExams = () => {
         </div>
       )}
 
-
-{isCBTModalOpen && cbtExams && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded shadow p-6 w-11/12 md:w-1/2 max-h-[75%] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">Add/Edit Exam</h2>
-            <div className="space-y-4">
-              <input
-                type="text"
-                name="examName"
-                placeholder="Exam Name"
-                value={cbtExams.examName}
-                onChange={handleInputChange2}
-                className="border border-gray-300 rounded w-full px-4 py-2"
-              />
-              <textarea
-                name="details"
-                placeholder="Details"
-                value={cbtExams.details}
-                onChange={handleInputChange2}
-                className="border border-gray-300 rounded w-full px-4 py-2"
-              />
-              <input
-                type="date"
-                name="examDate"
-                value={cbtExams.examDate}
-                onChange={handleInputChange2}
-                className="border border-gray-300 rounded w-full px-4 py-2"
-              />
-              <input
-                type="time"
-                name="examTime"
-                value={cbtExams.examTime}
-                onChange={handleInputChange2}
-                className="border border-gray-300 rounded w-full px-4 py-2"
-              />
-              <div className="flex flex-wrap gap-4">
-                {["isShuffle", "isRandom", "canRetake", "canSeeResult"].map((field) => (
-                  <label key={field}>
-                    <input
-                      type="checkbox"
-                      name={field}
-                      checked={cbtExams[field]}
-                      onChange={handleInputChange2}
-                      className="mr-2"
-                    />
-                    {field.replace(/([A-Z])/g, " $1")}
-                  </label>
-                ))}
-              </div>
-              <select
-                name="status"
-                value={cbtExams.status}
-                onChange={handleInputChange2}
-                className="border border-gray-300 rounded w-full px-4 py-2"
-              >
-                <option value="">Select Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-              <select
-                name="courseId"
-                value={cbtExams.courseId}
-                onChange={handleInputChange2}
-                className="border border-gray-300 rounded w-full px-4 py-2"
-              >
-                <option value="">Select Course</option>
-                {courses.map((course) => (
-                  <option key={course.course_id} value={course.course_id}>
-                    {course.course_name}
-                  </option>
-                ))}
-              </select>
-              <select
-                name="cohortId"
-                value={cbtExams.cohortId}
-                onChange={handleInputChange2}
-                className="border border-gray-300 rounded w-full px-4 py-2"
-              >
-                <option value="">Select Cohort</option>
-                {cohorts.map((cohort) => (
-                  <option key={cohort.cohort_id} value={cohort.cohort_id}>
-                    {cohort.cohort_name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="mt-4 flex justify-end space-x-4">
-              <button
-                onClick={handleSubmitEdit}
-                className="px-4 py-2 bg-blue-500 text-white rounded"
-              >
-                Save
-              </button>
-              <button
-                onClick={closeCBTModal}
-                className="px-4 py-2 bg-red text-white rounded"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
 
-export default OngoingExams;
+export default MyExamResults;

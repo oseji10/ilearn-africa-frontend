@@ -53,7 +53,7 @@ useEffect(() => {
 
   return (
     <DefaultLayout>
-      <Breadcrumb pageName="Registration Complete" />
+      <Breadcrumb pageName="Registration form filled" />
 
       <div className="flex flex-col gap-10">
         
