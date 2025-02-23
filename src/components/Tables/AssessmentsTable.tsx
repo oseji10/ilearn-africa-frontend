@@ -377,6 +377,7 @@ const AssessmentsTable = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white rounded shadow p-6 w-11/12 md:w-1/2 max-h-[75%] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">Add New Exam</h2>
+            <form onSubmit={handleSave}>
             <div className="space-y-4">
               <input
                 type="text"
@@ -534,6 +535,7 @@ const AssessmentsTable = () => {
                 Cancel
               </button>
             </div>
+            </form>
           </div>
         </div>
       )}
@@ -545,6 +547,7 @@ const AssessmentsTable = () => {
             <h2 className="text-xl font-bold mb-4">Add/Edit Exam</h2>
             <div className="space-y-4">
               <input
+              required
                 type="text"
                 name="examName"
                 placeholder="Exam Name"
@@ -560,6 +563,7 @@ const AssessmentsTable = () => {
                 className="border border-gray-300 rounded w-full px-4 py-2"
               />
               <input
+              required
                 type="date"
                 name="examDate"
                 value={cbtExams.examDate}
@@ -567,6 +571,7 @@ const AssessmentsTable = () => {
                 className="border border-gray-300 rounded w-full px-4 py-2"
               />
               <input
+              required
                 type="time"
                 name="examTime"
                 value={cbtExams.examTime}
@@ -597,34 +602,10 @@ const AssessmentsTable = () => {
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
               </select>
-              {/* <select
-                name="courseId"
-                value={cbtExams.courseId}
-                onChange={handleInputChange2}
-                className="border border-gray-300 rounded w-full px-4 py-2"
-              >
-                <option value="">Select Course</option>
-                {courses.map((course) => (
-                  <option key={course.course_id} value={course.course_id}>
-                    {course.course_name}
-                  </option>
-                ))}
-              </select>
-              <select
-                name="cohortId"
-                value={cbtExams.cohortId}
-                onChange={handleInputChange2}
-                className="border border-gray-300 rounded w-full px-4 py-2"
-              >
-                <option value="">Select Cohort</option>
-                {cohorts.map((cohort) => (
-                  <option key={cohort.cohort_id} value={cohort.cohort_id}>
-                    {cohort.cohort_name}
-                  </option>
-                ))}
-              </select> */}
+
 
 <select
+required
                 name="cohortId"
                 value={cbtExams.cohortId}
                 onChange={(e) => {
@@ -642,6 +623,7 @@ const AssessmentsTable = () => {
               </select>
 
               <select
+              required
                 name="courseId"
                 value={cbtExams.courseId}
                 onChange={handleInputChange}

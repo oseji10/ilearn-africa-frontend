@@ -319,6 +319,7 @@ const AssessmentDashboard: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white rounded shadow p-6 w-11/12 md:w-1/2 max-h-[75%] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">Add New Exam</h2>
+              <form onSubmit={handleSave}>
             <div className="space-y-4">
               <input
                 type="text"
@@ -327,6 +328,7 @@ const AssessmentDashboard: React.FC = () => {
                 value={formData.examName}
                 onChange={handleInputChange}
                 className="border border-gray-300 rounded w-full px-4 py-2"
+                required
               />
 
               <textarea
@@ -342,6 +344,7 @@ const AssessmentDashboard: React.FC = () => {
                 value={formData.examDate}
                 onChange={handleInputChange}
                 className="border border-gray-300 rounded w-full px-4 py-2"
+                required
               />
               <input
                 type="time"
@@ -349,6 +352,7 @@ const AssessmentDashboard: React.FC = () => {
                 value={formData.examTime}
                 onChange={handleInputChange}
                 className="border border-gray-300 rounded w-full px-4 py-2"
+                required
               />
 
               <input
@@ -358,6 +362,7 @@ const AssessmentDashboard: React.FC = () => {
                 onChange={handleInputChange}
                 placeholder="Time Allowed in Minutes e.g. (60 mins is 1hr)"
                 className="border border-gray-300 rounded w-full px-4 py-2"
+                required
               />
 
               <div className="flex items-center space-x-2">
@@ -403,6 +408,7 @@ const AssessmentDashboard: React.FC = () => {
                 </label>
               </div>
               <select
+              required
                 name="status"
                 value={formData.status}
                 onChange={handleInputChange}
@@ -439,8 +445,8 @@ const AssessmentDashboard: React.FC = () => {
               >
                 <option value="">Select Course</option>
                 {cohortCourses.map((course) => (
-                  <option key={course.course_list.id} value={course.course_list.course_id}>
-                    {course.course_list.course_name}
+                  <option key={course?.course_list?.id} value={course?.course_list?.course_id}>
+                    {course?.course_list?.course_name}
                   </option>
                 ))}
               </select>
@@ -455,7 +461,7 @@ const AssessmentDashboard: React.FC = () => {
                 Create
               </button> */}
               <button
-                onClick={handleSave}
+                type="submit"
                 className="px-4 py-2 bg-blue-500 text-white rounded flex items-center"
                 disabled={isSubmitting}
               >
@@ -475,7 +481,9 @@ const AssessmentDashboard: React.FC = () => {
               >
                 Cancel
               </button>
+
             </div>
+      </form>
           </div>
         </div>
       )}

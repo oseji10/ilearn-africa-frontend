@@ -26,7 +26,7 @@ const QuestionsTable = () => {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCBTModalOpen, setCBTModalOpen] = useState(false);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   // const [isModalOpen, setIsModalOpen] = useState(false);
   const [questionData, setQuestionData] = useState({
     question: "",
@@ -47,20 +47,6 @@ const QuestionsTable = () => {
   const handleRadioChange = (index) => {
     setQuestionData((prev) => ({ ...prev, correctOptionIndex: index }));
   };
-
-  // const handleInputChange = (e, index = null) => {
-  //   const { name, value } = e.target;
-
-  //   if (name === "question") {
-  //     setQuestionData((prev) => ({ ...prev, question: value }));
-  //   } else if (name === "option" && index !== null) {
-  //     const updatedOptions = [...questionData.options];
-  //     updatedOptions[index] = value; // Update the specific option
-  //     setQuestionData((prev) => ({ ...prev, options: updatedOptions }));
-  //   } else if (name === "score") {
-  //     setQuestionData((prev) => ({ ...prev, score: value })); // Update the score
-  //   }
-  // };
 
   const handleInputChange = (e, index = null) => {
     const { name, value } = e.target;
@@ -113,7 +99,9 @@ const QuestionsTable = () => {
     }));
   };
 
-  const handleSaveQuestion = async () => {
+  const handleSaveQuestion = async (event) => {
+    event.preventDefault(); 
+    setIsSubmitting(true);
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
@@ -127,6 +115,7 @@ const QuestionsTable = () => {
           },
         }
       );
+      setIsSubmitting(false);
       console.log("Question saved successfully:", response.data);
       Swal.fire({
         title: "Success!",
@@ -143,9 +132,11 @@ const QuestionsTable = () => {
         isCorrect: "",
         questionId: ""
       });
+      // setIsSubmitting(false);
       closeModal();
       window.location.reload();
     } catch (err) {
+      setIsSubmitting(false);
       console.error("Error saving question:", err);
       Swal.fire({
         title: "Error",
@@ -157,7 +148,9 @@ const QuestionsTable = () => {
   };
 
 
-  const handleUpdateQuestion = async () => {
+  const handleUpdateQuestion = async (event) => {
+    event.preventDefault(); 
+    setIsSubmitting(true);
     try {
       const token = localStorage.getItem("token");
 
@@ -185,7 +178,7 @@ const QuestionsTable = () => {
           },
         }
       );
-
+      setIsSubmitting(false);
       Swal.fire({
         title: "Success!",
         text: "Question updated successfully.",
@@ -197,7 +190,7 @@ const QuestionsTable = () => {
       window.location.reload();
     } catch (err) {
       console.error("Error updating question:", err);
-
+      setIsSubmitting(false);
       Swal.fire({
         title: "Error",
         text: "Failed to update the question. Please try again.",
@@ -474,7 +467,9 @@ const QuestionsTable = () => {
           <div className="bg-white rounded shadow p-6 w-11/12 md:w-1/2 max-h-[75%] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">Add New Question</h2>
             <div className="space-y-4">
+              <form onSubmit={handleSaveQuestion}>
               <textarea
+              required
                 name="question"
                 placeholder="Type your question here..."
                 value={questionData.question}
@@ -483,6 +478,7 @@ const QuestionsTable = () => {
               />
               {/* <label>Score:</label> */}
               <input
+              required
                 type="number"
                 name="score"
                 placeholder="score"
@@ -491,11 +487,12 @@ const QuestionsTable = () => {
                 className="border border-gray-300 rounded w-full px-4 py-2"
 
               />
-              
+              <br/><br/>
               <div>
                 {questionData.options.map((option, index) => (
                   <div key={index} className="flex items-center mb-2">
                     <input
+                    required
                       type="radio"
                       name="correctOption"
                       checked={questionData.correctOptionIndex === index}
@@ -503,6 +500,7 @@ const QuestionsTable = () => {
                       className="mr-2"
                     />
                     <input
+                    required
                       type="text"
                       name="option"
                       placeholder={`Option ${index + 1}`}
@@ -528,18 +526,34 @@ const QuestionsTable = () => {
                   Add Option
                 </button>
               </div>
-              <button
-                onClick={handleSaveQuestion}
+              {/* <button
+                // onClick={handleSaveQuestion}
                 className="mt-4 px-4 py-2 bg-green-500 text-white rounded"
               >
                 Save Question
-              </button>&nbsp;
+              </button> */}
+              <button
+                type="submit"
+                className="mt-4 px-4 py-2 bg-green-500 text-white rounded"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center">
+                    Saving Question...
+                    <span className="animate-spin border-2 border-white border-t-transparent rounded-full h-4 w-4 ml-2"></span>
+                  </span>
+                ) : (
+                  "Save Question"
+                )}
+              </button>
+                &nbsp;
               <button
                 onClick={closeModal}
                 className="mt-4 px-4 py-2 bg-red text-white rounded"
               >
                 Cancel
               </button>
+            </form>
             </div>
           </div>
         </div>
@@ -548,8 +562,10 @@ const QuestionsTable = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white rounded shadow p-6 w-11/12 md:w-1/2 max-h-[75%] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">Edit Question</h2>
+            <form onSubmit={handleUpdateQuestion}>
             <div className="space-y-4">
               <textarea
+              required
                 name="question"
                 placeholder="Enter your question"
                 value={questionData.question}
@@ -558,6 +574,7 @@ const QuestionsTable = () => {
               />
               {/* <label>Score:</label> */}
               <input
+              required
                 type="number"
                 name="score"
                 value={questionData.score}
@@ -569,6 +586,8 @@ const QuestionsTable = () => {
                 <div key={index} className="flex items-center space-x-2">
                   {/* Option {index + 1}  */}
                   <input
+              required
+
                     type="radio"
                     name="correctOption"
                     checked={questionData.correctOptionIndex === index}
@@ -606,13 +625,31 @@ const QuestionsTable = () => {
               >
                 Cancel
               </button>
-              <button
-                onClick={handleUpdateQuestion}
+              {/* <button
+                // onClick={handleUpdateQuestion}
+                type="submit"
                 className="px-4 py-2 bg-green-500 text-white rounded"
               >
                 Save Changes
+              </button> */}
+
+              <button
+                // onClick={handleSubmitEdit}
+                className="px-4 py-2 bg-blue-500 text-white rounded flex items-center"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center">
+                    Saving Changes...
+                    <span className="animate-spin border-2 border-white border-t-transparent rounded-full h-4 w-4 ml-2"></span>
+                  </span>
+                ) : (
+                  "Save Changes"
+                )}
               </button>
+
             </div>
+            </form>
           </div>
         </div>
       )}
