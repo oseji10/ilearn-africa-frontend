@@ -195,7 +195,7 @@ const MyAssessmentsTable = () => {
                   )
                 }
               >
-                <FontAwesomeIcon icon={faPencil} /> Take Exam
+                <FontAwesomeIcon icon={faPencil} /> Take Examination
               </button>
             ) : (
               <span className="text-gray-500">Not yet available</span>

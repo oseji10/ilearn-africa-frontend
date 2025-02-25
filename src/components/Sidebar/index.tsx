@@ -273,7 +273,7 @@ const clientMenu = [
         icon: (
           <FontAwesomeIcon icon={faPen} className="fill-current" size="lg" />
         ),
-        label: "My Exams",
+        label: "My Examinations",
         route: "/client-dashboard/my-assessments",
         // children: [
      
