@@ -65,7 +65,9 @@ const MyAssessmentsTable = () => {
           // params: { client_id },
         });
 
-        setFilteredCourses(clientResponse.data);
+        // setFilteredCourses(clientResponse.data);
+        setFilteredCourses(clientResponse.data.exams || []);
+
         setLoading(false);
       } catch (err) {
         console.error("Error fetching data:", err);
@@ -178,35 +180,70 @@ const MyAssessmentsTable = () => {
       
       ),
     },
+    // {
+    //   name: "Actions",
+    //   cell: (row) => {
+    //     const examDateTime = new Date(`${row.examDate}T${row.examTime}`); // Combine date & time
+    //     const now = new Date();
+    
+    //     return (
+    //       <div className="flex space-x-2">
+    //         {now >= examDateTime ? (
+    //           <button
+    //             className="px-4 py-2 bg-blue-500 text-white rounded shadow"
+    //             onClick={() =>
+    //               router.push(
+    //                 `/client-dashboard/my-assessments/instructions?examId=${row.examId}&examName=${row.examName}&details=${row.details}&timeAllowed=${row.timeAllowed}`
+    //               )
+    //             }
+    //           >
+    //             <FontAwesomeIcon icon={faPencil} /> Take Examination
+    //           </button>
+    //         ) : (
+    //           <span className="text-gray-500">Not yet available</span>
+    //         )}
+    //       </div>
+    //     );
+    //   },
+    //   ignoreRowClick: true,
+    //   allowOverflow: true,
+    //   button: true,
+    // },
+
     {
       name: "Actions",
       cell: (row) => {
-        const examDateTime = new Date(`${row.examDate}T${row.examTime}`); // Combine date & time
-        const now = new Date();
+        const statusMessages = {
+          "incomplete payment": "Incomplete Payment",
+          "not yet available": "Not Yet Available",
+          "cannot retake exam": "Cannot Retake Exam",
+          "eligible for exam": "Take Examination",
+        };
     
         return (
           <div className="flex space-x-2">
-            {now >= examDateTime ? (
+            {row.status2 === "eligible for exam" ? (
               <button
-                className="px-4 py-2 bg-blue-500 text-white rounded shadow"
+                className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 transition"
                 onClick={() =>
                   router.push(
                     `/client-dashboard/my-assessments/instructions?examId=${row.examId}&examName=${row.examName}&details=${row.details}&timeAllowed=${row.timeAllowed}`
                   )
                 }
               >
-                <FontAwesomeIcon icon={faPencil} /> Take Examination
+                <FontAwesomeIcon icon={faPencil} /> {statusMessages[row.status2]}
               </button>
             ) : (
-              <span className="text-gray-500">Not yet available</span>
+              <span className="text-red-500 font-semibold">{statusMessages[row.status2]}</span>
             )}
           </div>
         );
       },
       ignoreRowClick: true,
       allowOverflow: true,
-      button: true,
-    },
+      // button: true,
+    }
+    
     
   ]}
   data={filteredCourses}

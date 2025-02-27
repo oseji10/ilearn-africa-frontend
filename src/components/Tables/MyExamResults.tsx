@@ -177,10 +177,10 @@ const MyExamResults = () => {
 
       <DataTable
   columns={[
-    { name: "Exam Name", selector: (row) => row?.exam?.examName, sortable: true },
+    { name: "Examination Name", selector: (row) => row?.exam?.examName, sortable: true },
     // { name: "Course Id", selector: (row) => row?.courseId, sortable: true },
     // { name: "Course Name", selector: (row) => row?.course?.course_name, sortable: true },
-    { name: "Exam Date", selector: (row) => row?.exam?.examDate, sortable: true },
+    { name: "Examination Date", selector: (row) => row?.exam?.examDate, sortable: true },
     { name: "Score", selector: (row) => row?.total_score, sortable: true },
     // {
     //   name: "Status",

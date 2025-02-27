@@ -143,7 +143,7 @@ const MyAssessmentDashboard: React.FC = () => {
 
          <a href="/client-dashboard/my-assessments/results"> 
          <CardDataStats 
-         title="Exam Results" 
+         title="Examination Results" 
          rate=""
          >
             <FontAwesomeIcon

@@ -305,7 +305,7 @@ const ECommerce: React.FC = () => {
                 />
               </CardDataStats></a>
 
-              <a href="/client-dashboard/my-assessments"><CardDataStats title="My Exams" total="" rate="">
+              <a href="/client-dashboard/my-assessments"><CardDataStats title="My Examinations" total="" rate="">
                 <FontAwesomeIcon
                   icon={faPen}
                   className="fill-primary dark:fill-white"
