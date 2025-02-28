@@ -14,7 +14,7 @@ import {
   faArrowAltCircleLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const ExamResultsDetails = () => {
   // const [courseLists, setCourses] = useState([]);
@@ -38,6 +38,11 @@ const ExamResultsDetails = () => {
     examName: "",
     timeAllowed: ""
   });
+
+  const searchParams = useSearchParams();
+  const examId = searchParams.get("examId");
+  const examName = searchParams.get("examName");
+
   const [courses, setCourses] = useState([]);
   const [cohorts, setCohorts] = useState([]);
 
@@ -88,34 +93,6 @@ const ExamResultsDetails = () => {
   const closeModal = () => setIsModalOpen(false);
   const closeCBTModal = () => setCBTModalOpen(false);
 
-  const handleSave = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/cbt-exams`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      console.log("Exam created successfully:", response.data);
-      closeModal(); 
-      window.location.reload();
-      Swal.fire({
-        title: "Success!",
-        text: "The exam was created successfully.",
-        icon: "success",
-        confirmButtonText: "OK",
-      });
-    } catch (err) {
-      console.error("Error creating exam:", err);
-      alert("Failed to create exam. Please try again.");
-    }
-  };
-
 
   
   const [cbtExams, setCbtExams] = useState([]);
@@ -123,7 +100,7 @@ const ExamResultsDetails = () => {
     const fetchCbtExams = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/exam-result`, {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/exam-result/${examId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setCbtExams(response.data); // Update based on the actual response structure
@@ -206,12 +183,7 @@ const ExamResultsDetails = () => {
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
-               {/* <button
-          className="px-4 py-2 bg-green-500 text-white rounded shadow"
-          onClick={openModal}
-        >
-          <FontAwesomeIcon icon={faPlus} /> Add New Exam
-        </button> */}
+             <h4>{examName}</h4>
 <span></span>
 
 
@@ -228,46 +200,46 @@ const ExamResultsDetails = () => {
     // { name: "Exam Name", selector: (row) => row?.examName, sortable: true },
     {
       name: "Student Name/Id",
-      selector: (row) => `${row?.clients?.firstname} ${row?.clients?.surname} ${row?.clients?.othernames}/${row?.clients?.client_id}`, // Adjust field names as needed
+      selector: (row) => `${row?.firstname} ${row?.surname} ${row?.othernames}/${row?.client_id}`, // Adjust field names as needed
       sortable: true,
       width: "40%"
   },
   
-    { name: "Course Name", selector: (row) => row?.course?.course_name, sortable: true },
+    // { name: "Course Name", selector: (row) => row?.course?.course_name, sortable: true },
     // { name: "Exam Date", selector: (row) => row?.examDate, sortable: true },
     { name: "Score", selector: (row) => row?.total_score, sortable: true },
-    {
-      name: "Status",
-      selector: (row) => row.status,
-      sortable: true,
-      cell: (row) => (
-        <span
-          className={`px-2 py-1 rounded text-white ${
-            row.status === "active" ? "bg-green-500" : "bg-red-500"
-          }`}
-        >
-          {row.status}
-        </span>
-      ),
-    },
-    {
-      name: "Actions",
-      cell: (row) => (
-        <div className="flex space-x-2">
+    // {
+    //   name: "Status",
+    //   selector: (row) => row.status,
+    //   sortable: true,
+    //   cell: (row) => (
+    //     <span
+    //       className={`px-2 py-1 rounded text-white ${
+    //         row.status === "active" ? "bg-green-500" : "bg-red-500"
+    //       }`}
+    //     >
+    //       {row.status}
+    //     </span>
+    //   ),
+    // },
+    // {
+    //   name: "Actions",
+    //   cell: (row) => (
+    //     <div className="flex space-x-2">
     
-          <a
-            href={`/assessments/questions`}
-            // href={`/assessments/questions?examName=${encodeURIComponent(row.examName)}&examId=${encodeURIComponent(row.examId)}&cohortName=${encodeURIComponent(row.cohort.cohort_name)}`}
-            className="text-blue-500 hover:text-green-700"
-          >
-            <FontAwesomeIcon icon={faEye} />
-          </a>
-        </div>
-      ),
-      ignoreRowClick: true,
-      allowOverflow: true,
-      button: true,
-    },
+    //       <a
+    //         href={`/assessments/questions`}
+    //         // href={`/assessments/questions?examName=${encodeURIComponent(row.examName)}&examId=${encodeURIComponent(row.examId)}&cohortName=${encodeURIComponent(row.cohort.cohort_name)}`}
+    //         className="text-blue-500 hover:text-green-700"
+    //       >
+    //         <FontAwesomeIcon icon={faEye} />
+    //       </a>
+    //     </div>
+    //   ),
+    //   ignoreRowClick: true,
+    //   allowOverflow: true,
+    //   button: true,
+    // },
   ]}
   data={filteredCourses}
   pagination

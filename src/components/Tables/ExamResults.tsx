@@ -169,8 +169,8 @@ const ExamResults = () => {
       <DataTable
   columns={[
     { name: "Exam Name", selector: (row) => row?.examName, sortable: true },
-    { name: "Course Id", selector: (row) => row?.courseId, sortable: true },
-    { name: "Course Name", selector: (row) => row?.course?.course_name, sortable: true },
+    // { name: "Course Id", selector: (row) => row?.courseId, sortable: true },
+    // { name: "Course Name", selector: (row) => row?.course?.course_name, sortable: true },
     { name: "Exam Date", selector: (row) => row?.examDate, sortable: true },
     // { name: "Score", selector: (row) => row?.timeAllowed, sortable: true },
     // {
@@ -204,7 +204,7 @@ const ExamResults = () => {
             <FontAwesomeIcon icon={faEdit} />
           </button> */}
           <a
-            href={`/assessments/assessment-results/details`}
+            href={`/assessments/assessment-results/details?examId=${row.examId}&examName=${row.examName}`}
             className="text-blue-500 hover:text-green-700"
           >
             <FontAwesomeIcon icon={faEye} />

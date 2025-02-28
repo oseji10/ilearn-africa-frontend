@@ -632,8 +632,8 @@ required
               >
                 <option value="">Select Course</option>
                 {cohortCourses.map((course) => (
-                  <option key={course.course_list.id} value={course.course_list.course_id}>
-                    {course.course_list.course_name}
+                  <option key={course?.id} value={course?.course_id}>
+                    {course?.course_name}
                   </option>
                 ))}
               </select>

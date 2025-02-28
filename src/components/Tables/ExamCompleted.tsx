@@ -24,7 +24,7 @@ const ExamCompleted = () => {
     const fetchResult = async () => {
       try {
         const client_id = localStorage.getItem("client_id");
-        const examId = localStorage.getItem("examId");
+        // const examId = localStorage.getItem("examId");
         if (!client_id) throw new Error("Client ID not found in local storage");
 
         const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/cbt-exam-result`, {
