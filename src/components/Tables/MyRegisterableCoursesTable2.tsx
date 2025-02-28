@@ -282,17 +282,17 @@ const MyRegisterableCoursesTable2 = () => {
                 <tr key={key}>
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
                     <h5 className="font-medium text-black dark:text-white">
-                      {course_list.course_list.course_id}
+                      {course_list?.course_id}
                     </h5>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <p className="text-black dark:text-white">
-                      {course_list.course_list.course_name}
+                      {course_list?.course_name}
                     </p>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <p className="text-black dark:text-white">
-                      NGN{Number(course_list.course_list.cost).toLocaleString(undefined, {
+                      NGN{Number(course_list?.cost).toLocaleString(undefined, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}
@@ -300,38 +300,34 @@ const MyRegisterableCoursesTable2 = () => {
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                   <p
-                      className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
-                        course_list.course_list.status === "Paid"
-                          ? "bg-warning text-warning"
-                          : course_list.status === "Not Paid"
-                            ? "bg-success text-success"
-                            : ""
-                      }`}
-                    >
-                      {course_list.course_list.status === "Paid"
-                        ? "Registered Already"
-                        : course_list.status === "Not Paid"
-                          ? "Available"
-                          : "N/A"}
-                    </p>
+  className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
+    course_list?.status === "Paid"
+      ? "bg-warning text-warning"
+      : course_list?.status === "Not Paid"
+        ? "bg-success text-success"
+        : ""
+  }`}
+>
+  {course_list?.status === "Paid"
+    ? "Registered Already"
+    : course_list?.status === "Not Paid"
+      ? "Available"
+      : "N/A"}
+</p>
+
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <div className="flex items-center space-x-3.5">
-                      {/* <button
-                        className="inline-flex items-center justify-center bg-primary px-10 py-4 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-10"
-                        onClick={() => handleEyeClick(course_list)}
-                      >APPLY
                       
-                      </button> */}
 
-                      {course_list.status === "Paid"
+                      {course_list?.status === "Paid"
                         ? <button
                         style={{background:'grey'}}
                         className="inline-flex items-center justify-center  px-10 py-4 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-10"
                         disabled
                       >ENROLL
                       </button>
-                        : course_list.status === "Not Paid"
+                        : course_list?.status === "Not Paid"
                           ?  
                           <button
                           className="inline-flex items-center justify-center bg-primary px-10 py-4 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-10"
@@ -356,13 +352,13 @@ const MyRegisterableCoursesTable2 = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div ref={modalRef} className="relative bg-white p-8 rounded-lg">
             <h2 className="text-2xl font-semibold mb-4">
-              Apply for {selectedCourse.course_list.course_name}
+              Apply for {selectedCourse?.course_list?.course_name}
             </h2>
             <form onSubmit={handlePaymentUpdate}>
               <input
                 type="text"
                 name="course_id"
-                value={selectedCourse.course_list.course_id}
+                value={selectedCourse?.course_list?.course_id}
                 hidden
               />
               <div className="flex items-center justify-center">
@@ -392,8 +388,8 @@ const MyRegisterableCoursesTable2 = () => {
     Select paid amount
   </option>
   {partPayments.map((partPayment) => (
-    <option key={partPayment.id} value={partPayment.id}>
-      {partPayment.amount} {/* Replace with appropriate label */}
+    <option key={partPayment?.id} value={partPayment?.id}>
+      {partPayment?.amount} {/* Replace with appropriate label */}
     </option>
   ))}
 </select>

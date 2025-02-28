@@ -42,30 +42,7 @@ const ExamResults = () => {
   const [cohorts, setCohorts] = useState([]);
 
   const router = useRouter();
-  // Fetch courses and cohorts
-  useEffect(() => {
-    const fetchDropdownData = async () => {
-      try {
-        const token = localStorage.getItem("token");
-
-        const [coursesResponse, cohortsResponse] = await Promise.all([
-          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/course_list`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/cohorts`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
-
-        setCourses(coursesResponse.data.courses);
-        setCohorts(cohortsResponse.data.cohorts);
-      } catch (err) {
-        console.error("Error fetching dropdown data:", err);
-      }
-    };
-
-    fetchDropdownData();
-  }, []);
+  
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -88,33 +65,6 @@ const ExamResults = () => {
   const closeModal = () => setIsModalOpen(false);
   const closeCBTModal = () => setCBTModalOpen(false);
 
-  const handleSave = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/cbt-exams`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      console.log("Exam created successfully:", response.data);
-      closeModal(); 
-      window.location.reload();
-      Swal.fire({
-        title: "Success!",
-        text: "The exam was created successfully.",
-        icon: "success",
-        confirmButtonText: "OK",
-      });
-    } catch (err) {
-      console.error("Error creating exam:", err);
-      alert("Failed to create exam. Please try again.");
-    }
-  };
 
 
   // Fetch data from /api/cbt-exams
@@ -123,7 +73,7 @@ const ExamResults = () => {
     const fetchCbtExams = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/cbt-exams`, {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/examination-results`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setCbtExams(response.data); // Update based on the actual response structure
@@ -192,72 +142,6 @@ const ExamResults = () => {
       confirmButtonText: "Close",
     });
   };
-  
-  // const handleEdit = (row) => {
-  //   console.log("Edit details for:", row);
-  //   // Example: Populate the form with row data and open the modal for editing
-  //   // setFormData(row);
-  //   // setIsModalOpen(true);
-  // };
-
-  const handleEdit = (row) => {
-    setCbtExams(row);
-    setCBTModalOpen(true);
-  };
-
-
-  const handleSubmitEdit = async () => {
-    try {
-      // Prepare the payload
-      const payload = {
-        examName: cbtExams.examName,
-        details: cbtExams.details,
-        examDate: cbtExams.examDate,
-        examTime: cbtExams.examTime,
-        isShuffle: cbtExams.isShuffle,
-        isRandom: cbtExams.isRandom,
-        canRetake: cbtExams.canRetake,
-        canSeeResult: cbtExams.canSeeResult,
-        status: cbtExams.status,
-        courseId: cbtExams.courseId,
-        cohortId: cbtExams.cohortId,
-        timeAllowed: cbtExams.timeAllowed,
-      };
-  
-      // Send the PUT request using axios
-      const response = await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL}/cbt-exams/${cbtExams.examId}`,
-        payload
-      );
-  
-      // Check response status to determine success
-      if (response.status === 200 || response.status === 204) {
-        // Refresh the router and show success message
-       
-        Swal.fire({
-          title: "Success!",
-          text: "The exam was updated successfully.",
-          icon: "success",
-          confirmButtonText: "OK",
-        });
-        setCBTModalOpen(false);
-        window.location.reload()
-      } else {
-        throw new Error(`Unexpected response status: ${response.status}`);
-      }
-    } catch (error) {
-      console.error("Error updating exam:", error);
-      Swal.fire({
-        title: "Error",
-        text: "Failed to update exam. Please try again.",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
-    }
-  };
-  
-  
-  
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
