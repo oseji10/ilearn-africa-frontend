@@ -89,7 +89,7 @@ const CohortsTable = () => {
           },
         }
       );
-      console.log(response.data.cohorts)
+      // console.log(response.data.cohorts)
       setCohorts(response.data.cohorts);
       setFilteredCohorts(response.data.cohorts); // Set initial filtered courses
       setLoading(false);
@@ -133,7 +133,7 @@ const CohortsTable = () => {
       }
 
       const data = await response.json();
-      console.log("hi", data.courses);
+      // console.log("hi", data.courses);
       setCohortCourses(data.courses); // Assuming the API response has a `courses` field
     } catch (error) {
       console.error('Error fetching cohort courses:', error);
@@ -160,7 +160,7 @@ const CohortsTable = () => {
   // Handle select change event
   const handleSelectChange = (e) => {
     const selectedValues = Array.from(e.target.selectedOptions, option => option.value);
-    console.log('Selected Values:', selectedValues); // Debugging
+    // console.log('Selected Values:', selectedValues); // Debugging
     setSelectedCourses(selectedValues);
   };
   
@@ -189,7 +189,7 @@ useEffect(() => {
           throw new Error('Failed to fetch course list');
         }
         const data = await response.json();
-        console.log(data)
+        // console.log(data)
         setCourseList(data.courses || []); // Adjust according to your API response structure
       } catch (error) {
         console.error('Error fetching course list:', error);
@@ -205,8 +205,8 @@ useEffect(() => {
 
 const handleCohortCoursesUpload = async (cohort_id, course_ids) => {
  
-  console.log('Cohort ID:', cohort_id); // Debugging
-  console.log('Course IDs:', course_ids); // Debugging
+  // console.log('Cohort ID:', cohort_id); // Debugging
+  // console.log('Course IDs:', course_ids); // Debugging
 
   const token = localStorage.getItem("token");
   if (!token) {
@@ -232,7 +232,7 @@ const handleCohortCoursesUpload = async (cohort_id, course_ids) => {
     }
 
     const data = await response.json();
-    console.log(data);
+    // console.log(data);
     // Handle successful response
     alert("Succefully uploaded courses to this Cohort");
     closeCoursesModal();
@@ -640,8 +640,8 @@ const handleCohortCoursesUpload = async (cohort_id, course_ids) => {
         >
           <div className="modal-box bg-white p-4 rounded shadow-md w-full max-w-lg md:max-w-md">
             <h3 className="font-bold text-lg">Cohort Details</h3>
-            <p>Cohort ID: <b>{selectedRow.cohort_id}</b></p>
-            <p>Cohort Name: <b>{selectedRow.cohort_name}</b></p>
+            <p>Cohort ID: <b>{selectedRow?.cohort_id}</b></p>
+            <p>Cohort Name: <b>{selectedRow?.cohort_name}</b></p>
             <p>Start Date: <b>{selectedRow?.start_date}</b></p>
             <p>Class Capacity: <b>{selectedRow?.capacity_per_class}</b></p>
 
@@ -651,11 +651,11 @@ const handleCohortCoursesUpload = async (cohort_id, course_ids) => {
   <ul className="list-disc pl-5">
   {cohortCourses.map((course, index) => (
   <li key={index}>
-    {course.course_list.course_id} - {course.course_list.course_name} |{" "}
+    {course?.course_id} - {course?.course_name} |{" "}
     <a
       onClick={() => {
-        const courseId = course.course_list.course_id;
-        const cohortId = course.cohort_id;// Define courseId here
+        const courseId = course?.course_id;
+        const cohortId = course?.cohort_id;// Define courseId here
         // console.log("Attempting to delete course ID:", courseId); // Log the ID for debugging
         deleteCohortCourse(courseId, cohortId); // Pass the courseId to the function
       }}
