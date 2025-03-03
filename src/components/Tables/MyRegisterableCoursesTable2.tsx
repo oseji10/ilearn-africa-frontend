@@ -162,7 +162,7 @@ const MyRegisterableCoursesTable2 = () => {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("client_id", clientId);
-      formData.append("course_id", selectedCourse.course_list.course_id);
+      formData.append("course_id", selectedCourse?.course_id);
       formData.append("cohort_id", cohortId);
       formData.append("part_payment", partPayment); 
 

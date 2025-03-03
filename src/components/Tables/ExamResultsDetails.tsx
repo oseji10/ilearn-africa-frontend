@@ -172,7 +172,37 @@ const ExamResultsDetails = () => {
 
 
 
-
+  const handleDelete = async (row, refreshTable) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to undo this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cbt-exam-result/${row.masterId}`, {
+            method: "DELETE",
+          });
+  
+          if (!response.ok) {
+            throw new Error("Failed to delete record");
+          }
+  
+          Swal.fire("Deleted!", "The record has been deleted.", "success");
+  
+          // Reload the table after deletion
+          // refreshTable();
+        } catch (error) {
+          Swal.fire("Error", "Something went wrong!", "error");
+        }
+      }
+    });
+  };
+  
   
   
   
@@ -187,7 +217,7 @@ const ExamResultsDetails = () => {
 <span></span>
 
 
-        <a href="/assessments"><button
+        <a href="/assessments/assessment-results"><button
           className="px-4 py-2 bg-blue-500 text-white rounded shadow"
           
         >
@@ -222,24 +252,31 @@ const ExamResultsDetails = () => {
     //     </span>
     //   ),
     // },
-    // {
-    //   name: "Actions",
-    //   cell: (row) => (
-    //     <div className="flex space-x-2">
+    {
+      name: "Actions",
+      cell: (row) => (
+        <div className="flex space-x-2">
     
-    //       <a
-    //         href={`/assessments/questions`}
-    //         // href={`/assessments/questions?examName=${encodeURIComponent(row.examName)}&examId=${encodeURIComponent(row.examId)}&cohortName=${encodeURIComponent(row.cohort.cohort_name)}`}
-    //         className="text-blue-500 hover:text-green-700"
-    //       >
-    //         <FontAwesomeIcon icon={faEye} />
-    //       </a>
-    //     </div>
-    //   ),
-    //   ignoreRowClick: true,
-    //   allowOverflow: true,
-    //   button: true,
-    // },
+          <a
+            href={`/assessments/questions`}
+            // href={`/assessments/questions?examName=${encodeURIComponent(row.examName)}&examId=${encodeURIComponent(row.examId)}&cohortName=${encodeURIComponent(row.cohort.cohort_name)}`}
+            className="text-blue-500 hover:text-green-700"
+          >
+            <FontAwesomeIcon icon={faEye} />
+          </a>
+
+          <a
+      className="text-red-500 hover:text-green-700 cursor-pointer"
+      onClick={() => handleDelete(row)}
+    >
+      <FontAwesomeIcon icon={faTrash} />
+    </a>
+        </div>
+      ),
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+    },
   ]}
   data={filteredCourses}
   pagination
