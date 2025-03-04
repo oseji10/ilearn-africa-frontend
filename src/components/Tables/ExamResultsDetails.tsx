@@ -172,7 +172,7 @@ const ExamResultsDetails = () => {
 
 
 
-  const handleDelete = async (row, refreshTable) => {
+  const handleDelete = async (row) => {
     Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to undo this!",
@@ -194,8 +194,10 @@ const ExamResultsDetails = () => {
   
           Swal.fire("Deleted!", "The record has been deleted.", "success");
   
-          // Reload the table after deletion
-          // refreshTable();
+          // Update the state to remove the deleted item
+          setCbtExams((prevExams) => prevExams.filter((exam) => exam.masterId !== row.masterId));
+          setFilteredCourses((prevExams) => prevExams.filter((exam) => exam.masterId !== row.masterId));
+  
         } catch (error) {
           Swal.fire("Error", "Something went wrong!", "error");
         }
@@ -258,7 +260,7 @@ const ExamResultsDetails = () => {
         <div className="flex space-x-2">
     
           <a
-            href={`/assessments/questions`}
+            href={`/assessments/assessment-results/detailed-exam-results?masterId=${row.masterId}`}
             // href={`/assessments/questions?examName=${encodeURIComponent(row.examName)}&examId=${encodeURIComponent(row.examId)}&cohortName=${encodeURIComponent(row.cohort.cohort_name)}`}
             className="text-blue-500 hover:text-green-700"
           >

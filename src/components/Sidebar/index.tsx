@@ -32,10 +32,6 @@ const adminMenu = [
         ),
         label: "Dashboard",
         route: "/dashboard",
-        // children: [
-        //   { label: "eCommerce", route: "/" }
-
-        // ],
       },
 
       {
@@ -85,15 +81,6 @@ const adminMenu = [
             label: "Admitted Clients",
             route: "/admission/admitted",
           },
-          // {
-          //   label: "Register Course",
-          //   route: "/admission/courses",
-          // },
-          // {
-          //   label: "Registered Courses",
-          //   route: "/clients/view",
-          //   // Optionally add an icon here if needed
-          // },
         ],
       },
 
@@ -110,8 +97,12 @@ const adminMenu = [
             route: "/payments",
           },
           {
-            label: "Pending Payments",
+            label: "Pending First Payments",
             route: "/payments/pending",
+          },
+          {
+            label: "Other Pending Payments",
+            route: "/payments/pending-part-payments",
           },
           {
             label: "Rejected Payments",
@@ -135,11 +126,6 @@ const adminMenu = [
             label: "Process Certificates",
             route: "/certificates/process-certificates",
           },
-          // {
-          //   label: "Upload Certificate",
-          //   route: "/certificates/upload",
-          //   // Optionally add an icon here if needed
-          // },
         ],
       },
 
@@ -150,17 +136,6 @@ const adminMenu = [
         ),
         label: "Examination",
         route: "/assessments",
-        // children: [
-        //   {
-        //     label: "All Certificates",
-        //     route: "/certificates/certificates",
-        //   },
-        //   {
-        //     label: "Process Certificates",
-        //     route: "/certificates/process-certificates",
-        //   },
-      
-        // ],
       },
 
 

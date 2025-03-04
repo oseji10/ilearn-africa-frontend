@@ -63,21 +63,21 @@ const ExamPage = () => {
   }, [examId]);
 
   useEffect(() => {
-    if (timer === null || !isExamActive) return;
-
+    if (timer === null || !isExamActive) return;  // Prevent reinitializing the timer
+  
     const interval = setInterval(() => {
       setTimer((prevTimer) => {
+        if (prevTimer === null) return null; // Stop updating if cleared
         if (prevTimer <= 1) {
           clearInterval(interval);
           setIsExamActive(false);
           if (!hasSubmitted) {
-            setHasSubmitted(true); // Prevent multiple submissions
-            handleSubmitExam(true); // Pass a flag to skip confirmation
+            setHasSubmitted(true);
+            handleSubmitExam(true);
           }
           return 0;
         }
-        
-
+  
         if (prevTimer === 300) {
           Swal.fire({
             title: "Warning!",
@@ -86,7 +86,7 @@ const ExamPage = () => {
             timer: 3000,
           });
         }
-
+  
         if (prevTimer === 60) {
           Swal.fire({
             title: "Hurry up!",
@@ -95,17 +95,16 @@ const ExamPage = () => {
             timer: 3000,
           });
         }
-
+  
         const newTimer = prevTimer - 1;
-        // localStorage.setItem("timer", newTimer);
         localStorage.setItem("timer", encryptData(newTimer));
         return newTimer;
       });
     }, 1000);
-
+  
     return () => clearInterval(interval);
   }, [timer, isExamActive]);
-
+  
 
   // **Proctoring: Detect tab switch and app switch**
   useEffect(() => {
@@ -197,6 +196,11 @@ const ExamPage = () => {
     const submitExam = async () => {
       setHasSubmitted(true);
       const clientId = localStorage.getItem("client_id");
+  
+      // Clear the timer properly
+      localStorage.removeItem("timer");
+      setTimer(null);
+  
       const answers = Object.entries(selectedAnswers).map(([questionId, optionSelected]) => ({
         questionId,
         optionSelected,
@@ -209,7 +213,7 @@ const ExamPage = () => {
         });
   
         Swal.fire({
-          title: "Exam Submitted Successcully!",
+          title: "Exam Submitted Successfully!",
           text: "Exam submitted successfully.",
           icon: "success",
           confirmButtonText: "OK",
@@ -256,6 +260,7 @@ const ExamPage = () => {
     }
   };
   
+  
 
   const handleForceSubmitExam = async (skipConfirmation = false) => {
     if (hasSubmitted) return;
@@ -273,7 +278,7 @@ const ExamPage = () => {
         await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/exam-result`, { clientId, examId, answers }, {
           headers: { Authorization: `Bearer ${token}` },
         });
-  
+        localStorage.removeItem("timer");
         Swal.fire({
           title: "Exam Submitted!",
           text: "Your exam exam has been submitted due to ethics violation.",
