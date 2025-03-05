@@ -148,7 +148,16 @@ const MyExamResults = () => {
   // Usage
  
 
+  const handleDownload = async (row) => {
+    try {
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/test_result/${row.masterId}`;
 
+      // Open the PDF in a new tab
+      window.open(url, "_blank");
+    } catch (error) {
+      console.error("Error opening receipt:", error);
+    }
+  };
   
   
 
@@ -205,19 +214,19 @@ const MyExamResults = () => {
             onClick={() => handleView(row)}
           >
             <FontAwesomeIcon icon={faEye} />
-          </button>
-          <button
-            className="text-green-500 hover:text-green-700"
-            onClick={() => handleEdit(row)}
-          >
-            <FontAwesomeIcon icon={faEdit} />
           </button> */}
-          <a
-            href={`/assessments/assessment-results/details`}
+          {/* <a
+            href={`http://localhost:8000/api/test_result`}
             className="text-blue-500 hover:text-green-700"
           >
             <FontAwesomeIcon icon={faEye} />
-          </a>
+          </a> */}
+          <button
+            className="text-green-500 hover:text-green-700"
+            onClick={() => handleDownload(row)}
+          >
+            <FontAwesomeIcon icon={faDownload} />
+          </button>
         </div>
       ),
       ignoreRowClick: true,

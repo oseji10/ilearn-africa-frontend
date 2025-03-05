@@ -402,6 +402,9 @@ useEffect(() => {
                   Client Name
                 </th>
                 <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
+                  Course
+                </th>
+                <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
                   Cost
                 </th>
                 <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
@@ -436,6 +439,9 @@ useEffect(() => {
                   {payment.clients.title} {payment.clients.firstname} {payment.clients.othernames} {payment.clients.surname}
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
+                    {payment.courses.course_name}
+                  </td>
+                  <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     
                     NGN{Number(payment.amount).toLocaleString(undefined, {
                       minimumFractionDigits: 2,
@@ -448,6 +454,7 @@ useEffect(() => {
                       maximumFractionDigits: 2,
                     })}
                     </td>
+               
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                   {format(new Date(payment.created_at), 'EEEE, MMMM do, yyyy')}
                   </td>

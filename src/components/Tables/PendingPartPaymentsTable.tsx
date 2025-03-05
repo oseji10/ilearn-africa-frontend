@@ -41,6 +41,7 @@ const PendingPartPaymentsTable = () => {
   const [progress, setProgress] = useState(0);
   const [isSelectAllChecked, setIsSelectAllChecked] = useState(false);
   const [selectedPayments, setSelectedPayments] = useState([]);
+  const [details, setDetails] = useState([]);
 
   const router = useRouter();
 
@@ -100,6 +101,43 @@ useEffect(() => {
   // Trigger handleSubmit based on certain dependencies, if needed.
 }, []);
 
+// useEffect(() => {
+//   const fetchPayments = async () => {
+//     try {
+//       const token = localStorage.getItem("token");
+//       if (!token) {
+//         throw new Error("No auth token found");
+//       }
+
+//       const response = await axios.get(
+//         `${process.env.NEXT_PUBLIC_API_URL}/pending-part-payments`,
+//         {
+//           headers: {
+//             Authorization: `Bearer ${token}`,
+//           },
+//         }
+//       );
+
+//       const allPayments = response.data.payments || [];
+
+//       // Filter only part payments that are pending
+//       const pendingPartPayments = allPayments.flatMap(payment =>
+//         payment.part_payments.filter(partPayment => partPayment.status === "pending")
+//       );
+
+//       setPayments(pendingPartPayments); // Set only pending part payments
+//       setDetails(allPayments);
+//       // const clientName = details.clients ? `${details.clients.firstname} ${details.clients.surname}` : "Unknown";
+//       // console.log(clientName);
+//       setLoading(false);
+//     } catch (err) {
+//       setError(err.message);
+//       setLoading(false);
+//     }
+//   };
+
+//   fetchPayments();
+// }, []);
 
   useEffect(() => {
     const fetchPayments = async () => {
@@ -180,9 +218,9 @@ useEffect(() => {
   
   useEffect(() => {
     if (searchTerm) {
-      const filtered = payments.filter((payment) => {
-        const clientName = `${payment.clients?.firstname || ''} ${payment.clients?.surname || ''} ${payment.clients?.othernames || ''} ${payment.payments?.courses?.course_id || ''} ${payment.payments?.courses?.course_name || ''}`.toLowerCase();
-        const transactionReference = `${payment.payments?.transaction_reference || ''}`.toLowerCase();
+      const filtered = details.filter((detail) => {
+        const clientName = `${detail.clients?.firstname || ''} ${detail.clients?.surname || ''} ${detail.clients?.othernames || ''} ${detail.payments?.courses?.course_id || ''} ${detail.payments?.courses?.course_name || ''}`.toLowerCase();
+        const transactionReference = `${detail.payments?.transaction_reference || ''}`.toLowerCase();
         return (
           clientName.includes(searchTerm.toLowerCase()) ||
           transactionReference.includes(searchTerm.toLowerCase()) ||
@@ -192,6 +230,7 @@ useEffect(() => {
       setFilteredPayments(filtered);
     } else {
       setFilteredPayments(payments);
+      setDetails(details);
     }
   }, [searchTerm, payments]);
 
@@ -226,115 +265,12 @@ useEffect(() => {
     };
   }, [handleClickOutside]);
 
-  const handleAddPaymentClick = useCallback(() => {
-    setIsClientModalOpen(true);
-  }, []);
+
 
 
   const handleConfirmReceiptChange = useCallback((e) => {
     setConfirmReceipt(e.target.checked);
   }, []);
-
-
-  const handleSelectAll = () => {
-    if (isSelectAllChecked) {
-      setSelectedPayment([]);
-    } else {
-      const allPaymentIds = filteredPayments.map((payment) => payment.transaction_reference);
-      setSelectedPayment(allPaymentIds);
-    }
-    setIsSelectAllChecked(!isSelectAllChecked);
-  };
-
-
-
-  const handleProcessAll = async () => {
-    if (selectedPayments.length === 0) {
-      alert("Please select at least one admission to process.");
-      return;
-    }
-  
-    setIsProcessingAll(true);
-    setProgress(0);
-  
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("No auth token found");
-  
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/certificates/batch-process`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ transaction_reference: selectedPayments }), // Send the array of admission numbers
-        }
-      );
-  
-      if (response.ok) {
-        setProgress(100);
-        setAdmissions((prevPayments) =>
-          prevPayments.filter(
-            (payment) => !selectedPayments.includes(payment.transaction_reference)
-          )
-        );
-        alert("All selected admissions have been processed successfully.");
-        setSelectedAdmissions([]);
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to process admissions");
-      }
-    } catch (err) {
-      console.error("Error processing all admissions:", err);
-      alert("An error occurred while processing admissions. Please try again.");
-    }
-  
-    setIsProcessingAll(false);
-  };
-  
-
-  const handleApproval = async (event) => {
-    event.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("No auth token found");
-
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/certificate/issue`,
-        { transaction_reference: selectedPayment.transaction_reference },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        alert("Certificate issued successfully!");
-        setAdmissions((prevAdmissions) =>
-          prevPayments.map((payment) =>
-            payment.admission_number === selectedPayment.transaction_reference
-              ? { ...payment, status: "COMPLETED" }
-              : payment
-          )
-        );
-        closeModal();
-      } else {
-        throw new Error("Failed to issue certificate.");
-      }
-    } catch (err) {
-      console.error("Error issuing certificate:", err);
-      alert("An error occurred while issuing the certificate. Please try again.");
-    }
-
-    setIsSubmitting(false);
-  };
-
-
 
   const confirmPayment = useCallback(
     async (event) => {
@@ -348,7 +284,7 @@ useEffect(() => {
       const paymentData = {
         client_id: selectedPayment.client_id,
         // transaction_reference: transactionReference,
-        other_reference: selectedPayment.other_reference
+        other_reference: selectedPayment.payment[0].other_reference
       };
 
       try {
@@ -401,28 +337,27 @@ useEffect(() => {
         <input
           type="checkbox"
           checked={isSelectAllChecked}
-          onChange={handleSelectAll}
+          // onChange={handleSelectAll}
         />
       ),
       cell: (row) => (
         <input
           type="checkbox"
           checked={selectedPayments.includes(row.transaction_reference)}
-          onChange={() => handleCheckboxChange(row.transaction_reference)}
+          // onChange={() => handleCheckboxChange(row.transaction_reference)}
         />
       ),
       ignoreRowClick: true,
       allowOverflow: true,
       button: true,
     },
-    // {
-    //   name: "Client ID",
-    //   selector: (row) => row.client_id,
-    //   sortable: true,
-    // },
-    {
+       {
       name: "Name",
       selector: (row) => `${row.clients?.firstname || ''} ${row.clients?.surname || ''} ${row.clients?.othernames || ''}`,
+      // selector: (row) => {
+      //   const clientName = row.clients?.firstname || '';  // Define clientName inside the function
+      //   return `${clientName}`;
+      // },
       sortable: true,
     },
     {
@@ -437,7 +372,7 @@ useEffect(() => {
     {
       name: "Amount",
       // selector: (row) => `${row.created_at || ''} `,
-      selector: (row) => `${'₦'}${Number(row.part_payment).toLocaleString(undefined, {
+      selector: (row) => `${'₦'}${Number(row.amount).toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })} `,
@@ -455,12 +390,10 @@ useEffect(() => {
     {
       name: "Status",
       selector: (row) => {
-        console.log("Row Part Payments:", row.part_payments); // Debugging
+        // console.log("Row Part Payments:", row.part_payments); // Debugging
 
-  const firstPartPayment = row?.part_payments?.[0]; // Get the first part payment
-  const status = firstPartPayment?.status; // Extract status
-
-  console.log("Extracted Status:", status); // Debugging
+  
+  const status = row?.status; // Extract status
         return (
           <p
             className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
@@ -536,22 +469,7 @@ useEffect(() => {
 
       &nbsp;
 
-      {/* <button
-        className={`mt-4 px-4 py-2 bg-blue-500 text-white rounded ${
-          isProcessingAll ? "cursor-not-allowed" : ""
-        }`}
-        onClick={handleProcessAll}
-        disabled={isProcessingAll}
-      >
-        {isProcessingAll ? (
-          <>
-            <FontAwesomeIcon icon={faSpinner} spin /> Processing...
-          </>
-        ) : (
-          "Process All Selected"
-        )}
-      </button> */}
-
+     
       <input
         type="text"
         placeholder="Search by name, course, or client ID..."
