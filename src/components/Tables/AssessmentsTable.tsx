@@ -498,8 +498,8 @@ const AssessmentsTable = () => {
               >
                 <option value="">Select Course</option>
                 {cohortCourses.map((course) => (
-                  <option key={course.course_list.id} value={course.course_list.course_id}>
-                    {course.course_list.course_name}
+                  <option key={course?.course_id} value={course?.course_id}>
+                    {course?.course_name}
                   </option>
                 ))}
               </select>
@@ -626,13 +626,13 @@ required
               required
                 name="courseId"
                 value={cbtExams.courseId}
-                onChange={handleInputChange}
+                onChange={handleInputChange2}
                 className="border border-gray-300 rounded w-full px-4 py-2"
                 disabled={!cbtExams.cohortId} // Disable if no cohort selected
               >
                 <option value="">Select Course</option>
                 {cohortCourses.map((course) => (
-                  <option key={course?.id} value={course?.course_id}>
+                  <option key={course?.course_id} value={course?.course_id}>
                     {course?.course_name}
                   </option>
                 ))}
