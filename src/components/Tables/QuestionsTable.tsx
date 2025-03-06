@@ -28,6 +28,9 @@ const QuestionsTable = () => {
   const [isCBTModalOpen, setCBTModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   // const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen2, setIsModalOpen2] = useState(false);
+  const [file, setFile] = useState(null);
+
   const [questionData, setQuestionData] = useState({
     question: "",
     options: ["", "", "", ""],
@@ -373,7 +376,46 @@ const QuestionsTable = () => {
 
 
 
+  const handleFileChange = (event) => {
+    setFile(event.target.files[0]);
+  };
 
+
+  const [isUploading, setIsUploading] = useState(false);
+  const handleBulkUpload = async () => {
+    if (!file) {
+      alert("Please select a file to upload.");
+      return;
+    }
+
+    setIsUploading(true); // Show spinner
+
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("examId", examId); // Append examId to payload
+
+    try {
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload-questions`, {
+        method: "POST",
+        body: formData,
+        
+      });
+      if (response.ok) {
+        alert("Questions uploaded successfully!");
+        setIsModalOpen2(false);
+        window.location.reload();
+        // fetchQuestions();
+      } else {
+        alert("Failed to upload questions.");
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    }
+    setIsUploading(false); // Hide spinner after upload
+
+  };
 
 
 
@@ -384,19 +426,27 @@ const QuestionsTable = () => {
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
-        <button
-          className="px-4 py-2 bg-green-500 text-white rounded shadow"
-          onClick={openModal}
-        >
-          <FontAwesomeIcon icon={faPlus} /> Add New Question
-        </button>
+        <div className="flex space-x-2">
+          <button
+            className="px-4 py-2 bg-green-500 text-white rounded shadow"
+            onClick={() => setIsModalOpen(true)}
+          >
+            <FontAwesomeIcon icon={faPlus} /> Add New Question
+          </button>
 
-        <a href="/assessments/all-assessments"><button
-          className="px-4 py-2 bg-blue-500 text-white rounded shadow"
-          
-        >
-          <FontAwesomeIcon icon={faArrowAltCircleLeft} /> Back To Exams
-        </button></a>
+          <button
+            className="px-4 py-2 bg-blue-500 text-white rounded shadow"
+            onClick={() => setIsModalOpen2(true)}
+          >
+            Bulk Upload
+          </button>
+        </div>
+
+        <a href="/assessments/all-assessments">
+          <button className="px-4 py-2 bg-blue-500 text-white rounded shadow">
+            <FontAwesomeIcon icon={faArrowAltCircleLeft} /> Back To Exams
+          </button>
+        </a>
       </div>
 
      
@@ -414,20 +464,7 @@ const QuestionsTable = () => {
             selector: (row) => row?.question,
             sortable: true
           },
-          // {
-          //   name: "Status",
-          //   selector: (row) => row.status,
-          //   sortable: true,
-          //   cell: (row) => (
-          //     <span
-          //       className={`px-2 py-1 rounded text-white ${
-          //         row.status === "active" ? "bg-green-500" : "bg-red"
-          //       }`}
-          //     >
-          //       {row.status}
-          //     </span>
-          //   ),
-          // },
+         
           {
             name: "Actions",
             cell: (row) => (
@@ -526,12 +563,7 @@ const QuestionsTable = () => {
                   Add Option
                 </button>
               </div>
-              {/* <button
-                // onClick={handleSaveQuestion}
-                className="mt-4 px-4 py-2 bg-green-500 text-white rounded"
-              >
-                Save Question
-              </button> */}
+             
               <button
                 type="submit"
                 className="mt-4 px-4 py-2 bg-green-500 text-white rounded"
@@ -625,14 +657,6 @@ const QuestionsTable = () => {
               >
                 Cancel
               </button>
-              {/* <button
-                // onClick={handleUpdateQuestion}
-                type="submit"
-                className="px-4 py-2 bg-green-500 text-white rounded"
-              >
-                Save Changes
-              </button> */}
-
               <button
                 // onClick={handleSubmitEdit}
                 className="px-4 py-2 bg-blue-500 text-white rounded flex items-center"
@@ -653,6 +677,36 @@ const QuestionsTable = () => {
           </div>
         </div>
       )}
+
+{isModalOpen2 && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+          <div className="bg-white p-4 rounded">
+            <h2 className="text-lg font-bold mb-2">Bulk Upload Questions</h2>
+            <input type="file" onChange={handleFileChange} className="mb-2" />
+            <div className="flex justify-end">
+              <button
+                className="p-2 bg-red text-white rounded mr-2"
+                onClick={() => setIsModalOpen2(false)}
+              >
+                Cancel
+              </button>
+              <button
+  className="p-2 bg-blue-500 text-white rounded"
+  onClick={handleBulkUpload} // Correct
+  disabled={isUploading}
+>
+
+                {isUploading ? (
+                  <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
+                ) : (
+                  "Upload"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+ 
 
 
     </div>
