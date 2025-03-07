@@ -114,25 +114,25 @@ const MyCoursesTable = () => {
                 <tr key={key}>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark ">
                     <h5 className="font-medium text-black dark:text-white">
-                      {my_course.course_id}
+                      {my_course?.course_id}
                     </h5>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <p className="text-black dark:text-white">
-                      {my_course.courses.course_name}
+                      {my_course?.courses?.course_name}
                     </p>
                   </td>
 
 
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <p className="text-black dark:text-white">
-                      {my_course.cohorts.cohort_name}
+                      {my_course?.cohorts?.cohort_name}
                     </p>
                   </td>
 
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <p className="text-black dark:text-white">
-                      {my_course.courses.centers.center_name}
+                      {my_course?.courses?.centers?.center_name}
                     </p>
                   </td>
 
@@ -145,9 +145,9 @@ const MyCoursesTable = () => {
                         Download Course Materials <FontAwesomeIcon icon={faDownload} />
                       </button> */}
 
-{(my_course.admissions.status === "ADMITTED" || my_course.admissions.status === "COMPLETED") ? (
+{(my_course?.admissions?.status === "ADMITTED" || my_course?.admissions?.status === "COMPLETED") ? (
   <button className="hover:text-primary" 
-          onClick={() => handleDownloadMaterialsClick(my_course.course_id)}
+          onClick={() => handleDownloadMaterialsClick(my_course?.course_id)}
   >
     Download Course Materials <FontAwesomeIcon icon={faDownload} />
   </button>

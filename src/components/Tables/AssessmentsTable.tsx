@@ -495,6 +495,7 @@ const AssessmentsTable = () => {
                 onChange={handleInputChange}
                 className="border border-gray-300 rounded w-full px-4 py-2"
                 disabled={!formData.cohortId} // Disable if no cohort selected
+                required
               >
                 <option value="">Select Course</option>
                 {cohortCourses.map((course) => (
