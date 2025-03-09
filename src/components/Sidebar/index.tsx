@@ -15,6 +15,9 @@ import { useRouter } from "next/navigation";
 import Register from "@/app/admission/register/page";
 import withStatusCheck from "../withStatusCheck";
 
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+
+
 interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (arg: boolean) => void;
@@ -284,6 +287,7 @@ const clientMenu = [
     const pathname = usePathname();
     const [pageName, setPageName] = useLocalStorage("selectedMenu", "dashboard");
     const [role, setRole] = useState("");
+    const [loading, setLoading] = useState(true); // State for loading spinner
   
     const router = useRouter();
 
@@ -293,31 +297,31 @@ const clientMenu = [
         const token = localStorage.getItem("token");
         if (token) {
           try {
-            const response = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL}/get-role`,
-              {
-                method: "GET",
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                  "Content-Type": "application/json",
-                },
-              }
-            );
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/get-role`, {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            });
             if (!response.ok) throw new Error("Network response was not ok");
             const data = await response.json();
-            // console.log(data)
-            setRole(data); // Assuming the role is returned in `data.role`
+            setRole(data); // Assuming role is returned in `data.role`
           } catch (error) {
             console.error("Error fetching user role:", error);
+          } finally {
+            setLoading(false); // Hide spinner after fetching role
           }
+        } else {
+          setLoading(false); // Hide spinner if no token is found
         }
       };
   
       fetchUserRole();
     }, []);
+  
 
 
-   
   
     const menuToRender = role === "admin" ? adminMenu : clientMenu;
   
@@ -363,7 +367,11 @@ const clientMenu = [
           {/* <!-- SIDEBAR HEADER --> */}
   
           <div className="scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
-            {/* <!-- Sidebar Menu --> */}
+          {loading ? (
+          <div className="flex justify-center items-center flex-1">
+            <FontAwesomeIcon icon={faSpinner} className="animate-spin text-white text-2xl" />
+          </div>
+        ) : (
             <nav className="mt-5 px-4 py-4 lg:mt-9 lg:px-6">
               {menuToRender.map((group, groupIndex) => (
                 <div key={groupIndex}>
@@ -384,6 +392,7 @@ const clientMenu = [
                 </div>
               ))}
             </nav>
+            )}
             {/* <!-- Sidebar Menu --> */}
           </div>
         </aside>

@@ -197,8 +197,8 @@ const PaymentsTable = () => {
       sortable: true,
     },
     {
-      name: "Transaction Reference",
-      selector: (row) => row.transaction_reference,
+      name: "Course",
+      selector: (row) => row.courses.course_name,
       sortable: true,
     },
     {

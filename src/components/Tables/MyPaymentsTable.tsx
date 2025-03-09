@@ -436,30 +436,30 @@ useEffect(() => {
                     {payment.client_id}
                   </td> */}
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                  {payment.clients.title} {payment.clients.firstname} {payment.clients.othernames} {payment.clients.surname}
+                  {payment?.clients?.title} {payment?.clients?.firstname} {payment?.clients?.othernames} {payment?.clients.surname}
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    {payment.courses.course_name}
+                    {payment?.courses?.course_name}
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     
-                    NGN{Number(payment.amount).toLocaleString(undefined, {
+                    NGN{Number(payment?.amount).toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
                   </td>
                     <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    NGN{Number(payment.part_payment).toLocaleString(undefined, {
+                    NGN{Number(payment?.part_payment).toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
                     </td>
                
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                  {format(new Date(payment.created_at), 'EEEE, MMMM do, yyyy')}
+                  {format(new Date(payment?.created_at), 'EEEE, MMMM do, yyyy')}
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    {payment.payment_method}
+                    {payment?.payment_method}
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     <p
@@ -480,7 +480,7 @@ useEffect(() => {
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
   <div className="flex items-center space-x-3.5">
-  {parseFloat(payment.part_payment) < parseFloat(payment.amount) && (
+  {parseFloat(payment?.part_payment) < parseFloat(payment?.amount) && (
   <button
     disabled={isSubmitting}
     className="px-4 py-2 bg-blue-500 text-white rounded"
@@ -501,7 +501,7 @@ useEffect(() => {
         Payment History
       </a>
     
-    {payment.status === 1 && parseFloat(payment.part_payment) >= parseFloat(payment.amount) && (
+    {payment.status === 1 && parseFloat(payment?.part_payment) >= parseFloat(payment?.amount) && (
       <>
         <FontAwesomeIcon
           icon={faDownload}

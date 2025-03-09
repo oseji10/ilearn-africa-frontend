@@ -361,9 +361,9 @@ useEffect(() => {
       sortable: true,
     },
     {
-      name: "Trx Reference",
-      // selector: (row) => `${row.payments?.transaction_reference || ''}`,
-      selector: (row) => `${row.transaction_reference  === null ? row.other_reference : row.transaction_reference || ''}`,
+      name: "Course",
+      selector: (row) => `${row.payment[0]?.courses?.course_name || ''}`,
+      // selector: (row) => `${row.transaction_reference  === null ? row.other_reference : row.transaction_reference || ''}`,
      
       sortable: true,
     },
