@@ -12,6 +12,7 @@ import {
   faFilePdf,
   faEdit,
   faArrowAltCircleLeft,
+  faCopy,
 } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
@@ -289,6 +290,58 @@ const AssessmentsTable = () => {
   };
 
 
+  
+
+  const cloneExam = async (row) => {
+    const confirmClone = await Swal.fire({
+      title: "Are you sure?",
+      text: "This will create a copy of the exam with all its questions.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, clone it!",
+    });
+  
+    if (confirmClone.isConfirmed) {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cbt-exams/${row.examId}/clone`, {
+          method: "POST",
+        });
+  
+        const data = await response.json();
+  
+        if (response.ok) {
+          Swal.fire({
+            title: "Cloned!",
+            text: data.message,
+            icon: "success",
+            confirmButtonColor: "#3085d6",
+          });
+          window.location.reload();
+        } else {
+          Swal.fire({
+            title: "Error!",
+            text: data.message || "Something went wrong!",
+            icon: "error",
+            confirmButtonColor: "#3085d6",
+          });
+        }
+      } catch (error) {
+        Swal.fire({
+          title: "Error!",
+          text: "Failed to clone the exam. Please try again.",
+          icon: "error",
+          confirmButtonColor: "#3085d6",
+        });
+        console.error("Error cloning exam:", error);
+      }
+    }
+  };
+  
+  
+  // <button onClick={() => cloneExam(exam.id)}>Clone Exam</button>
+  
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
@@ -360,7 +413,16 @@ const AssessmentsTable = () => {
                 >
                   <FontAwesomeIcon icon={faPlus} />
                 </a>
+<button
+className="text-blue-500 hover:text-blue-700"
+onClick={() => cloneExam(row)}
+// onClick={() => cloneExam(exam.id)}
+>
+<FontAwesomeIcon icon={faCopy} />
+</button>
               </div>
+
+
             ),
             ignoreRowClick: true,
             allowOverflow: true,
