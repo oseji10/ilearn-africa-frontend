@@ -56,11 +56,13 @@ const SignUp: React.FC = () => {
     setFirstName('');
     setSurName('');
     setOtherNames('');
+    setIsSubmitting(false);
     const timer = setTimeout(() => {
       router.push("/auth/signin");
-    }, 10 * 3000);
+    }, 10 * 4000);
     } else {
       const data = await response.json();
+      setIsSubmitting(false);
       setError(data.message);
       setError(data.errors.phone_number);
     }
@@ -70,15 +72,15 @@ const SignUp: React.FC = () => {
   useEffect(() => {
     if (error || success) {
       const duration = 5000;
-      const interval = 100;
+      const interval = 400;
       const steps = duration / interval;
       let currentStep = 0;
 
-      setProgress(100);
+      setProgress(400);
 
       const timer = setInterval(() => {
         currentStep++;
-        setProgress((100 * (steps - currentStep)) / steps);
+        setProgress((400 * (steps - currentStep)) / steps);
 
         if (currentStep >= steps) {
           clearInterval(timer);
@@ -283,7 +285,7 @@ const SignUp: React.FC = () => {
 </button>
 
 
-              <button
+              {/* <button
                 type="button"
                 className="w-full flex items-center justify-center rounded-lg border border-gray-300 bg-gray-100 text-black py-2 hover:bg-gray-200"
               >
@@ -295,9 +297,9 @@ const SignUp: React.FC = () => {
                   className="mr-2"
                 />
                 
-                {/* <FontAwesomeIcon icon={faGoogle} /> */}
+                
                 Sign Up with Google
-              </button>
+              </button> */}
             </div>
 
             {/* Sign In Link */}

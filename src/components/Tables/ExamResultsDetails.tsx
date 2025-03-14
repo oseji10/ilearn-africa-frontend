@@ -12,9 +12,14 @@ import {
   faFilePdf,
   faEdit,
   faArrowAltCircleLeft,
+  faRotateRight,
+  faFileExcel,
 } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 import { useRouter, useSearchParams } from "next/navigation";
+
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 const ExamResultsDetails = () => {
   // const [courseLists, setCourses] = useState([]);
@@ -192,7 +197,14 @@ const ExamResultsDetails = () => {
             throw new Error("Failed to delete record");
           }
   
-          Swal.fire("Deleted!", "The record has been deleted.", "success");
+          Swal.fire(
+            {
+              icon: "success",
+              title: "Deleted!",
+              text: "This record has been deleted successfully",
+              confirmButtonColor: "#3085d6",
+            }
+          );
   
           // Update the state to remove the deleted item
           setCbtExams((prevExams) => prevExams.filter((exam) => exam.masterId !== row.masterId));
@@ -206,8 +218,94 @@ const ExamResultsDetails = () => {
   };
   
   
-  
-  
+  const handleDownload = async (row) => {
+    try {
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/test_result/${row.masterId}`;
+
+      // Open the PDF in a new tab
+      window.open(url, "_blank");
+    } catch (error) {
+      console.error("Error opening receipt:", error);
+    }
+  };
+
+
+
+const handleExamRetake = async (row) => {
+  try {
+    // Show confirmation dialog
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Do you really want to allow this client to retake the exam?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, allow retake!",
+      cancelButtonText: "Cancel",
+    });
+
+    // If the admin cancels, do nothing
+    if (!result.isConfirmed) return;
+
+    const payload = {
+      examId: row.examId,
+      clientId: row.clientId,
+    };
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cbt-exams/retake`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to process exam retake request");
+    }
+
+    const responseData = await response.json();
+
+    // Show success or error message
+    if (responseData.success) {
+      Swal.fire(
+        {
+          icon: "success",
+          title: "Success",
+          text: "Exam retake request processed successfully",
+          confirmButtonColor: "#3085d6",
+        }
+      );
+    } else {
+      Swal.fire("Error", "Failed to process exam retake request", "error");
+    }
+  } catch (error) {
+    Swal.fire("Error", "An error occurred while processing the request", "error");
+    console.error("Error handling exam retake:", error);
+  }
+};
+
+const handleDownloadExcel = () => {
+  if (cbtExams.length === 0) {
+    Swal.fire("No Data", "There are no results to download.", "warning");
+    return;
+  }
+
+  const worksheet = XLSX.utils.json_to_sheet(cbtExams.map(exam => ({
+    "Client Name": exam.firstname + " " + exam.surname + " " + exam.othernames,
+    "Client ID": exam.client_id,
+    "Exam Date": exam.updated_at,
+    // "Exam Time": exam.examTime,
+    "Score": exam.total_score,
+    // "Status": exam.status,
+  })));
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Exam Results");
+  const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+  const data = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  saveAs(data, `${examName}_Results.xlsx`);
+};
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
@@ -217,7 +315,12 @@ const ExamResultsDetails = () => {
       <div className="flex justify-between items-center mb-4">
              <h4>{examName}</h4>
 <span></span>
-
+<button
+          onClick={handleDownloadExcel}
+          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center"
+        >
+          <FontAwesomeIcon icon={faFileExcel} className="mr-2" /> Download Excel
+        </button>
 
         <a href="/assessments/assessment-results"><button
           className="px-4 py-2 bg-blue-500 text-white rounded shadow"
@@ -238,6 +341,7 @@ const ExamResultsDetails = () => {
   },
   
     { name: "Score", selector: (row) => row?.total_score, sortable: true },
+    { name: "Retake count", selector: (row) => row?.retake_count, sortable: true },
 
     {
       name: "Actions",
@@ -253,11 +357,25 @@ const ExamResultsDetails = () => {
           </a>
 
           <a
-      className="text-red-500 hover:text-green-700 cursor-pointer"
+      className="text-red hover:text-green-700 cursor-pointer"
       onClick={() => handleDelete(row)}
     >
       <FontAwesomeIcon icon={faTrash} />
     </a>
+
+    <button
+                className="text-green-500 hover:text-red"
+                onClick={() => handleDownload(row)}
+              >
+                <FontAwesomeIcon icon={faDownload} />
+              </button>
+
+              <button
+                className="text-red-500 hover:text-green-700"
+                onClick={() => handleExamRetake(row)}
+              >
+                <FontAwesomeIcon icon={faRotateRight} />
+              </button>
         </div>
       ),
       ignoreRowClick: true,

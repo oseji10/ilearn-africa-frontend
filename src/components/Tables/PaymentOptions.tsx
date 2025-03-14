@@ -44,13 +44,13 @@ const PaymentOptions = () => {
   href={`/client-dashboard/my-registration/courses-after-payment?cohort_id=${cohortId}`} 
   style={{ color: 'blue' }}
 >
-  <FontAwesomeIcon icon={faCheckCircle} /> I Have Already Paid To iLearn Africa. I want to select course paid for and upload proof of payment
+  <FontAwesomeIcon icon={faCheckCircle} /> Upload Payment Evidence
 </a>
 <br />OR
 
 <br/>
              {/* <a style={{color:'green'}} href={`/client-dashboard/courses?cohort_id=${cohortId}`}><FontAwesomeIcon icon={faCartPlus} /> I Have Not Paid Yet. I Want To Register For a Course and Pay Online.</a><br/>  Call iLearn Africa admin 09160913155 if you are still confused */}
-             <a style={{color:'green'}} href={`/client-dashboard/my-registration/my-cohort?cohort_id=${cohortId}`}><FontAwesomeIcon icon={faCartPlus} /> I Have Not Paid Yet. I Want To Register For a Course and Pay Online.</a><br/>  Call iLearn Africa admin 09160913155 if you are still confused
+             <a style={{color:'green'}} href={`/client-dashboard/my-registration/my-cohort?cohort_id=${cohortId}`}><FontAwesomeIcon icon={faCartPlus} /> Make Payment</a><br/>  Speak to an admin? 09160913155
             </p>
             </div>
           </div>

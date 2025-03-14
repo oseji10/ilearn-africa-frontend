@@ -66,7 +66,17 @@ const adminMenu = [
           <FontAwesomeIcon icon={faNetworkWired} className="fill-current" size="lg" />
         ),
         label: "Cohorts",
-        route: "/cohorts",
+        route: "#",
+        children: [
+          {
+            label: "All Cohorts",
+            route: "/cohorts",
+          },
+          {
+            label: "Clients By Cohorts",
+            route: "/cohorts/clients",
+          },
+        ],
       },
 
       {
