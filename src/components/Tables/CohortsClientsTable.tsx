@@ -16,7 +16,8 @@ const CohortsClientsTable = () => {
   const [selectedClient, setSelectedClient] = useState(null);
   const [newCohortId, setNewCohortId] = useState("");
   const [newCourseId, setNewCourseId] = useState("");
-
+  const [searchTerm, setSearchTerm] = useState("");
+const [filteredClients, setFilteredClients] = useState([]);
   // Fetch Cohorts for Dropdown
   useEffect(() => {
     const fetchCohorts = async () => {
@@ -53,6 +54,7 @@ const CohortsClientsTable = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setClients(response.data.clients);
+      setFilteredClients(response.data.clients);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -95,28 +97,17 @@ const CohortsClientsTable = () => {
     fetchCoursesForCohort(selectedCohort); // Load courses for the selected cohort
   };
 
-  // Save Changes
-  // const handleSaveChanges = async () => {
-  //   if (!selectedClient) return;
-
-  //   try {
-  //     const token = localStorage.getItem("token");
-  //     await axios.put(
-  //       `${process.env.NEXT_PUBLIC_API_URL}/clients/${selectedClient.client_id}/update-cohort`,
-  //       {
-  //         cohort_id: newCohortId,
-  //         course_id: newCourseId,
-  //       },
-  //       { headers: { Authorization: `Bearer ${token}` } }
-  //     );
-
-  //     alert("Client updated successfully!");
-  //     setShowModal(false);
-  //     fetchClients(); // Refresh client list
-  //   } catch (err) {
-  //     console.error("Error updating client:", err.message);
-  //   }
-  // };
+   useEffect(() => {
+      if (searchTerm) {
+        const filtered = clients.filter((client) => {
+          const clientDetails = `${client.firstname || ''} ${client.surname || ''} ${client.othernames || ''}`.toLowerCase();
+          return clientDetails.includes(searchTerm.toLowerCase());
+        });
+        setFilteredClients(filtered);
+      } else {
+        setFilteredClients(clients);
+      }
+    }, [searchTerm, clients]);
 
 
   const handleSaveChanges = async () => {
@@ -151,7 +142,7 @@ const CohortsClientsTable = () => {
       selector: (row) => `${row.firstname} ${row.surname} ${row.othernames}`,
       sortable: true,
     },
-    { name: "Course", selector: (row) => row.course_name, sortable: true },
+    { name: "Course", selector: (row) => row?.course_id + " - " + row.course_name, sortable: true },
     {
       name: "Actions",
       cell: (row) => (
@@ -170,6 +161,7 @@ const CohortsClientsTable = () => {
 
   return (
     <div>
+      
       {/* Dropdown and Search Button */}
       <div className="mb-4 flex items-center space-x-4">
         <select
@@ -190,6 +182,14 @@ const CohortsClientsTable = () => {
         >
           Search
         </button>
+
+        <input
+        type="text"
+        placeholder="Search Clients"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="w-full px-4 py-2 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      />
       </div>
 
       {/* Table */}
@@ -198,7 +198,13 @@ const CohortsClientsTable = () => {
       ) : error ? (
         <p className="text-red-500">Error: {error}</p>
       ) : (
-        <DataTable columns={columns} data={clients} pagination highlightOnHover />
+        // <DataTable columns={columns} data={clients} pagination highlightOnHover />
+        <DataTable
+                columns={columns}
+                data={filteredClients}
+                pagination
+                highlightOnHover
+              />
       )}
 
       {/* Edit Modal */}
@@ -230,7 +236,7 @@ const CohortsClientsTable = () => {
             >
               {courses.map((course) => (
                 <option key={course.course_id} value={course.course_id}>
-                  {course.course_name}
+                  {course.course_id} - {course.course_name}
                 </option>
               ))}
             </select>

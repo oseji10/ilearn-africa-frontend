@@ -168,8 +168,8 @@ const ExamResults = () => {
 
       <DataTable
   columns={[
+    { name: "Cohort", selector: (row) => row?.cohort?.cohort_name, sortable: true },
     { name: "Exam Name", selector: (row) => row?.examName, sortable: true },
-    // { name: "Course Id", selector: (row) => row?.courseId, sortable: true },
     // { name: "Course Name", selector: (row) => row?.course?.course_name, sortable: true },
     { name: "Exam Date", selector: (row) => row?.examDate, sortable: true },
     // { name: "Score", selector: (row) => row?.timeAllowed, sortable: true },

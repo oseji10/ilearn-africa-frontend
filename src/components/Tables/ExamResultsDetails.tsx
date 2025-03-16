@@ -22,12 +22,14 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
 const ExamResultsDetails = () => {
-  // const [courseLists, setCourses] = useState([]);
+  const [cbtExams, setCbtExams] = useState([]);
+  const [filteredClients, setFilteredClients] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCBTModalOpen, setCBTModalOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
   
   const [formData, setFormData] = useState({
     details: "",
@@ -100,7 +102,7 @@ const ExamResultsDetails = () => {
 
 
   
-  const [cbtExams, setCbtExams] = useState([]);
+  
   useEffect(() => {
     const fetchCbtExams = async () => {
       try {
@@ -110,6 +112,7 @@ const ExamResultsDetails = () => {
         });
         setCbtExams(response.data); // Update based on the actual response structure
         setFilteredCourses(response.data); // To handle filtering later
+        setFilteredClients(response.data);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching CBT exams:", error);
@@ -155,7 +158,18 @@ const ExamResultsDetails = () => {
   
   
   // Usage
- 
+   useEffect(() => {
+       if (searchTerm) {
+         const filtered = cbtExams.filter((client) => {
+           const clientDetails = `${client?.client?.firstname || ''} ${client?.client?.surname || ''} ${client?.client?.othernames || ''}`.toLowerCase();
+           return clientDetails.includes(searchTerm.toLowerCase());
+         });
+         setFilteredClients(filtered);
+       } else {
+         setFilteredClients(cbtExams);
+       }
+     }, [searchTerm, cbtExams]);
+
 
   const handleView = (row) => {
     const date = formatDate(row?.examDate); // Convert to "Sunday, 19th January, 2024"
@@ -293,11 +307,11 @@ const handleDownloadExcel = () => {
   }
 
   const worksheet = XLSX.utils.json_to_sheet(cbtExams.map(exam => ({
-    "Client Name": exam.firstname + " " + exam.surname + " " + exam.othernames,
-    "Client ID": exam.client_id,
-    "Exam Date": exam.updated_at,
+    "Client Name": exam?.client?.firstname + " " + exam?.client?.surname + " " + exam?.client?.othernames,
+    "Client ID": exam?.clientId,
+    "Exam Date": exam?.updated_at,
     // "Exam Time": exam.examTime,
-    "Score": exam.total_score,
+    "Score": exam?.total_score,
     // "Status": exam.status,
   })));
   const workbook = XLSX.utils.book_new();
@@ -329,7 +343,13 @@ const handleDownloadExcel = () => {
           <FontAwesomeIcon icon={faArrowAltCircleLeft} /> Back To Dashboard
         </button></a>
       </div>
-
+      <input
+        type="text"
+        placeholder="Search Clients"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="w-full px-4 py-2 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      />
       <DataTable
   columns={[
     // { name: "Exam Name", selector: (row) => row?.examName, sortable: true },
@@ -339,7 +359,7 @@ const handleDownloadExcel = () => {
       sortable: true,
       width: "40%"
   },
-  
+  { name: "Exam Date", selector: (row) => row?.exam?.updated_at, sortable: true },
     { name: "Score", selector: (row) => row?.total_score, sortable: true },
     { name: "Retake count", selector: (row) => row?.retake_count, sortable: true },
 
@@ -350,6 +370,7 @@ const handleDownloadExcel = () => {
     
           <a
             href={`/assessments/assessment-results/detailed-exam-results?masterId=${row.masterId}`}
+            target="_blank"
             // href={`/assessments/questions?examName=${encodeURIComponent(row.examName)}&examId=${encodeURIComponent(row.examId)}&cohortName=${encodeURIComponent(row.cohort.cohort_name)}`}
             className="text-blue-500 hover:text-green-700"
           >
@@ -383,7 +404,7 @@ const handleDownloadExcel = () => {
       button: true,
     },
   ]}
-  data={filteredCourses}
+  data={filteredClients}
   pagination
   highlightOnHover
 />
