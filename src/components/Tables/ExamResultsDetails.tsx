@@ -335,7 +335,7 @@ const handleDownloadExcel = () => {
     // { name: "Exam Name", selector: (row) => row?.examName, sortable: true },
     {
       name: "Student Name/Id",
-      selector: (row) => `${row?.firstname} ${row?.surname} ${row?.othernames ?? ''}/${row?.client_id}`, // Adjust field names as needed
+      selector: (row) => `${row?.client?.firstname} ${row?.client?.surname} ${row?.client?.othernames ?? ''}/${row?.clientId}`, // Adjust field names as needed
       sortable: true,
       width: "40%"
   },
