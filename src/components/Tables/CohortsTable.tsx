@@ -358,33 +358,34 @@ const handleCohortCoursesUpload = async (cohort_id, course_ids) => {
 
 
   const deleteCohortCourse = async (cohortId, courseId) => {
-    //  console.log("Client object:", client);
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         throw new Error("No auth token found");
       }
-
+  
+      console.log("Sending payload:", { cohort_id: cohortId, course_id: courseId }); // Debug payload
+  
       const response = await axios.post(
-              `${process.env.NEXT_PUBLIC_API_URL}/cohorts/delete-cohort-course?cohort_id=${cohortId}&course_id=${courseId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/cohorts/delete-cohort-course`,
+        { cohort_id: cohortId, course_id: courseId }, // Ensure both IDs in payload
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          // body: JSON.stringify({
-          //           cohort_id: cohortId,
-          //           course_id: courseId , // Use the selected course IDs
-          //         }),
         }
       );
-
-      // // Filter out the deleted client from the list
-      // setCohorts(cohorts.filter((c) => c.cohort_id !== cohort.cohort_id));
-      // setFilteredCohorts(filteredCohorts.filter((c) => c.cohort_id !== cohort.cohort_id));
-      alert("Course Deleted");
-      setIsCohortModalOpen(false)
+  
+      console.log("API response:", response.data); // Debug response
+      alert("Course Deleted Successfully");
+      setIsCohortModalOpen(false); // Close modal on success
+      // Update state if needed (uncomment and adapt)
+      // setCohorts(cohorts.filter((c) => c.cohort_id !== cohortId));
+      // setFilteredCohorts(filteredCohorts.filter((c) => c.cohort_id !== cohortId));
     } catch (err) {
+      console.error("Error deleting course:", err); // Debug error
       setError(err.message);
+      alert(`Error: ${err.message}`); // Show error to user
     }
   };
 
@@ -649,23 +650,22 @@ const handleCohortCoursesUpload = async (cohort_id, course_ids) => {
             <h4 className="font-bold mt-4">Courses in this Cohort:</h4>
             {cohortCourses.length > 0 ? (
   <ul className="list-disc pl-5">
-  {cohortCourses.map((course, index) => (
-  <li key={index}>
-    {course?.course_id} - {course?.course_name} |{" "}
-    <a
-      onClick={() => {
-        const courseId = course?.course_id;
-        const cohortId = course?.cohort_id;// Define courseId here
-        // console.log("Attempting to delete course ID:", courseId); // Log the ID for debugging
-        deleteCohortCourse(courseId, cohortId); // Pass the courseId to the function
-      }}
-      style={{ color: "red" }}
-    >
-      Delete
-    </a>
-  </li>
-))}
-
+    {cohortCourses.map((course) => (
+      <li key={course.course_id}>
+        {course?.course_id} - {course?.course_name} |{" "}
+        <a
+          onClick={() => {
+            const cohortId = selectedRow?.cohort_id;;
+            const courseId = course?.course_id;
+            console.log("Attempting to delete:", { cohortId, courseId }); // Debug IDs
+            deleteCohortCourse(cohortId, courseId); // Pass both IDs
+          }}
+          style={{ color: "red" }}
+        >
+          Delete
+        </a>
+      </li>
+    ))}
   </ul>
 ) : (
   <p>No courses found for this cohort.</p>
@@ -797,7 +797,7 @@ const handleCohortCoursesUpload = async (cohort_id, course_ids) => {
           >
             {courseList.map(course => (
               <option key={course.course_id} value={course.course_id}>
-                {course.course_name}
+                {course.course_id} - {course.course_name}
               </option>
             ))}
           </select>

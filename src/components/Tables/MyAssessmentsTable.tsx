@@ -154,7 +154,7 @@ const MyAssessmentsTable = () => {
   columns={[
     { name: "Exam Name", selector: (row) => row?.examName, sortable: true },
     { name: "Course ID", selector: (row) => row?.courseId, sortable: true },
-    { name: "Course Name", selector: (row) => row?.course?.course_name, sortable: true },
+    { name: "Course Name", selector: (row) => row?.course_name, sortable: true },
     {
       name: "Exam Date",
       selector: (row) => row.examDate,

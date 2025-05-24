@@ -35,6 +35,7 @@ const ExamPage = () => {
   const [timer, setTimer] = useState(null);
   const [isExamActive, setIsExamActive] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmittingLoader, setIsSubmittingLoader] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
   
@@ -207,11 +208,12 @@ const ExamPage = () => {
       }));
   
       try {
+        setIsSubmittingLoader(true); // Start spinner
         const token = localStorage.getItem("token");
         await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/exam-result`, { clientId, examId, answers }, {
           headers: { Authorization: `Bearer ${token}` },
         });
-  
+        setIsSubmittingLoader(false); // Start spinner
         Swal.fire({
           title: "Exam Submitted Successfully!",
           text: "Exam submitted successfully.",
@@ -225,6 +227,7 @@ const ExamPage = () => {
           router.push(`/client-dashboard/my-assessments/exam-completed?examId=${examId}&examName=${examName}`);
         });
       } catch (err) {
+        setIsSubmittingLoader(false); // Start spinner
         Swal.fire({
           title: "Error!",
           text: "Failed to submit exam. Please try again.",
@@ -348,17 +351,35 @@ const ExamPage = () => {
           </div>
               <div className="mt-6 text-center">
          
-          <button
+          {/* <button
   onClick={handleSubmitExam}
-  // disabled={!isSubmitEnabled}
   disabled={Object.keys(selectedAnswers).length === 0}
   className={`px-6 py-2 rounded shadow ${
     isSubmitEnabled ? "bg-green-500 text-white" : "bg-gray-400 text-gray-700 cursor-not-allowed"
   }`}
 >
   Submit Exam
-</button>
+</button> */}
 
+<button
+      onClick={handleSubmitExam}
+      disabled={!isSubmitEnabled || isSubmittingLoader} // Disable button during loading
+      className={`px-6 py-2 rounded shadow flex items-center justify-center ${
+        isSubmitEnabled && !isSubmittingLoader
+          ? 'bg-green-500 text-white'
+          : 'bg-gray-400 text-gray-700 cursor-not-allowed'
+      }`}
+    >
+      {isSubmittingLoader ? (
+        <>
+          
+          Submitting... 
+          <span className="animate-spin border-2 border-black border-t-transparent rounded-full h-4 w-4 ml-2"></span>
+        </>
+      ) : (
+        'Submit Exam'
+      )}
+    </button>
             </div>
             </div>
 
