@@ -81,7 +81,7 @@ const SignIn: React.FC = () => {
                 <thead className="bg-indigo-600 dark:bg-indigo-900 text-white sticky top-0 z-10">
                   <tr>
                     <th className="p-4 text-sm font-semibold">Course Name</th>
-                    <th className="p-4 text-sm font-semibold">Cohort</th>
+                    {/* <th className="p-4 text-sm font-semibold">Cohort</th> */}
                     <th className="p-4 text-sm font-semibold">Cost</th>
                     <th className="p-4 text-sm font-semibold">Start Date</th>
                     <th className="p-4 text-sm font-semibold">Action</th>
@@ -95,14 +95,14 @@ const SignIn: React.FC = () => {
                         className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                       >
                         <td className="p-4 text-sm font-medium">{course.course_name}</td>
-                        <td className="p-4 text-sm">{course.cohort_name}</td>
+                        {/* <td className="p-4 text-sm">{course.cohort_name}</td> */}
                         <td className="p-4 text-sm">
                           {course.cost !== "N/A" ? `₦${parseInt(course.cost).toLocaleString()}` : "N/A"}
                         </td>
                         <td className="p-4 text-sm">{course.start_date}</td>
                         <td className="p-4">
                           <Link
-                            href={`/ilearn-course-payment-summary?course_id=${course.course_id}&cohort_id=${course.cohort_id}&course_name=${encodeURIComponent(course.course_name)}&cohort_name=${encodeURIComponent(course.cohort_name)}&cost=${course.cost}`}
+                            href={`/ilearn-course-payment-summary?course_id=${course.course_id}&cohort_id=${course.cohort_id}&course_name=${encodeURIComponent(course.course_name)}&cohort_name=${encodeURIComponent(course.cohort_name)}&cost=${course.cost}&start_date=${course.start_date}`}
                             className="inline-block rounded-lg bg-indigo-600 text-white py-2 px-4 text-sm font-medium hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-colors duration-200 shadow-md"
                           >
                             Register
