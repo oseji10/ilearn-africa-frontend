@@ -188,17 +188,17 @@ const PaymentsTable = () => {
   const columns = [
     {
       name: "Client ID",
-      selector: (row) => row.client_id,
+      selector: (row) => row?.client_id,
       sortable: true,
     },
     {
       name: "Client Name",
-      selector: (row) => `${row.clients.title || ''} ${row.clients.firstname || ''} ${row.clients.othernames || ''} ${row.clients.surname || ''}`,
+      selector: (row) => `${row.clients?.title || ''} ${row.clients?.firstname || ''} ${row.clients?.othernames || ''} ${row.clients?.surname || ''}`,
       sortable: true,
     },
     {
       name: "Course",
-      selector: (row) => row.courses.course_name,
+      selector: (row) => row.courses?.course_name,
       sortable: true,
     },
     {
@@ -206,8 +206,8 @@ const PaymentsTable = () => {
       selector: (row) => {
         // Check if part_payments exists and has items; if so, sum their amounts
         const amount = row.part_payments?.length > 0
-          ? row.part_payments.reduce((total, payment) => total + Number(payment.amount), 0)
-          : row.amount;
+          ? row?.part_payments.reduce((total, payment) => total + Number(payment.amount), 0)
+          : row?.amount;
     
         // Format the amount as a number with currency
         return `NGN${Number(amount).toLocaleString(undefined, {

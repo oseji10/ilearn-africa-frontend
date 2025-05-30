@@ -67,13 +67,13 @@ const Register: React.FC = () => {
   const handleAmountChange = (e) => {
     setSelectedAmount(e.target.value);
   };
-
+  
   const handleProceedToPayment = async (e) => {
     e.preventDefault();
     console.log("handleProceedToPayment called with paymentMethod:", paymentMethod);
     setIsSubmitting(true);
     setFormError("");
-
+  
     // Validate form fields
     if (!formData.name || !formData.email || !formData.phone_number || !formData.password) {
       console.log("Form validation failed: Missing fields");
@@ -81,7 +81,7 @@ const Register: React.FC = () => {
       setIsSubmitting(false);
       return;
     }
-
+  
     if (paymentMethod === "transferNow") {
       if (!selectedAmount) {
         console.log("Transfer validation failed: No amount selected");
@@ -89,7 +89,7 @@ const Register: React.FC = () => {
         setIsSubmitting(false);
         return;
       }
-
+  
       try {
         const payload = {
           tx_ref: `tx_${Date.now()}`,
@@ -100,15 +100,20 @@ const Register: React.FC = () => {
           name: formData.name,
           phone_number: formData.phone_number,
           payment_method: "bank_transfer",
+          secret: formData.password,
         };
-
+  
         console.log("Sending transfer notification:", payload);
-        const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/notify-payment`, payload, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/notify-payment`,
+          payload,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+  
         if (response.data.success) {
           alert("Payment notification submitted successfully. We will verify your payment shortly.");
           router.push("/payment-confirmation");
@@ -135,47 +140,50 @@ const Register: React.FC = () => {
         setIsSubmitting(false);
         return;
       }
-      if (!process.env.NEXT_PUBLIC_FLUTTERWAVE_URL) {
-        console.log("Validation failed: Missing Flutterwave URL");
-        setFormError("Payment configuration error: Missing URL.");
-        setIsSubmitting(false);
-        return;
-      }
-      if (!process.env.NEXT_PUBLIC_FLUTTERWAVE_SECRET_KEY) {
-        console.log("Validation failed: Missing Flutterwave secret key");
-        setFormError("Payment configuration error: Missing secret key.");
-        setIsSubmitting(false);
-        return;
-      }
-
+  
       try {
         const payload = {
           tx_ref: `${course.course_id}-${Date.now()}`,
           amount: parseInt(course.amount),
           currency: "NGN",
-          email: formData.email,
-          phone_number: formData.phone_number,
-          name: formData.name,
-          payment_options: "card, banktransfer, ussd",
-        redirect_url: `${process.env.NEXT_PUBLIC_API_URL}/verify-this-payment?course_id=${encodeURIComponent(course.course_id)}&cohort_id=${encodeURIComponent(course.cohort_id)}`,
+          redirect_url: `${process.env.NEXT_PUBLIC_API_URL}/verify-this-payment?course_id=${encodeURIComponent(
+            course.course_id
+          )}&cohort_id=${encodeURIComponent(course.cohort_id)}`,
+          payment_options: "card,banktransfer,ussd",
+          customer: {
+            email: formData.email,
+            phonenumber: formData.phone_number,
+            name: formData.name,
+            secret: formData.password,
+          },
           customizations: {
             title: "iLearn Africa Course Payment",
             description: `Payment for ${course.course_name} - ${course.cohort_name}`,
             logo: `${window.location.origin}/images/logo/ilearn-logo.png`,
           },
         };
-
-        console.log("Sending payment request to:", process.env.NEXT_PUBLIC_FLUTTERWAVE_URL, "with payload:", payload);
-        const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/initialize-payment`, payload, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_FLUTTERWAVE_SECRET_KEY}`,
-          },
-        });
-
-        console.log("Flutterwave response:", response.data);
+  
+        console.log(
+          "Sending payment request to backend:",
+          `${process.env.NEXT_PUBLIC_API_URL}/initialize-payment`,
+          "with payload:",
+          payload
+        );
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/initialize-payment`,
+          payload,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+  
+        console.log("Backend response:", response.data);
         if (response.data.data && response.data.data.link) {
           console.log("Redirecting to payment URL:", response.data.data.link);
+          // Store payload in sessionStorage to retrieve after redirect
+          sessionStorage.setItem("payment_payload", JSON.stringify(payload));
           window.location.href = response.data.data.link;
         } else {
           console.error("Invalid response structure:", response.data);
@@ -188,9 +196,8 @@ const Register: React.FC = () => {
         setIsSubmitting(false);
       }
     }
-  };
-
-  return (
+  };  
+    return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-800 dark:via-gray-900 dark:to-black p-4">
       <div className="w-full max-w-5xl flex flex-col items-center">
         <a href="/" className="mb-8">
