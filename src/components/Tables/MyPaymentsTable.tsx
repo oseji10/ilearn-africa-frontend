@@ -399,7 +399,7 @@ useEffect(() => {
                   Client ID
                 </th> */}
                 <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
-                  Client Name
+                  Reference
                 </th>
                 <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
                   Course
@@ -432,12 +432,12 @@ useEffect(() => {
             <tbody>
               {payments.map((payment) => (
                 <tr key={payment.transaction_reference}>
-                  {/* <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    {payment.client_id}
-                  </td> */}
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                  {payment?.clients?.title} {payment?.clients?.firstname} {payment?.clients?.othernames} {payment?.clients.surname}
+                    {payment.transaction_reference}
                   </td>
+                  {/* <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
+                  {payment?.clients?.title} {payment?.clients?.firstname} {payment?.clients?.othernames} {payment?.clients.surname}
+                  </td> */}
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     {payment?.courses?.course_name}
                   </td>

@@ -1,26 +1,41 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faSpinner, faCopy } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 
-const Register: React.FC = () => {
+const Register = () => {
   const router = useRouter();
   const [course, setCourse] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone_number: "",
+    full_name: "",
+    gender: "",
+    date_of_birth: "",
+    nationality: "",
+    city: "",
+    phonenumber: "",
+    email_address: "",
+    preferred_mode_of_communication: "",
     password: "",
+    employment_status: "",
+    job_title: "",
+    name_of_organization: "",
+    years_of_experience: "",
+    qualification: "",
   });
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("payOnline");
   const [selectedAmount, setSelectedAmount] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [transactionRef, setTransactionRef] = useState("");
+  const [emailSearchState, setEmailSearchState] = useState(null); // null, 'loading', 'done'
+  const [phoneSearchState, setPhoneSearchState] = useState(null); // null, 'loading', 'done'
 
   // Generate amount options from 5,000 to 300,000 in increments of 5,000
   const amountOptions = Array.from({ length: 60 }, (_, i) => (i + 1) * 5000);
@@ -54,9 +69,61 @@ const Register: React.FC = () => {
     setIsLoading(false);
   }, []);
 
+  // Debounced function for real-time validation
+  useEffect(() => {
+    let timeoutId;
+    const checkUserExists = async () => {
+      if (!formData.email_address && !formData.phonenumber) return;
+
+      if (formData.email_address) setEmailSearchState("loading");
+      if (formData.phonenumber) setPhoneSearchState("loading");
+
+      try {
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/check-user`,
+          {
+            email: formData.email_address,
+            phonenumber: formData.phonenumber,
+          },
+          {
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+
+        setEmailError(response.data.email_exists ? "Email already exists." : null);
+        setPhoneError(response.data.phonenumber_exists ? "Phone number already exists." : null);
+        if (formData.email_address) setEmailSearchState("done");
+        if (formData.phonenumber) setPhoneSearchState("done");
+      } catch (error) {
+        console.error("Error checking user:", error);
+        setFormError("Failed to validate email or phone number.");
+        if (formData.email_address) setEmailSearchState("done");
+        if (formData.phonenumber) setPhoneSearchState("done");
+      }
+    };
+
+    if (formData.email_address || formData.phonenumber) {
+      timeoutId = setTimeout(checkUserExists, 500);
+    }
+
+    return () => clearTimeout(timeoutId);
+  }, [formData.email_address, formData.phonenumber]);
+
+  // Generate transaction reference when transferNow is selected
+  useEffect(() => {
+    if (paymentMethod === "transferNow" && course?.course_id) {
+      setTransactionRef(`tx_${course.course_id}_${Date.now()}`);
+    } else {
+      setTransactionRef("");
+    }
+  }, [paymentMethod, course]);
+
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : type === "radio" ? value : value,
+    }));
   };
 
   const handlePaymentMethodChange = (e) => {
@@ -67,21 +134,50 @@ const Register: React.FC = () => {
   const handleAmountChange = (e) => {
     setSelectedAmount(e.target.value);
   };
-  
+
+  const copyTransactionRef = () => {
+    if (transactionRef) {
+      navigator.clipboard.writeText(transactionRef);
+      alert("Transaction reference copied to clipboard!");
+    }
+  };
+
   const handleProceedToPayment = async (e) => {
     e.preventDefault();
     console.log("handleProceedToPayment called with paymentMethod:", paymentMethod);
     setIsSubmitting(true);
     setFormError("");
-  
+
     // Validate form fields
-    if (!formData.name || !formData.email || !formData.phone_number || !formData.password) {
-      console.log("Form validation failed: Missing fields");
-      setFormError("Please fill in all fields.");
+    const requiredFields = [
+      "full_name",
+      "gender",
+      "date_of_birth",
+      "nationality",
+      "city",
+      "phonenumber",
+      "email_address",
+      "preferred_mode_of_communication",
+      "password",
+      "employment_status",
+      "qualification",
+    ];
+    for (const field of requiredFields) {
+      if (!formData[field]) {
+        console.log(`Form validation failed: Missing ${field}`);
+        setFormError(`Please fill in the ${field.replace("_", " ")} field.`);
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    // Check for email or phone errors to prevent submission
+    if (emailError || phoneError) {
+      setFormError("The email or phone number is already in use. Please use a different one.");
       setIsSubmitting(false);
       return;
     }
-  
+
     if (paymentMethod === "transferNow") {
       if (!selectedAmount) {
         console.log("Transfer validation failed: No amount selected");
@@ -89,20 +185,30 @@ const Register: React.FC = () => {
         setIsSubmitting(false);
         return;
       }
-  
+
       try {
         const payload = {
-          tx_ref: `tx_${Date.now()}`,
+          tx_ref: transactionRef,
           amount: parseInt(selectedAmount),
-          email: formData.email,
+          email: formData.email_address,
           course_id: course.course_id,
           cohort_id: course.cohort_id,
-          name: formData.name,
-          phone_number: formData.phone_number,
+          name: formData.full_name,
+          phonenumber: formData.phonenumber,
           payment_method: "bank_transfer",
           secret: formData.password,
+          gender: formData.gender,
+          date_of_birth: formData.date_of_birth,
+          nationality: formData.nationality,
+          address: formData.city,
+          preferred_mode_of_communication: formData.preferred_mode_of_communication,
+          employment_status: formData.employment_status,
+          job_title: formData.job_title,
+          name_of_organization: formData.name_of_organization,
+          years_of_experience: formData.years_of_experience,
+          qualification: formData.qualification,
         };
-  
+
         console.log("Sending transfer notification:", payload);
         const response = await axios.post(
           `${process.env.NEXT_PUBLIC_API_URL}/notify-payment`,
@@ -113,16 +219,32 @@ const Register: React.FC = () => {
             },
           }
         );
-  
+
+        console.log("Backend response:", response.data);
         if (response.data.success) {
-          alert("Payment notification submitted successfully. We will verify your payment shortly.");
-          router.push("/payment-confirmation");
+          // Store token and user details for autologin
+          localStorage.setItem("token", response.data.access_token);
+          localStorage.setItem("client_id", response.data.user.client_id);
+          localStorage.setItem("role", response.data.role);
+          localStorage.setItem("status", response.data.client.status);
+
+          // Redirect based on role and status
+          if (response.data.role === "client" && response.data.client.status === "profile_created") {
+            router.push("/clients/register");
+          } else {
+            router.push("/dashboard");
+          }
         } else {
           throw new Error(response.data.message || "Failed to notify payment.");
         }
       } catch (error) {
-        console.error("Payment notification error:", error);
-        setFormError(error.message || "Failed to notify payment. Please try again.");
+        console.error("Payment notification error:", error, "Response:", error.response?.data);
+        const errorMessage =
+          error.response?.data?.message ||
+          (error.response?.data?.details
+            ? Object.values(error.response.data.details).join(", ")
+            : "Failed to notify payment. Please try again.");
+        setFormError(errorMessage);
       } finally {
         setIsSubmitting(false);
       }
@@ -140,7 +262,7 @@ const Register: React.FC = () => {
         setIsSubmitting(false);
         return;
       }
-  
+
       try {
         const payload = {
           tx_ref: `${course.course_id}-${Date.now()}`,
@@ -151,10 +273,20 @@ const Register: React.FC = () => {
           )}&cohort_id=${encodeURIComponent(course.cohort_id)}`,
           payment_options: "card,banktransfer,ussd",
           customer: {
-            email: formData.email,
-            phonenumber: formData.phone_number,
-            name: formData.name,
+            email: formData.email_address,
+            phonenumber: formData.phonenumber,
+            name: formData.full_name,
             secret: formData.password,
+            gender: formData.gender,
+            date_of_birth: formData.date_of_birth,
+            nationality: formData.nationality,
+            address: formData.city,
+            preferred_mode_of_communication: formData.preferred_mode_of_communication,
+            employment_status: formData.employment_status,
+            job_title: formData.job_title,
+            name_of_organization: formData.name_of_organization,
+            years_of_experience: formData.years_of_experience,
+            qualification: formData.qualification,
           },
           customizations: {
             title: "iLearn Africa Course Payment",
@@ -162,7 +294,7 @@ const Register: React.FC = () => {
             logo: `${window.location.origin}/images/logo/ilearn-logo.png`,
           },
         };
-  
+
         console.log(
           "Sending payment request to backend:",
           `${process.env.NEXT_PUBLIC_API_URL}/initialize-payment`,
@@ -178,11 +310,10 @@ const Register: React.FC = () => {
             },
           }
         );
-  
+
         console.log("Backend response:", response.data);
         if (response.data.data && response.data.data.link) {
           console.log("Redirecting to payment URL:", response.data.data.link);
-          // Store payload in sessionStorage to retrieve after redirect
           sessionStorage.setItem("payment_payload", JSON.stringify(payload));
           window.location.href = response.data.data.link;
         } else {
@@ -191,13 +322,19 @@ const Register: React.FC = () => {
         }
       } catch (error) {
         console.error("Payment initiation failed:", error, "Response:", error.response?.data);
-        setFormError(error.response?.data?.message || "Failed to initiate payment. Please try again.");
+        const errorMessage =
+          error.response?.data?.message ||
+          (error.response?.data?.details
+            ? Object.values(error.response.data.details).join(", ")
+            : "Failed to initiate payment. Please try again.");
+        setFormError(errorMessage);
       } finally {
         setIsSubmitting(false);
       }
     }
-  };  
-    return (
+  };
+
+  return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-800 dark:via-gray-900 dark:to-black p-4">
       <div className="w-full max-w-5xl flex flex-col items-center">
         <a href="/" className="mb-8">
@@ -218,7 +355,7 @@ const Register: React.FC = () => {
         </a>
         <div className="w-full bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 transition-all duration-300">
           <h2 className="text-3xl font-bold mb-8 text-center text-gray-900 dark:text-white">
-            Payment Summary
+            Registration & Payment
           </h2>
           {isLoading ? (
             <div className="flex justify-center items-center py-12">
@@ -254,48 +391,292 @@ const Register: React.FC = () => {
                 {formError && (
                   <p className="text-sm text-red-500 dark:text-red-400 mb-4 text-center">{formError}</p>
                 )}
-                <form
-                  onSubmit={(e) => {
-                    console.log("Form submitted");
-                    handleProceedToPayment(e);
-                  }}
-                  className="space-y-4"
-                >
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Full Name</label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full rounded-lg border border-gray-300 bg-transparent py-2 px-4 text-gray-900 focus:border-indigo-600 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                      placeholder="Enter your full name"
-                    />
+                <form onSubmit={handleProceedToPayment} className="space-y-6">
+                  <div className="space-y-4">
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white">🧾 SECTION A: PERSONAL INFORMATION</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      Please fill in your details accurately. Your certificate will be issued based on this information.
+                    </p>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Full Name (as on certificate)</label>
+                      <input
+                        type="text"
+                        name="full_name"
+                        value={formData.full_name}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full rounded-lg border border-gray-300 bg-transparent py-2 px-4 text-gray-900 focus:border-indigo-600 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                        placeholder="Enter your full name"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Gender</label>
+                      <div className="flex items-center space-x-4 mt-2">
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            name="gender"
+                            value="Male"
+                            checked={formData.gender === "Male"}
+                            onChange={handleInputChange}
+                            required
+                            className="mr-2 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          Male
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            name="gender"
+                            value="Female"
+                            checked={formData.gender === "Female"}
+                            onChange={handleInputChange}
+                            required
+                            className="mr-2 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          Female
+                        </label>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Date of Birth</label>
+                      <input
+                        type="date"
+                        name="date_of_birth"
+                        value={formData.date_of_birth}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full rounded-lg border border-gray-300 bg-transparent py-2 px-4 text-gray-900 focus:border-indigo-600 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Nationality</label>
+                        <input
+                          type="text"
+                          name="nationality"
+                          value={formData.nationality}
+                          onChange={handleInputChange}
+                          required
+                          className="w-full rounded-lg border border-gray-300 bg-transparent py-2 px-4 text-gray-900 focus:border-indigo-600 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                          placeholder="Enter your nationality"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-600 dark:text-gray-300">City</label>
+                        <input
+                          type="text"
+                          name="city"
+                          value={formData.city}
+                          onChange={handleInputChange}
+                          required
+                          className="w-full rounded-lg border border-gray-300 bg-transparent py-2 px-4 text-gray-900 focus:border-indigo-600 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                          placeholder="Enter your city"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Phone Number (WhatsApp preferred)</label>
+                      <input
+                        type="tel"
+                        name="phonenumber"
+                        value={formData.phonenumber}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full rounded-lg border border-gray-300 bg-transparent py-2 px-4 text-gray-900 focus:border-indigo-600 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                        placeholder="Enter your phone number"
+                      />
+                      {phoneSearchState && (
+                        <span
+                          className={`text-sm mt-1 block ${
+                            phoneSearchState === "loading" || phoneError
+                              ? "text-red dark:text-red"
+                              : "text-green-600 dark:text-green-500"
+                          }`}
+                        >
+                          {phoneSearchState === "loading" ? "Checking..." : phoneError || "Phone number has not been used."}
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Email Address</label>
+                      <input
+                        type="email"
+                        name="email_address"
+                        value={formData.email_address}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full rounded-lg border border-gray-300 bg-transparent py-2 px-4 text-gray-900 focus:border-indigo-600 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                        placeholder="Enter your email"
+                      />
+                      {emailSearchState && (
+                        <span
+                          className={`text-sm mt-1 block ${
+                            emailSearchState === "loading" || emailError
+                              ? "text-red dark:text-red"
+                              : "text-green-600 dark:text-green-500"
+                          }`}
+                        >
+                          {emailSearchState === "loading" ? "Checking..." : emailError || "Email has not been used."}
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Preferred Communication Channel</label>
+                      <div className="flex items-center space-x-4 mt-2">
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            name="preferred_mode_of_communication"
+                            value="Email"
+                            checked={formData.preferred_mode_of_communication === "Email"}
+                            onChange={handleInputChange}
+                            required
+                            className="mr-2 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          Email
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            name="preferred_mode_of_communication"
+                            value="WhatsApp"
+                            checked={formData.preferred_mode_of_communication === "WhatsApp"}
+                            onChange={handleInputChange}
+                            required
+                            className="mr-2 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          WhatsApp
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            name="preferred_mode_of_communication"
+                            value="Phone Call"
+                            checked={formData.preferred_mode_of_communication === "Phone Call"}
+                            onChange={handleInputChange}
+                            required
+                            className="mr-2 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          Phone Call
+                        </label>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Email</label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full rounded-lg border border-gray-300 bg-transparent py-2 px-4 text-gray-900 focus:border-indigo-600 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                      placeholder="Enter your email"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Phone Number</label>
-                    <input
-                      type="tel"
-                      name="phone_number"
-                      value={formData.phone_number}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full rounded-lg border border-gray-300 bg-transparent py-2 px-4 text-gray-900 focus:border-indigo-600 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                      placeholder="Enter your phone number"
-                    />
+                  <div className="space-y-4">
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white">🏢 SECTION B: PROFESSIONAL DETAILS</h4>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Current Employment Status</label>
+                      <div className="flex flex-wrap items-center space-x-4 mt-2">
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            name="employment_status"
+                            value="Employed"
+                            checked={formData.employment_status === "Employed"}
+                            onChange={handleInputChange}
+                            required
+                            className="mr-2 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          Employed
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            name="employment_status"
+                            value="Self-Employed"
+                            checked={formData.employment_status === "Self-Employed"}
+                            onChange={handleInputChange}
+                            required
+                            className="mr-2 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          Self-Employed
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            name="employment_status"
+                            value="Unemployed"
+                            checked={formData.employment_status === "Unemployed"}
+                            onChange={handleInputChange}
+                            required
+                            className="mr-2 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          Unemployed
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            name="employment_status"
+                            value="Student"
+                            checked={formData.employment_status === "Student"}
+                            onChange={handleInputChange}
+                            required
+                            className="mr-2 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          Student
+                        </label>
+                      </div>
+                    </div>
+                    {(formData.employment_status === "Employed" || formData.employment_status === "Self-Employed") && (
+                      <>
+                        <div>
+                          <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Job Title</label>
+                          <input
+                            type="text"
+                            name="job_title"
+                            value={formData.job_title}
+                            onChange={handleInputChange}
+                            required={formData.employment_status === "Employed" || formData.employment_status === "Self-Employed"}
+                            className="w-full rounded-lg border border-gray-300 bg-transparent py-2 px-4 text-gray-900 focus:border-indigo-600 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                            placeholder="Enter your job title"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Name of Organization</label>
+                          <input
+                            type="text"
+                            name="name_of_organization"
+                            value={formData.name_of_organization}
+                            onChange={handleInputChange}
+                            className="w-full rounded-lg border border-gray-300 bg-transparent py-2 px-4 text-gray-900 focus:border-indigo-600 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                            placeholder="Enter your organization name"
+                          />
+                        </div>
+                      </>
+                    )}
+                    <div>
+                      <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Years of Professional Experience</label>
+                      <input
+                        type="number"
+                        name="years_of_experience"
+                        value={formData.years_of_experience}
+                        onChange={handleInputChange}
+                        min="0"
+                        className="w-full rounded-lg border border-gray-300 bg-transparent py-2 px-4 text-gray-900 focus:border-indigo-600 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                        placeholder="Enter years of experience"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Educational Qualification</label>
+                      <select
+                        name="qualification"
+                        value={formData.qualification}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full rounded-lg border border-gray-300 bg-transparent py-2 px-4 text-gray-900 focus:border-indigo-600 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                      >
+                        <option value="">Select qualification</option>
+                        <option value="1">SSCE</option>
+                        <option value="2">NCE</option>
+                        <option value="3">OND</option>
+                        <option value="4">HND</option>
+                        <option value="5">Degree</option>
+                        <option value="6">PGD</option>
+                        <option value="7">Masters</option>
+                        <option value="8">PhD</option>
+                      </select>
+                    </div>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Password</label>
@@ -366,7 +747,18 @@ const Register: React.FC = () => {
                           <strong>Account Number:</strong> 1025182377
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-300">
-                          Please include the transaction reference <strong>{`${course?.course_id}-${Date.now()}`}</strong> in your transfer description.
+                          Please include the transaction reference{" "}
+                          <strong className="inline-flex items-center">
+                            {transactionRef}
+                            <button
+                              onClick={copyTransactionRef}
+                              className="ml-2 text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-600"
+                              title="Copy Transaction Reference"
+                            >
+                              <FontAwesomeIcon icon={faCopy} />
+                            </button>
+                          </strong>{" "}
+                          in your transfer description.
                         </p>
                       </div>
                     </div>
@@ -374,7 +766,7 @@ const Register: React.FC = () => {
                   <div className="flex justify-center">
                     <button
                       type="submit"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || !!emailError || !!phoneError}
                       className="rounded-lg bg-indigo-600 text-white py-3 px-6 text-sm font-medium hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-colors duration-200 shadow-md disabled:opacity-50"
                     >
                       {isSubmitting ? (
@@ -398,9 +790,9 @@ const Register: React.FC = () => {
             </p>
           )}
           <p className="mt-8 text-center text-sm text-gray-600 dark:text-gray-300">
-            Don't have an account?{" "}
-            <Link href="/auth/signup" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
-              Sign Up
+            Already have an account?{" "}
+            <Link href="/auth/signin" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
+              Sign In
             </Link>
           </p>
         </div>
