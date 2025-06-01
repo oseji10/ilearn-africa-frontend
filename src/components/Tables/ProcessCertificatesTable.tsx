@@ -13,6 +13,7 @@ const ProcessCertificatesTable = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isIssuingIL, setIsIssuingIL] = useState(null); // New state for IL Certificate issuance
   const [selectedAdmission, setSelectedAdmission] = useState(null);
   const [confirmReceipt, setConfirmReceipt] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -87,6 +88,14 @@ const ProcessCertificatesTable = () => {
     setIsSelectAllChecked(!isSelectAllChecked);
   };
 
+  const handleCheckboxChange = (admissionNumber) => {
+    setSelectedAdmissions((prev) =>
+      prev.includes(admissionNumber)
+        ? prev.filter((id) => id !== admissionNumber)
+        : [...prev, admissionNumber]
+    );
+  };
+
   const handleProcessAll = async () => {
     if (selectedAdmissions.length === 0) {
       alert("Please select at least one admission to process.");
@@ -133,7 +142,6 @@ const ProcessCertificatesTable = () => {
     setIsProcessingAll(false);
   };
   
-
   const handleApproval = async (event) => {
     event.preventDefault();
     setIsSubmitting(true);
@@ -171,6 +179,44 @@ const ProcessCertificatesTable = () => {
     }
 
     setIsSubmitting(false);
+  };
+
+  const handleIssueILCertificate = async (admission) => {
+    setIsIssuingIL(admission.admission_number);
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No auth token found");
+
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/certificate/ilearn/issue`,
+        { admission_number: admission.admission_number },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        alert("IL Certificate issued successfully!");
+        setAdmissions((prevAdmissions) =>
+          prevAdmissions.map((adm) =>
+            adm.admission_number === admission.admission_number
+              ? { ...adm, status: "COMPLETED" }
+              : adm
+          )
+        );
+      } else {
+        throw new Error("Failed to issue IL certificate.");
+      }
+    } catch (err) {
+      console.error("Error issuing IL certificate:", err);
+      alert("An error occurred while issuing the IL certificate. Please try again.");
+    }
+
+    setIsIssuingIL(null);
   };
 
   const columns = [
@@ -239,6 +285,21 @@ const ProcessCertificatesTable = () => {
           >
             <FontAwesomeIcon icon={faEye} /> Process
           </button>
+          <button
+            className={`px-4 py-2 bg-purple-500 text-white rounded ${
+              isIssuingIL === row.admission_number || row.status === "COMPLETED"
+                ? "cursor-not-allowed opacity-50"
+                : ""
+            }`}
+            onClick={() => handleIssueILCertificate(row)}
+            disabled={isIssuingIL === row.admission_number || row.status === "COMPLETED"}
+          >
+            {isIssuingIL === row.admission_number ? (
+              <FontAwesomeIcon icon={faSpinner} spin />
+            ) : (
+              "Issue IL Certificate"
+            )}
+          </button>
         </div>
       ),
     },
@@ -260,7 +321,7 @@ const ProcessCertificatesTable = () => {
         </button>
       </CSVLink>
 
-      &nbsp;
+       
 
       <button
         className={`mt-4 px-4 py-2 bg-blue-500 text-white rounded ${
@@ -321,7 +382,7 @@ const ProcessCertificatesTable = () => {
                 checked={confirmReceipt}
                 onChange={handleConfirmReceiptChange}
               />
-              &nbsp; Confirm receipt of all necessary documents
+                Confirm receipt of all necessary documents
             </label>
             <br />
             <button

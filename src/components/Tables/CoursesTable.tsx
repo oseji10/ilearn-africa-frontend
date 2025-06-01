@@ -15,7 +15,11 @@ const CoursesTable = () => {
   const [isCourseEditModalOpen, setIsCourseEditModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModal2Open, setIsModal2Open] = useState(false);
+  const [isModuleModalOpen, setIsModuleModalOpen] = useState(false);
   const [centerList, setCenterList] = useState([]);
+  const [modules, setModules] = useState([]);
+  const [selectedModule, setSelectedModule] = useState({ id: "", modules: "" });
+  const [isModuleEdit, setIsModuleEdit] = useState(false);
   const [selectedRow, setSelectedRow] = useState({
     course_id: "",
     course_name: "",
@@ -23,7 +27,7 @@ const CoursesTable = () => {
     center_id: "",
     certification_name: "",
     professional_certification_name: "",
-  })
+  });
   const [selectedCourse, setSelectedCourse] = useState({
     course_id: "",
     course_name: "",
@@ -32,7 +36,6 @@ const CoursesTable = () => {
     certification_name: "",
     professional_certification_name: "",
   });
-
   const [selectedCourseEdit, setSelectedCourseEdit] = useState({
     course_id: "",
     course_name: "",
@@ -45,6 +48,9 @@ const CoursesTable = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const modal1Ref = useRef(null);
   const modal2Ref = useRef(null);
+  const modalRef = useRef(null);
+  const modalRef2 = useRef(null);
+  const moduleModalRef = useRef(null);
   const router = useRouter();
   const [formData, setFormData] = useState({
     course_id2: "",
@@ -52,13 +58,8 @@ const CoursesTable = () => {
     material_name: "",
     document: "",
   });
-
-  const [selectedCourse2, setSelectedCourse2] = useState(null)
+  const [selectedCourse2, setSelectedCourse2] = useState(null);
   const [selectedCourseDelete, setSelectedCourseDelete] = useState(null);
-
-  const modalRef = useRef(null);
-  const modalRef2 = useRef(null);
-
 
   // Fetch center names from API
   useEffect(() => {
@@ -74,12 +75,11 @@ const CoursesTable = () => {
             },
           }
         );
-        setCenterList(response.data.centers); // assuming the response is an array of centers
+        setCenterList(response.data.centers);
       } catch (error) {
         console.error("Error fetching centers:", error);
       }
     };
-
     fetchCenters();
   }, []);
 
@@ -90,7 +90,6 @@ const CoursesTable = () => {
       if (!token) {
         throw new Error("No auth token found");
       }
-
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/course_list`,
         {
@@ -99,13 +98,31 @@ const CoursesTable = () => {
           },
         }
       );
-      console.log(response.data.courses)
       setCourses(response.data.courses);
-      setFilteredCourses(response.data.courses); // Set initial filtered courses
+      setFilteredCourses(response.data.courses);
       setLoading(false);
     } catch (err) {
       setError(err.message);
       setLoading(false);
+    }
+  };
+
+  // Fetch modules for a course
+  const fetchModules = async (course_id) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/course/modules/${course_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setModules(response.data.modules || []);
+    } catch (err) {
+      console.error("Error fetching modules:", err);
+      setModules([]);
     }
   };
 
@@ -127,7 +144,8 @@ const CoursesTable = () => {
 
   const openCourseModal = (row) => {
     setIsCourseModalOpen(true);
-    setSelectedRow(row);  // Assuming you have a state to store the selected row
+    setSelectedRow(row);
+    fetchModules(row.course_id);
   };
 
   const openModal = () => {
@@ -148,12 +166,25 @@ const CoursesTable = () => {
 
   const closeCourseModal = useCallback(() => {
     setIsCourseModalOpen(false);
+    setModules([]);
   }, []);
-  
+
   const closeCourseEditModal = useCallback(() => {
     setIsCourseEditModalOpen(false);
   }, []);
- 
+
+  const openModuleModal = (module = { id: "", modules: "" }, isEdit = false) => {
+    setSelectedModule(module);
+    setIsModuleEdit(isEdit);
+    setIsModuleModalOpen(true);
+  };
+
+  const closeModuleModal = useCallback(() => {
+    setIsModuleModalOpen(false);
+    setSelectedModule({ id: "", modules: "" });
+    setIsModuleEdit(false);
+  }, []);
+
   const handleCourseDelete = useCallback((course) => {
     setSelectedCourseDelete(course);
   }, []);
@@ -165,7 +196,6 @@ const CoursesTable = () => {
       [name]: value,
     });
   };
-  
 
   const handleChangeEdit = (e) => {
     const { name, value } = e.target;
@@ -174,15 +204,21 @@ const CoursesTable = () => {
       [name]: value,
     });
   };
-  
+
+  const handleModuleChange = (e) => {
+    const { name, value } = e.target;
+    setSelectedModule({
+      ...selectedModule,
+      [name]: value,
+    });
+  };
 
   const handleChange2 = (e) => {
     const { name, type, files, value } = e.target;
-  
     if (type === "file") {
       setFormData({
         ...formData,
-        [name]: files[0], // Assign the file object
+        [name]: files[0],
       });
     } else {
       setFormData({
@@ -191,16 +227,14 @@ const CoursesTable = () => {
       });
     }
   };
-  
+
   const deleteCourse = async (course) => {
-    //  console.log("Client object:", client);
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         throw new Error("No auth token found");
       }
-  
-      const response = await axios.delete(
+      await axios.delete(
         `${process.env.NEXT_PUBLIC_API_URL}/delete_course/${course.course_id}`,
         {
           headers: {
@@ -208,85 +242,62 @@ const CoursesTable = () => {
           },
         }
       );
-  
-         // Filter out the deleted client from the list
-    setCourses(courseLists.filter((c) => c.course_id !== course.course_id));
-    setFilteredCourses(filteredCourses.filter((c) => c.course_id !== course.course_id));
-    setSelectedCourseDelete(null); // Close the modal
-  } catch (err) {
-    setError(err.message);
-  }
-};
+      setCourses(courseLists.filter((c) => c.course_id !== course.course_id));
+      setFilteredCourses(filteredCourses.filter((c) => c.course_id !== course.course_id));
+      setSelectedCourseDelete(null);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
-
-
-   const handleCourseUpload = async (row) => {
+  const handleCourseUpload = async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         throw new Error("No auth token found");
       }
       setIsSubmitting(true);
-      
-  
-      const response = await fetch(
+      const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/course_list`,
-       
+        selectedCourse,
         {
-          method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ ...selectedCourse }),
         }
-      
       );
-  
-      if (response.ok) {
-        const data = await response.json(); 
-        // setResponse(data.message);
-        alert(data.message);
-        
-      
-        closeModal();
-      } else {
-        const data = await response.json(); 
-        alert(data.message);
-      }
+      alert(response.data.message);
+      fetchCourses();
+      closeModal();
     } catch (error) {
       console.error("Error:", error);
-      alert("An error occurred");
+      alert(error.response?.data?.message || "An error occurred");
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
-
-
 
   const handleFileUpload = async () => {
     try {
       setIsSubmitting(true);
       const token = localStorage.getItem("token");
-  
-      // Create a FormData object
       const data = new FormData();
       data.append("course_id2", formData.course_id2);
       data.append("material_type", formData.material_type);
       data.append("material_name", formData.material_name);
-      data.append("document", formData.document); // Appending the file
-  
+      data.append("document", formData.document);
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/course_material`,
         data,
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data", // This is important for file uploads
+            "Content-Type": "multipart/form-data",
           },
         }
       );
-  
-      fetchCourses(); // Fetch courses again to update the table after submission
+      fetchCourses();
       alert("Course material uploaded!");
       closeModal2();
       setFormData({
@@ -297,15 +308,75 @@ const CoursesTable = () => {
       });
     } catch (error) {
       console.error("Error uploading course material:", error);
+      alert("Error uploading course material");
     } finally {
       setIsSubmitting(false);
       router.refresh();
     }
   };
-  
+
+  const handleModuleSubmit = async () => {
+    try {
+      setIsSubmitting(true);
+      const token = localStorage.getItem("token");
+      if (isModuleEdit) {
+        await axios.patch(
+          `${process.env.NEXT_PUBLIC_API_URL}/course/module/${selectedModule.id}`,
+          { modules: selectedModule.modules },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        alert("Module updated!");
+      } else {
+        await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/course/module`,
+          { course_id: selectedRow.course_id, modules: selectedModule.modules },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        alert("Module added!");
+      }
+      fetchModules(selectedRow.course_id);
+      closeModuleModal();
+    } catch (error) {
+      console.error("Error submitting module:", error);
+      alert(error.response?.data?.message || "Error submitting module");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleModuleDelete = async (id) => {
+    if (!confirm("Are you sure you want to delete this module?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_API_URL}/course/module/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      fetchModules(selectedRow.course_id);
+      alert("Module deleted!");
+    } catch (error) {
+      console.error("Error deleting module:", error);
+      alert("Error deleting module");
+    }
+  };
+
   const openEditCourseModal = (row) => {
-    setSelectedCourseEdit(row);  // Set the selected course for editing
-    setIsCourseEditModalOpen(true);  // Open the modal
+    setSelectedCourseEdit(row);
+    setIsCourseEditModalOpen(true);
   };
 
   const handleCourseUpdate = async () => {
@@ -314,7 +385,7 @@ const CoursesTable = () => {
       const token = localStorage.getItem("token");
       await axios.patch(
         `${process.env.NEXT_PUBLIC_API_URL}/update_course/${selectedCourseEdit.course_id}`,
-        selectedCourseEdit,  // Send the updated course data
+        selectedCourseEdit,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -322,17 +393,17 @@ const CoursesTable = () => {
           },
         }
       );
-      fetchCourses();  // Fetch the updated courses
+      fetchCourses();
       alert("Course details updated!");
-      closeCourseModal();  // Close the modal after update
+      closeCourseEditModal();
     } catch (error) {
       console.error("Error updating course:", error);
+      alert("Error updating course");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  
   const columns = [
     {
       name: "Course ID",
@@ -382,26 +453,21 @@ const CoursesTable = () => {
       name: "Actions",
       cell: (row) => (
         <div className="flex space-x-2">
- <button
-        onClick={() => openEditCourseModal(row)}  // New edit button
-        className="px-4 py-2 bg-yellow-500 text-white rounded"
-      >
-        <FontAwesomeIcon icon={faEdit} />
-      </button>
-
           <button
-            // onClick={() => alert(`View details for ${row.course_id}`)}
+            onClick={() => openEditCourseModal(row)}
+            className="px-4 py-2 bg-yellow-500 text-white rounded"
+          >
+            <FontAwesomeIcon icon={faEdit} />
+          </button>
+          <button
             onClick={() => openCourseModal(row)}
             className="px-4 py-2 bg-blue-500 text-white rounded"
           >
             <FontAwesomeIcon icon={faEye} />
           </button>
           <button
-          style={{color: 'red'}}
-            // onClick={() => alert(`Delete ${row.course_id}`)}
-            // onClick={() => deleteCourse(selectedCourseDelete)} 
             onClick={() => handleCourseDelete(row)}
-            className="px-4 py-2 bg-red-500 text-white rounded"
+            className="px-4 py-2 bg-red text-white rounded"
           >
             <FontAwesomeIcon icon={faTrash} />
           </button>
@@ -424,14 +490,13 @@ const CoursesTable = () => {
         className="inline-flex items-center justify-center bg-primary px-10 py-4 text-center font-medium text-white hover:bg-opacity-90 lg:px-8"
         onClick={openModal}
       >
-        <FontAwesomeIcon icon={faPlus} />&nbsp;Add New Course
-      </button>
-&nbsp;
+        <FontAwesomeIcon icon={faPlus} /> Add New Course
+      </button> 
       <button
         className="inline-flex items-center justify-center bg-secondary px-10 py-4 text-center font-medium text-white hover:bg-opacity-90 lg:px-8"
         onClick={openModal2}
       >
-        <FontAwesomeIcon icon={faFilePdf} />&nbsp;Upload Course Material
+        <FontAwesomeIcon icon={faFilePdf} /> Upload Course Material
       </button><br/><br/>
       <input
         type="text"
@@ -447,7 +512,6 @@ const CoursesTable = () => {
         highlightOnHover
       />
 
-
 {isCourseModalOpen && selectedRow && (
   <div
     ref={modal2Ref}
@@ -455,45 +519,65 @@ const CoursesTable = () => {
   >
     <div className="modal-box bg-white p-4 rounded shadow-md w-full max-w-lg md:max-w-md">
       <h3 className="font-bold text-lg">Course Details</h3>
-        <p>Course ID: <b>{selectedRow.course_id}</b></p> 
+      <div className="max-h-[70vh] overflow-y-auto px-2 py-2">
+        <p>Course ID: <b>{selectedRow.course_id}</b></p>
         <p>Course Name: <b>{selectedRow.course_name}</b></p>
         <p>Certification Name: <b>{selectedRow?.certification_name}</b></p>
         <p>Professional Certification Name: <b>{selectedRow?.professional_certification_name}</b></p>
-        
-        {/* <p>Partner Name:<b>{selectedRow?.centers.center_name}</b> </p> */}
-      <div className="modal-action mt-4 flex justify-end">
+        <div className="mt-4">
+          <h4 className="font-semibold">Modules</h4>
+          {modules.length > 0 ? (
+            <ul className="list-disc pl-5">
+              {modules.map((module) => (
+                <li key={module.id} className="flex justify-between items-center py-1">
+                  <span>{module.modules}</span>
+                  <div>
+                    <button
+                      onClick={() => openModuleModal(module, true)}
+                      className="text-yellow-500 mr-2"
+                    >
+                      <FontAwesomeIcon icon={faEdit} />
+                    </button>
+                    <button
+                      onClick={() => handleModuleDelete(module.id)}
+                      className="text-red-500"
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No modules added.</p>
+          )}
+          <button
+            onClick={() => openModuleModal()}
+            className="mt-2 px-4 py-2 bg-green-500 text-white rounded"
+          >
+            <FontAwesomeIcon icon={faPlus} /> Add Module
+          </button>
         </div>
+      </div>
+      <div className="modal-action mt-4 flex justify-end">
         <button
-        style={{background: 'red', color:'white'}}
-          className="mt-4 px-4 py-2 text-black rounded"
+          style={{ background: 'red', color: 'white' }}
+          className="px-4 py-2 rounded"
           onClick={closeCourseModal}
           disabled={isSubmitting}
         >
-          Cancel
+          Close
         </button>
-        {/* <button
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
-          onClick={handleCourseUpload}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <FontAwesomeIcon icon={faSpinner} spin />
-          ) : (
-            "Submit"
-          )}
-        </button> */}
-      
+      </div>
     </div>
   </div>
 )}
-
-
       {isModalOpen && (
         <div
-        ref={modalRef}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
-      >
-        <div className="modal-box bg-white p-4 rounded shadow-md w-full max-w-lg md:max-w-md">
+          ref={modalRef}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
+        >
+          <div className="modal-box bg-white p-4 rounded shadow-md w-full max-w-lg md:max-w-md">
             <h3 className="font-bold text-lg">Add Course</h3>
             <input
               type="text"
@@ -511,8 +595,7 @@ const CoursesTable = () => {
               onChange={handleChange}
               className="mt-2 w-full p-2 border rounded"
             />
-
-<input
+            <input
               type="text"
               name="certification_name"
               placeholder="Certification Name"
@@ -520,8 +603,7 @@ const CoursesTable = () => {
               onChange={handleChange}
               className="mt-2 w-full p-2 border rounded"
             />
-
-<input
+            <input
               type="text"
               name="professional_certification_name"
               placeholder="Professional Certification Name (For partner courses only)"
@@ -529,9 +611,6 @@ const CoursesTable = () => {
               onChange={handleChange}
               className="mt-2 w-full p-2 border rounded"
             />
-
-
-
             <input
               type="number"
               name="cost"
@@ -577,28 +656,27 @@ const CoursesTable = () => {
         </div>
       )}
 
-{isModal2Open && (
-  <div
-    ref={modal2Ref}
-    className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
-  >
-    <div className="modal-box bg-white p-4 rounded shadow-md w-full max-w-lg md:max-w-md">
-      <h3 className="font-bold text-lg">Upload Course Material</h3>
-
-      <select
-        name="course_id2"
-        value={formData.course_id2}
-        onChange={handleChange2}
-        className="mt-2 w-full p-2 border rounded"
-      >
-        <option value="">Select Course</option>
-        {courseLists.map((course) => (
-          <option key={course.course_id} value={course.course_id}>
-            {course.course_name}
-          </option>
-        ))}
-      </select>
-      <input
+      {isModal2Open && (
+        <div
+          ref={modal2Ref}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
+        >
+          <div className="modal-box bg-white p-4 rounded shadow-md w-full max-w-lg md:max-w-md">
+            <h3 className="font-bold text-lg">Upload Course Material</h3>
+            <select
+              name="course_id2"
+              value={formData.course_id2}
+              onChange={handleChange2}
+              className="mt-2 w-full p-2 border rounded"
+            >
+              <option value="">Select Course</option>
+              {courseLists.map((course) => (
+                <option key={course.course_id} value={course.course_id}>
+                  {course.course_name}
+                </option>
+              ))}
+            </select>
+            <input
               type="text"
               name="material_name"
               placeholder="Material Name"
@@ -606,72 +684,64 @@ const CoursesTable = () => {
               onChange={handleChange2}
               className="mt-2 w-full p-2 border rounded"
             />
-      <select
-        name="material_type"
-        value={formData.material_type}
-        onChange={handleChange2}
-        className="mt-2 w-full p-2 border rounded"
-      >
-        <option value="">Select Material Type</option>
-        <option value="Course Material">Course Material</option>
-        <option value="Brochure">Brochure</option>
-      </select>
+            <select
+              name="material_type"
+              value={formData.material_type}
+              onChange={handleChange2}
+              className="mt-2 w-full p-2 border rounded"
+            >
+              <option value="">Select Material Type</option>
+              <option value="Course Material">Course Material</option>
+              <option value="Brochure">Brochure</option>
+            </select>
+            <input
+              type="file"
+              name="document"
+              onChange={handleChange2}
+              className="mt-2 w-full p-2 border rounded"
+            />
+            <div className="modal-action mt-4 flex justify-end">
+              <button
+                className="mt-4 px-4 py-2 text-black rounded"
+                onClick={closeModal2}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </button>
+              <button
+                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
+                onClick={handleFileUpload}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <FontAwesomeIcon icon={faSpinner} spin />
+                ) : (
+                  "Submit"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-      <input
-        type="file"
-        name="document"
-        onChange={handleChange2}
-        className="mt-2 w-full p-2 border rounded"
-      />
-
-      <div className="modal-action mt-4 flex justify-end">
-        <button
-          // style={{color: 'black'}}
-          className="mt-4 px-4 py-2 text-black rounded"
-          onClick={closeModal2}
-          disabled={isSubmitting}
-        >
-          Cancel
-        </button>
-        <button
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
-          onClick={handleFileUpload}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <FontAwesomeIcon icon={faSpinner} spin />
-          ) : (
-            "Submit"
-          )}
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
-
-
-{selectedCourseDelete && (
+      {selectedCourseDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div
             className="bg-white p-6 rounded shadow-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto"
             ref={modalRef2}
           >
             <h2 className="text-xl font-semibold mb-4">Delete Course?</h2>
-            {/* <h2 className="text-xl font-semibold mb-4">Hh{selectedCourseDelete.course_id}</h2> */}
             <h3 className="text-xl font-semibold mb-4">Are you sure you want to delete this course?</h3>
-
-<button
-style={{background: 'red'}}
-  className="mt-4 px-4 py-2 bg-red-500 text-white rounded"
-  onClick={() => deleteCourse(selectedCourseDelete)} // Corrected this line
->
-  Delete
-</button> 
-&nbsp;&nbsp;
-<button
+            <button
+              style={{ background: 'red' }}
+              className="mt-4 px-4 py-2 bg-red-500 text-white rounded"
+              onClick={() => deleteCourse(selectedCourseDelete)}
+            >
+              Delete
+            </button>
+            <button
               className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
-              onClick={closeModal2}
+              onClick={() => setSelectedCourseDelete(null)}
             >
               Close
             </button>
@@ -679,94 +749,118 @@ style={{background: 'red'}}
         </div>
       )}
 
-
-
-{isCourseEditModalOpen && selectedCourseEdit && (
-  <div
-    ref={modal2Ref}
-    className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
-  >
-    <div className="modal-box bg-white p-4 rounded shadow-md w-full max-w-lg md:max-w-md">
-      <h3 className="font-bold text-lg">Edit Course</h3>
-      <div >
-      <label className=" text-sm text-black dark:text-white" >Course Name:</label>
-      
-        <input
-          type="text"
-          name="course_name"
-          value={selectedCourseEdit.course_name}
-          onChange={handleChangeEdit}
-          placeholder="Certification Name"
-          className="w-full px-4 py-2 border border-gray-300 rounded"
-        />
-
-<label className=" text-sm text-black dark:text-white" >Professional Certification Name:</label>
-<input
-          type="text"
-          name="professional_certification_name"
-          value={selectedCourseEdit.professional_certification_name}
-          onChange={handleChangeEdit}
-          placeholder="Professional Certification Name (Partner courses ONLY)"
-          className="w-full px-4 py-2 border border-gray-300 rounded"
-        />  
-
-<label className=" text-sm text-black dark:text-white" >Certification Name:</label>
-<input
-          type="text"
-          name="certification_name"
-          value={selectedCourseEdit.certification_name}
-          onChange={handleChangeEdit}
-          placeholder="Course Name"
-          className="w-full px-4 py-2 border border-gray-300 rounded"
-        />  
-
-        <label className=" text-black dark:text-white"  htmlFor="cost">Cost:</label>
-        <input
-          type="text"
-          name="cost"
-          value={selectedCourseEdit.cost}
-          onChange={handleChangeEdit}
-          placeholder="Cost"
-          className="w-full px-4 py-2 border border-gray-300 rounded"
-        />
-
-<label className=" text-black dark:text-white"  htmlFor="center">Center:</label>
-        <select
-          name="center_id"
-          value={selectedCourseEdit.center_id}
-          onChange={handleChangeEdit}
-          className="w-full px-4 py-2 border border-gray-300 rounded"
+      {isCourseEditModalOpen && selectedCourseEdit && (
+        <div
+          ref={modal2Ref}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
         >
-          <option value="">Select Center</option>
-          {centerList.map((center) => (
-            <option key={center.center_id} value={center.center_id}>
-              {center.center_name}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="modal-action mt-4 flex justify-end">
-      <button
-          onClick={handleCourseUpdate}  // Submit edit
-          className="px-4 py-2 bg-blue-500 text-white rounded"
-        >
-          {isSubmitting ? <FontAwesomeIcon icon={faSpinner} spin /> : "Update"}
-        </button>
-        &nbsp;
-        <button
-          onClick={closeCourseEditModal}
-          className="px-4 py-2 bg-gray-500 text-white rounded"
-          style={{background: 'red'}}
-        >
-          Cancel
-        </button>
-       
-      </div>
-    </div>
-  </div>
-)}
+          <div className="modal-box bg-white p-4 rounded shadow-md w-full max-w-lg md:max-w-md">
+            <h3 className="font-bold text-lg">Edit Course</h3>
+            <div>
+              <label className="text-sm text-black dark:text-white">Course Name:</label>
+              <input
+                type="text"
+                name="course_name"
+                value={selectedCourseEdit.course_name}
+                onChange={handleChangeEdit}
+                placeholder="Course Name"
+                className="w-full px-4 py-2 border border-gray-300 rounded"
+              />
+              <label className="text-sm text-black dark:text-white">Professional Certification Name:</label>
+              <input
+                type="text"
+                name="professional_certification_name"
+                value={selectedCourseEdit.professional_certification_name}
+                onChange={handleChangeEdit}
+                placeholder="Professional Certification Name (Partner courses ONLY)"
+                className="w-full px-4 py-2 border border-gray-300 rounded"
+              />
+              <label className="text-sm text-black dark:text-white">Certification Name:</label>
+              <input
+                type="text"
+                name="certification_name"
+                value={selectedCourseEdit.certification_name}
+                onChange={handleChangeEdit}
+                placeholder="Certification Name"
+                className="w-full px-4 py-2 border border-gray-300 rounded"
+              />
+              <label className="text-black dark:text-white" htmlFor="cost">Cost:</label>
+              <input
+                type="text"
+                name="cost"
+                value={selectedCourseEdit.cost}
+                onChange={handleChangeEdit}
+                placeholder="Cost"
+                className="w-full px-4 py-2 border border-gray-300 rounded"
+              />
+              <label className="text-black dark:text-white" htmlFor="center">Center:</label>
+              <select
+                name="center_id"
+                value={selectedCourseEdit.center_id}
+                onChange={handleChangeEdit}
+                className="w-full px-4 py-2 border border-gray-300 rounded"
+              >
+                <option value="">Select Center</option>
+                {centerList.map((center) => (
+                  <option key={center.center_id} value={center.center_id}>
+                    {center.center_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="modal-action mt-4 flex justify-end">
+              <button
+                onClick={handleCourseUpdate}
+                className="px-4 py-2 bg-blue-500 text-white rounded"
+              >
+                {isSubmitting ? <FontAwesomeIcon icon={faSpinner} spin /> : "Update"}
+              </button>
+              <button
+                onClick={closeCourseEditModal}
+                className="px-4 py-2 bg-gray-500 text-white rounded"
+                style={{ background: 'red' }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-
+      {isModuleModalOpen && (
+        <div
+          ref={moduleModalRef}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
+        >
+          <div className="modal-box bg-white p-4 rounded shadow-md w-full max-w-lg md:max-w-md">
+            <h3 className="font-bold text-lg">{isModuleEdit ? "Edit Module" : "Add Module"}</h3>
+            <input
+              type="text"
+              name="modules"
+              placeholder="Module Title"
+              value={selectedModule.modules}
+              onChange={handleModuleChange}
+              className="mt-2 w-full p-2 border rounded"
+            />
+            <div className="modal-action mt-4 flex justify-end">
+              <button
+                className="px-4 py-2 text-black rounded"
+                onClick={closeModuleModal}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-blue-500 text-white rounded"
+                onClick={handleModuleSubmit}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? <FontAwesomeIcon icon={faSpinner} spin /> : isModuleEdit ? "Update" : "Add"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

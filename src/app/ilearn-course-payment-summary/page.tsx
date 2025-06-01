@@ -112,7 +112,7 @@ const Register = () => {
   // Generate transaction reference when transferNow is selected
   useEffect(() => {
     if (paymentMethod === "transferNow" && course?.course_id) {
-      setTransactionRef(`tx_${course.course_id}_${Date.now()}`);
+      setTransactionRef(`${course.course_id}_${Date.now()}`);
     } else {
       setTransactionRef("");
     }
