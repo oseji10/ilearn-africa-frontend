@@ -1,11 +1,12 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React from "react"; // Added explicit React import
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faCopy } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import { useState, useEffect } from "react";
 
 const Register = () => {
   const router = useRouter();
@@ -36,6 +37,8 @@ const Register = () => {
   const [transactionRef, setTransactionRef] = useState("");
   const [emailSearchState, setEmailSearchState] = useState(null); // null, 'loading', 'done'
   const [phoneSearchState, setPhoneSearchState] = useState(null); // null, 'loading', 'done'
+  const [consentIP, setConsentIP] = useState(false); // Consent for intellectual property
+  const [consentSharing, setConsentSharing] = useState(false); // Consent for unauthorized sharing
 
   // Generate amount options from 5,000 to 300,000 in increments of 5,000
   const amountOptions = Array.from({ length: 60 }, (_, i) => (i + 1) * 5000);
@@ -120,10 +123,16 @@ const Register = () => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : type === "radio" ? value : value,
-    }));
+    if (name === "consentIP") {
+      setConsentIP(checked);
+    } else if (name === "consentSharing") {
+      setConsentSharing(checked);
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: type === "checkbox" ? checked : type === "radio" ? value : value,
+      }));
+    }
   };
 
   const handlePaymentMethodChange = (e) => {
@@ -653,12 +662,12 @@ const Register = () => {
                         value={formData.years_of_experience}
                         onChange={handleInputChange}
                         min="0"
-                        className="w-full rounded-lg border border-gray-300 bg-transparent py-2 px-4 text-gray-900 focus:border-indigo-600 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                        className="w-full rounded-lg border border-gray-600 bg-transparent py-2 px-4 text-gray-900 focus:border-indigo-600 focus:outline-none dark:bg-gray-700 dark:text-gray-100"
                         placeholder="Enter years of experience"
                       />
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Educational Qualification</label>
+                      <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Highest Educational Qualification</label>
                       <select
                         name="qualification"
                         value={formData.qualification}
@@ -763,10 +772,39 @@ const Register = () => {
                       </div>
                     </div>
                   )}
+                  <div className="space-y-4">
+                    <div className="flex items-start">
+                      <input
+                        type="checkbox"
+                        name="consentIP"
+                        checked={consentIP}
+                        onChange={handleInputChange}
+                        required
+                        className="mt-1 mr-2 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <label className="text-sm text-gray-600 dark:text-gray-300">
+                        I understand that presentation slides, recorded sessions, and tools provided during this training are
+                        the intellectual property of iLearn Africa and are not to be reproduced, redistributed, or hosted elsewhere without written permission.
+                      </label>
+                    </div>
+                    <div className="flex items-start">
+                      <input
+                        type="checkbox"
+                        name="consentSharing"
+                        checked={consentSharing}
+                        onChange={handleInputChange}
+                        required
+                        className="mt-1 mr-2 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <label className="text-sm text-gray-600 dark:text-gray-300">
+                        I acknowledge that unauthorized duplication or sharing of course materials is a breach of intellectual property rights and will attract legal action.
+                      </label>
+                    </div>
+                  </div>
                   <div className="flex justify-center">
                     <button
                       type="submit"
-                      disabled={isSubmitting || !!emailError || !!phoneError}
+                      disabled={isSubmitting || !!emailError || !!phoneError || !consentIP || !consentSharing}
                       className="rounded-lg bg-indigo-600 text-white py-3 px-6 text-sm font-medium hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-colors duration-200 shadow-md disabled:opacity-50"
                     >
                       {isSubmitting ? (

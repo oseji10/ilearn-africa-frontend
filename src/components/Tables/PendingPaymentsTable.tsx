@@ -327,13 +327,22 @@ const PendingPaymentsTable = () => {
     setIsSubmitting(false);
   };
 
-  const confirmPayment = useCallback(
-    async (event) => {
-      event.preventDefault();
-      setIsSubmitting(true);
-      if (!confirmReceipt) {
-        setError("You must confirm receipt of this payment.");
-        return;
+
+const confirmPayment = useCallback(
+  async (event) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+
+    if (!confirmReceipt) {
+      setError("You must confirm receipt of this payment.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No auth token found");
       }
 
       const paymentData = {
@@ -341,37 +350,33 @@ const PendingPaymentsTable = () => {
         other_reference: selectedPayment.other_reference,
       };
 
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("No auth token found");
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/confirm-payment`,
+        paymentData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/confirm-payment`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(paymentData),
-          }
-        );
+      );
 
-        if (response.ok) {
-          setError(null);
-          closeModal();
-          window.location.reload();
-        } else {
-          throw new Error("Payment confirmation failed");
-        }
-      } catch (error) {
-        setError(error.message);
+      if (response.status === 200) {
+        setError(null);
+        alert("Payment confirmed successfully!");
+        closeModal();
+        window.location.reload();
+      } else {
+        throw new Error("Payment confirmation failed");
       }
-      setIsSubmitting(false);
-    },
-    [selectedPayment, confirmReceipt, closeModal]
-  );
+    } catch (err) {
+      console.error("Error confirming payment:", err);
+      setError("An error occurred while confirming the payment. Please try again.");
+    }
+
+    setIsSubmitting(false);
+  },
+  [selectedPayment, confirmReceipt, closeModal]
+);
 
   if (loading) {
     return <p>Loading...</p>;
