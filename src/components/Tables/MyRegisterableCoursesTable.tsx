@@ -115,6 +115,8 @@ const MyRegisterableCoursesTable = () => {
   if (error) {
     return <p>Error: {error}</p>;
   }
+  
+  
   const handlePayment = async () => {
     try {
       setIsSubmitting(true);

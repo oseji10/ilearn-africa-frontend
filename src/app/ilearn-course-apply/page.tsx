@@ -122,9 +122,9 @@ const SignIn: React.FC = () => {
             </div>
           )}
           <p className="mt-8 text-center text-sm text-gray-600 dark:text-gray-300">
-            Don't have an account?{" "}
-            <Link href="/auth/signup" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
-              Sign Up
+            Already have an account?{" "}
+            <Link href="/auth/signin" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
+              Sign In
             </Link>
           </p>
         </div>

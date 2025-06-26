@@ -1,5 +1,5 @@
 "use client";
-import React from "react"; // Added explicit React import
+import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -35,10 +35,12 @@ const Register = () => {
   const [emailError, setEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [transactionRef, setTransactionRef] = useState("");
-  const [emailSearchState, setEmailSearchState] = useState(null); // null, 'loading', 'done'
-  const [phoneSearchState, setPhoneSearchState] = useState(null); // null, 'loading', 'done'
-  const [consentIP, setConsentIP] = useState(false); // Consent for intellectual property
-  const [consentSharing, setConsentSharing] = useState(false); // Consent for unauthorized sharing
+  const [emailSearchState, setEmailSearchState] = useState(null);
+  const [phoneSearchState, setPhoneSearchState] = useState(null);
+  const [consentIP, setConsentIP] = useState(false);
+  const [consentSharing, setConsentSharing] = useState(false);
+  const [paymentProof, setPaymentProof] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   // Generate amount options from 5,000 to 300,000 in increments of 5,000
   const amountOptions = Array.from({ length: 60 }, (_, i) => (i + 1) * 5000);
@@ -75,11 +77,24 @@ const Register = () => {
   // Debounced function for real-time validation
   useEffect(() => {
     let timeoutId;
-    const checkUserExists = async () => {
-      if (!formData.email_address && !formData.phonenumber) return;
 
-      if (formData.email_address) setEmailSearchState("loading");
-      if (formData.phonenumber) setPhoneSearchState("loading");
+    const isValidEmail = (email) => {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    };
+
+    const isValidPhone = (phone) => {
+      return /^\+?\d{10,15}$/.test(phone.replace(/\s/g, ""));
+    };
+
+    const checkUserExists = async () => {
+      if (!isValidEmail(formData.email_address) && !isValidPhone(formData.phonenumber)) {
+        setEmailSearchState(null);
+        setPhoneSearchState(null);
+        return;
+      }
+
+      if (isValidEmail(formData.email_address)) setEmailSearchState("loading");
+      if (isValidPhone(formData.phonenumber)) setPhoneSearchState("loading");
 
       try {
         const response = await axios.post(
@@ -95,31 +110,81 @@ const Register = () => {
 
         setEmailError(response.data.email_exists ? "Email already exists." : null);
         setPhoneError(response.data.phonenumber_exists ? "Phone number already exists." : null);
-        if (formData.email_address) setEmailSearchState("done");
-        if (formData.phonenumber) setPhoneSearchState("done");
+        setFormError("");
+        if (isValidEmail(formData.email_address)) setEmailSearchState("done");
+        if (isValidPhone(formData.phonenumber)) setPhoneSearchState("done");
       } catch (error) {
         console.error("Error checking user:", error);
-        setFormError("Failed to validate email or phone number.");
-        if (formData.email_address) setEmailSearchState("done");
-        if (formData.phonenumber) setPhoneSearchState("done");
+        if (isValidEmail(formData.email_address) || isValidPhone(formData.phonenumber)) {
+          setFormError("Failed to validate email or phone number.");
+        }
+        if (isValidEmail(formData.email_address)) setEmailSearchState("done");
+        if (isValidPhone(formData.phonenumber)) setPhoneSearchState("done");
       }
     };
 
-    if (formData.email_address || formData.phonenumber) {
+    if (
+      (formData.email_address && isValidEmail(formData.email_address)) ||
+      (formData.phonenumber && isValidPhone(formData.phonenumber))
+    ) {
       timeoutId = setTimeout(checkUserExists, 500);
+    } else {
+      setEmailError(null);
+      setPhoneError(null);
+      setFormError("");
+      setEmailSearchState(null);
+      setPhoneSearchState(null);
     }
 
     return () => clearTimeout(timeoutId);
   }, [formData.email_address, formData.phonenumber]);
 
-  // Generate transaction reference when transferNow is selected
+  // Generate transaction reference when transferNow or alreadyPaid is selected
   useEffect(() => {
-    if (paymentMethod === "transferNow" && course?.course_id) {
+    if ((paymentMethod === "transferNow" || paymentMethod === "alreadyPaid") && course?.course_id) {
       setTransactionRef(`${course.course_id}_${Date.now()}`);
     } else {
       setTransactionRef("");
     }
   }, [paymentMethod, course]);
+
+  // Handle file input change and generate preview
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!["image/jpeg", "image/png", "application/pdf"].includes(file.type)) {
+        setFormError("Please upload a valid file (JPEG, PNG, or PDF).");
+        setPaymentProof(null);
+        setPreviewUrl(null);
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setFormError("File size must be less than 5MB.");
+        setPaymentProof(null);
+        setPreviewUrl(null);
+        return;
+      }
+      setPaymentProof(file);
+      setFormError("");
+      if (file.type.startsWith("image/")) {
+        setPreviewUrl(URL.createObjectURL(file));
+      } else {
+        setPreviewUrl(null);
+      }
+    } else {
+      setPaymentProof(null);
+      setPreviewUrl(null);
+    }
+  };
+
+  // Clean up preview URL to avoid memory leaks
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -138,6 +203,9 @@ const Register = () => {
   const handlePaymentMethodChange = (e) => {
     setPaymentMethod(e.target.value);
     setSelectedAmount("");
+    setPaymentProof(null);
+    setPreviewUrl(null);
+    setFormError("");
   };
 
   const handleAmountChange = (e) => {
@@ -180,7 +248,7 @@ const Register = () => {
       }
     }
 
-    // Check for email or phone errors to prevent submission
+    // Check for email or phone errors
     if (emailError || phoneError) {
       setFormError("The email or phone number is already in use. Please use a different one.");
       setIsSubmitting(false);
@@ -231,13 +299,11 @@ const Register = () => {
 
         console.log("Backend response:", response.data);
         if (response.data.success) {
-          // Store token and user details for autologin
           localStorage.setItem("token", response.data.access_token);
           localStorage.setItem("client_id", response.data.user.client_id);
           localStorage.setItem("role", response.data.role);
           localStorage.setItem("status", response.data.client.status);
 
-          // Redirect based on role and status
           if (response.data.role === "client" && response.data.client.status === "profile_created") {
             router.push("/clients/register");
           } else {
@@ -248,6 +314,80 @@ const Register = () => {
         }
       } catch (error) {
         console.error("Payment notification error:", error, "Response:", error.response?.data);
+        const errorMessage =
+          error.response?.data?.message ||
+          (error.response?.data?.details
+            ? Object.values(error.response.data.details).join(", ")
+            : "Failed to notify payment. Please try again.");
+        setFormError(errorMessage);
+      } finally {
+        setIsSubmitting(false);
+      }
+    } else if (paymentMethod === "alreadyPaid") {
+      if (!selectedAmount) {
+        console.log("Already paid validation failed: No amount selected");
+        setFormError("Please select an amount for the payment.");
+        setIsSubmitting(false);
+        return;
+      }
+      if (!paymentProof) {
+        console.log("Already paid validation failed: No payment proof uploaded");
+        setFormError("Please upload proof of payment.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      try {
+        const formDataPayload = new FormData();
+        formDataPayload.append("tx_ref", transactionRef);
+        formDataPayload.append("amount", parseInt(selectedAmount));
+        formDataPayload.append("email", formData.email_address);
+        formDataPayload.append("course_id", course.course_id);
+        formDataPayload.append("cohort_id", course.cohort_id);
+        formDataPayload.append("name", formData.full_name);
+        formDataPayload.append("phonenumber", formData.phonenumber);
+        formDataPayload.append("payment_method", "already_paid");
+        formDataPayload.append("secret", formData.password);
+        formDataPayload.append("gender", formData.gender);
+        formDataPayload.append("date_of_birth", formData.date_of_birth);
+        formDataPayload.append("nationality", formData.nationality);
+        formDataPayload.append("address", formData.city);
+        formDataPayload.append("preferred_mode_of_communication", formData.preferred_mode_of_communication);
+        formDataPayload.append("employment_status", formData.employment_status);
+        formDataPayload.append("job_title", formData.job_title);
+        formDataPayload.append("name_of_organization", formData.name_of_organization);
+        formDataPayload.append("years_of_experience", formData.years_of_experience);
+        formDataPayload.append("qualification", formData.qualification);
+        formDataPayload.append("payment_proof", paymentProof);
+
+        console.log("Sending already paid notification with file...");
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/notify-payment`,
+          formDataPayload,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        console.log("Backend response:", response.data);
+        if (response.data.success) {
+          localStorage.setItem("token", response.data.access_token);
+          localStorage.setItem("client_id", response.data.user.client_id);
+          localStorage.setItem("role", response.data.role);
+          localStorage.setItem("status", response.data.client.status);
+
+          if (response.data.role === "client" && response.data.client.status === "profile_created") {
+            router.push("/clients/register");
+          } else {
+            router.push("/dashboard");
+          }
+        } else {
+          throw new Error(response.data.message || "Failed to notify payment.");
+        }
+      } catch (error) {
+        console.error("Already paid notification error:", error, "Response:", error.response?.data);
         const errorMessage =
           error.response?.data?.message ||
           (error.response?.data?.details
@@ -499,7 +639,7 @@ const Register = () => {
                         <span
                           className={`text-sm mt-1 block ${
                             phoneSearchState === "loading" || phoneError
-                              ? "text-red dark:text-red"
+                              ? "text-red-500 dark:text-red-400"
                               : "text-green-600 dark:text-green-500"
                           }`}
                         >
@@ -522,7 +662,7 @@ const Register = () => {
                         <span
                           className={`text-sm mt-1 block ${
                             emailSearchState === "loading" || emailError
-                              ? "text-red dark:text-red"
+                              ? "text-red-500 dark:text-red-400"
                               : "text-green-600 dark:text-green-500"
                           }`}
                         >
@@ -662,7 +802,7 @@ const Register = () => {
                         value={formData.years_of_experience}
                         onChange={handleInputChange}
                         min="0"
-                        className="w-full rounded-lg border border-gray-600 bg-transparent py-2 px-4 text-gray-900 focus:border-indigo-600 focus:outline-none dark:bg-gray-700 dark:text-gray-100"
+                        className="w-full rounded-lg border border-gray-300 bg-transparent py-2 px-4 text-gray-900 focus:border-indigo-600 focus:outline-none dark:bg-gray-700 dark:text-gray-100"
                         placeholder="Enter years of experience"
                       />
                     </div>
@@ -724,16 +864,27 @@ const Register = () => {
                         />
                         Transfer Now
                       </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value="alreadyPaid"
+                          checked={paymentMethod === "alreadyPaid"}
+                          onChange={handlePaymentMethodChange}
+                          className="mr-2 text-indigo-600 focus:ring-indigo-500"
+                        />
+                        Already Paid
+                      </label>
                     </div>
                   </div>
-                  {paymentMethod === "transferNow" && (
+                  {(paymentMethod === "transferNow" || paymentMethod === "alreadyPaid") && (
                     <div className="space-y-4">
                       <div>
                         <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Select Amount</label>
                         <select
                           value={selectedAmount}
                           onChange={handleAmountChange}
-                          required={paymentMethod === "transferNow"}
+                          required={paymentMethod === "transferNow" || paymentMethod === "alreadyPaid"}
                           className="w-full rounded-lg border border-gray-300 bg-transparent py-2 px-4 text-gray-900 focus:border-indigo-600 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                         >
                           <option value="">Select an amount</option>
@@ -744,32 +895,66 @@ const Register = () => {
                           ))}
                         </select>
                       </div>
-                      <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-4">
-                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Bank Transfer Details</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          <strong>Bank Name:</strong> United Bank for Africa
-                        </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          <strong>Account Name:</strong> iLearn Africa
-                        </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          <strong>Account Number:</strong> 1025182377
-                        </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          Please include the transaction reference{" "}
-                          <strong className="inline-flex items-center">
-                            {transactionRef}
-                            <button
-                              onClick={copyTransactionRef}
-                              className="ml-2 text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-600"
-                              title="Copy Transaction Reference"
-                            >
-                              <FontAwesomeIcon icon={faCopy} />
-                            </button>
-                          </strong>{" "}
-                          in your transfer description.
+                      {paymentMethod === "transferNow" && (
+                        <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-4">
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Bank Transfer Details</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
+                            <strong>Bank Name:</strong> United Bank for Africa
+                          </p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
+                            <strong>Account Name:</strong> iLearn Africa
+                          </p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
+                            <strong>Account Number:</strong> 1025182377
+                          </p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
+                            Please include the transaction reference{" "}
+                            <strong className="inline-flex items-center">
+                              {transactionRef}
+                              <button
+                                onClick={copyTransactionRef}
+                                className="ml-2 text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-600"
+                                title="Copy Transaction Reference"
+                              >
+                                <FontAwesomeIcon icon={faCopy} />
+                              </button>
+                            </strong>{" "}
+                            in your transfer description.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {paymentMethod === "alreadyPaid" && (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Upload Proof of Payment</label>
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,application/pdf"
+                          onChange={handleFileChange}
+                          required={paymentMethod === "alreadyPaid"}
+                          className="w-full rounded-lg border border-gray-300 bg-transparent py-2 px-4 text-gray-900 focus:border-indigo-600 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                        />
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                          Accepted formats: JPEG, PNG, PDF (max 5MB)
                         </p>
                       </div>
+                      {previewUrl && (
+                        <div className="mt-2">
+                          <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Preview</p>
+                          <img
+                            src={previewUrl}
+                            alt="Payment Proof Preview"
+                            className="mt-2 max-w-[200px] max-h-[200px] object-contain rounded-lg border border-gray-300 dark:border-gray-600"
+                          />
+                        </div>
+                      )}
+                      {paymentProof && !previewUrl && (
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">
+                          PDF uploaded: {paymentProof.name}
+                        </p>
+                      )}
                     </div>
                   )}
                   <div className="space-y-4">
@@ -782,7 +967,7 @@ const Register = () => {
                         required
                         className="mt-1 mr-2 text-indigo-600 focus:ring-indigo-500"
                       />
-                      <label className="text-sm text-gray-600 dark:text-gray-300">
+                      <label className="text-base text-gray-600 dark:text-gray-300 font-semibold">
                         I understand that presentation slides, recorded sessions, and tools provided during this training are
                         the intellectual property of iLearn Africa and are not to be reproduced, redistributed, or hosted elsewhere without written permission.
                       </label>
@@ -796,7 +981,7 @@ const Register = () => {
                         required
                         className="mt-1 mr-2 text-indigo-600 focus:ring-indigo-500"
                       />
-                      <label className="text-sm text-gray-600 dark:text-gray-300">
+                      <label className="text-base dark:text-gray-300 font-semibold">
                         I acknowledge that unauthorized duplication or sharing of course materials is a breach of intellectual property rights and will attract legal action.
                       </label>
                     </div>
@@ -804,7 +989,7 @@ const Register = () => {
                   <div className="flex justify-center">
                     <button
                       type="submit"
-                      disabled={isSubmitting || !!emailError || !!phoneError || !consentIP || !consentSharing}
+                      disabled={isSubmitting || !!emailError || !!phoneError || !consentIP || !consentSharing || (paymentMethod === "alreadyPaid" && !paymentProof)}
                       className="rounded-lg bg-indigo-600 text-white py-3 px-6 text-sm font-medium hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-colors duration-200 shadow-md disabled:opacity-50"
                     >
                       {isSubmitting ? (
@@ -814,6 +999,8 @@ const Register = () => {
                         </>
                       ) : paymentMethod === "transferNow" ? (
                         "I Have Completed This Payment"
+                      ) : paymentMethod === "alreadyPaid" ? (
+                        "Submit Payment Proof"
                       ) : (
                         "Proceed to Payment"
                       )}
