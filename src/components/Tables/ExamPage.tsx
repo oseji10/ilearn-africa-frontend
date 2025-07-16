@@ -108,59 +108,59 @@ const ExamPage = () => {
   
 
   // **Proctoring: Detect tab switch and app switch**
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        setTabSwitchCount((prev) => prev + 1);
-        showTabWarning();
-      }
-    };
+  // useEffect(() => {
+  //   const handleVisibilityChange = () => {
+  //     if (document.hidden) {
+  //       setTabSwitchCount((prev) => prev + 1);
+  //       showTabWarning();
+  //     }
+  //   };
 
-    const handleBlur = () => {
-      setTabSwitchCount((prev) => prev + 1);
-      showTabWarning();
-    };
+  //   const handleBlur = () => {
+  //     setTabSwitchCount((prev) => prev + 1);
+  //     showTabWarning();
+  //   };
 
-    const showTabWarning = () => {
-      if (tabSwitchCount >= 3) {
-        Swal.fire({
-          title: "Exam Violation!",
-          text: "You have switched tabs/applications multiple times. Further violations may result in exam submission.",
-          icon: "error",
-          confirmButtonText: "Ok",
-          customClass: {
-            confirmButton: styles['confirm-btn'],
-            cancelButton: styles['cancel-btn'],
-          },
-        });
+  //   const showTabWarning = () => {
+  //     if (tabSwitchCount >= 3) {
+  //       Swal.fire({
+  //         title: "Exam Violation!",
+  //         text: "You have switched tabs/applications multiple times. Further violations may result in exam submission.",
+  //         icon: "error",
+  //         confirmButtonText: "Ok",
+  //         customClass: {
+  //           confirmButton: styles['confirm-btn'],
+  //           cancelButton: styles['cancel-btn'],
+  //         },
+  //       });
 
-        if (tabSwitchCount >= 5) {
-          Swal.fire({
-            title: "FINAL WARNING!",
-            text: "You have continuously violated exam ethics by switiching tabs/applications even after several warnings. If this happens again, your exam will be submitted. This is your last WARNING!",
-            icon: "error",
-            confirmButtonText: "Ok",
-            customClass: {
-              confirmButton: styles['confirm-btn'],
-              cancelButton: styles['cancel-btn'],
-            },
-          });
-        }
+  //       if (tabSwitchCount >= 5) {
+  //         Swal.fire({
+  //           title: "FINAL WARNING!",
+  //           text: "You have continuously violated exam ethics by switiching tabs/applications even after several warnings. If this happens again, your exam will be submitted. This is your last WARNING!",
+  //           icon: "error",
+  //           confirmButtonText: "Ok",
+  //           customClass: {
+  //             confirmButton: styles['confirm-btn'],
+  //             cancelButton: styles['cancel-btn'],
+  //           },
+  //         });
+  //       }
 
-        if (tabSwitchCount >= 6) {
-          handleForceSubmitExam(true);
-        }
-      }
-    };
+  //       if (tabSwitchCount >= 6) {
+  //         handleForceSubmitExam(true);
+  //       }
+  //     }
+  //   };
 
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("blur", handleBlur);
+  //   document.addEventListener("visibilitychange", handleVisibilityChange);
+  //   window.addEventListener("blur", handleBlur);
 
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("blur", handleBlur);
-    };
-  }, [tabSwitchCount]);
+  //   return () => {
+  //     document.removeEventListener("visibilitychange", handleVisibilityChange);
+  //     window.removeEventListener("blur", handleBlur);
+  //   };
+  // }, [tabSwitchCount]);
 
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);

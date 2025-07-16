@@ -360,7 +360,7 @@ const confirmPayment = useCallback(
         }
       );
 
-      if (response.status === 200) {
+      if (response.status === 201) {
         setError(null);
         alert("Payment confirmed successfully!");
         closeModal();

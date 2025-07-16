@@ -443,7 +443,7 @@ useEffect(() => {
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                     
-                    NGN{Number(payment?.amount).toLocaleString(undefined, {
+                    NGN{Number(payment?.courses?.cost).toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
