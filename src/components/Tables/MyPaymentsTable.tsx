@@ -462,21 +462,21 @@ useEffect(() => {
                     {payment?.payment_method}
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    <p
-                    className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
-                        payment.status === 1
-                          ? "bg-success text-success"
-                          : payment.status === 0
-                            ? "bg-warning text-warning"
-                            : ""
-                      }`}
-                    >
-                      {payment.status === 1
-                        ? "PAID"
-                        : payment.status === 0
-                          ? "PENDING"
-                          : "N/A"}
-                          </p>
+                   <p
+  className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
+    payment.status?.toString() === "1"
+      ? "bg-success text-success"
+      : payment.status?.toString() === "0"
+        ? "bg-warning text-warning"
+        : ""
+  }`}
+>
+  {payment.status?.toString() === "1"
+    ? "PAID"
+    : payment.status?.toString() === "0"
+      ? "PENDING"
+      : "N/A"}
+</p>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
   <div className="flex items-center space-x-3.5">

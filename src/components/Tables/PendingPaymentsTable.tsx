@@ -348,6 +348,7 @@ const confirmPayment = useCallback(
       const paymentData = {
         client_id: selectedPayment.client_id,
         other_reference: selectedPayment.other_reference,
+        transaction_reference: selectedPayment.transaction_reference,
       };
 
       const response = await axios.post(
