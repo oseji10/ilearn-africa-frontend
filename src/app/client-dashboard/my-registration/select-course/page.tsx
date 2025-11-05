@@ -370,6 +370,9 @@ const RegistrationPage = () => {
                     <th className="min-w-[220px] px-4 py-4 font-medium text-black dark:text-white">
                       Course Name
                     </th>
+                     <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
+                      Cohort Name
+                    </th>
                     <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
                       Cost
                     </th>
@@ -387,6 +390,11 @@ const RegistrationPage = () => {
                       <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                         {course.course_name}
                       </td>
+
+                      <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
+                        {course?.cohort_name}
+                      </td>
+                      
                       <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                         {course.cost !== "N/A" ? `₦${parseInt(course.cost).toLocaleString()}` : "N/A"}
                       </td>

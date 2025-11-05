@@ -353,7 +353,6 @@ const QuestionsTable = () => {
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
-  if (!cbtExams.length) return <p>No questions available.</p>;
 
   return (
     <div className="p-4">
@@ -378,6 +377,13 @@ const QuestionsTable = () => {
           </button>
         </a>
       </div>
+
+      {/* Show message when no questions exist, but still render the table */}
+      {!cbtExams.length && (
+        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
+          <p className="text-yellow-800">No questions available. Add new questions or use bulk upload to get started.</p>
+        </div>
+      )}
 
       <DataTable
         columns={[
@@ -424,6 +430,7 @@ const QuestionsTable = () => {
         data={filteredCourses}
         pagination
         highlightOnHover
+        noDataComponent={<p className="p-4">No questions available. Add new questions to see them here.</p>}
       />
 
       {isModalOpen && (
